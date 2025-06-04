@@ -34,6 +34,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint id;
         address owner;
         uint goal;
+        uint256 chainID;
         Donation[] donations;
     }
 
@@ -56,6 +57,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         newPool.id = _poolIDs._value;
         newPool.owner = msg.sender;
         newPool.goal = _goal;
+        newPool.chainID = block.chainid;
         return _poolIDs._value;
     }
 
