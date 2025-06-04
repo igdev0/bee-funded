@@ -59,8 +59,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         return _poolIDs._value;
     }
 
-    function destroyPool(uint poolId) external {
-        require(pools[poolId].owner == msg.sender, "Not pool owner");
+    function destroyPool(uint poolId) external isPoolOwner(poolId) {
         delete pools[poolId];
     }
 
