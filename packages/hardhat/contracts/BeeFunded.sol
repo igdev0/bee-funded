@@ -1,13 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.30;
 
-import "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
-import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
+import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
-contract BeeFunded {
+contract BeeFunded is AutomationCompatibleInterface {
     event NewDonation(address indexed from, address token, uint256 amount, string message);
+
+    struct Subscription {
+        address subscriber;
+        address token;
+        uint256 amount;
+        uint256 nextPaymentTime;
+        uint256 interval;
+        bool poolId;
+        bool active;
+    }
 
     struct Donation {
         // The donor address
@@ -28,6 +38,7 @@ contract BeeFunded {
     }
 
     mapping(uint => Pool) public pools;
+    Subscription[] public subscriptions;
 
     using Counters for Counters.Counter;
     Counters.Counter public _poolIDs;
@@ -79,6 +90,56 @@ contract BeeFunded {
         }));
 
         emit NewDonation(msg.sender, tokenAddress, amount, message); // same event works
+    }
+
+    function subscribe(
+        uint poolId,
+        address token,
+        uint256 amount,
+        uint256 interval
+    ) external {
+        require(interval >= 1 weeks, "Min interval is 1 week");
+        require(amount > 0, "Zero amount");
+        require(pools[poolId].owner != address(0), "Pool does not exist");
+
+        // Just a record — payment is processed later
+        subscriptions.push(Subscription({
+            subscriber: msg.sender,
+            token: token,
+            amount: amount,
+            nextPaymentTime: block.timestamp + interval,
+            interval: interval,
+            poolId: poolId,
+            active: true
+        }));
+    }
+
+    function checkUpKeep(bytes calldata) external view override returns (bool upKeepNeeded, bytes memory performData) {
+        for (uint i = 0; i < subscriptions.length; i++) {
+            if (subscriptions[i].active && block.timestamp >= subscriptions[i].nextPaymentTime) {
+                return (true, abi.encode(i));
+            }
+        }
+        return (false, "");
+    }
+
+    function performUpkeep(bytes calldata performData) external override {
+        uint index = abi.decode(performData, (uint));
+        Subscription storage sub = subscriptions[index];
+        require(sub.active, "Subscription is not active");
+        require(block.timestamp >= sub.nextPaymentTime, "Not due yet");
+
+        IERC20 token = IERC20(sub.token);
+        require(token.transferFrom(sub.subscriber, address(this), sub.amount), "Insufficient funds");
+
+        pools[sub.poolId].donations.push(Donation({
+            donor: sub.subscriber,
+            token: sub.token,
+            amount: sub.amount,
+            message: "Recurring donation"
+        }));
+
+        sub.nextPaymentTime += sub.interval;
     }
 
     function withdraw(uint poolId, address tokenAddress, uint256 amount) external isPoolOwner(poolId) {
