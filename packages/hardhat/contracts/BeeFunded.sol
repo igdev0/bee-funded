@@ -15,14 +15,14 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint256 amount;
         uint256 nextPaymentTime;
         uint256 interval;
-        bool poolId;
+        uint256 poolId;
         bool active;
     }
 
     struct Donation {
         // The donor address
         address donor;
-        // The token address, address(1) will be used for native token.
+        // The token address, address(0) will be used for native token.
         address token;
         // Token amount;
         uint256 amount;
@@ -34,17 +34,17 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint id;
         address owner;
         uint goal;
-        uint256 chainID;
+        uint256 chainId;
         Donation[] donations;
     }
+
+    mapping(uint => mapping(address => uint256)) public poolBalances;
 
     mapping(uint => Pool) public pools;
     Subscription[] public subscriptions;
 
     using Counters for Counters.Counter;
     Counters.Counter public _poolIDs;
-
-    constructor() {}
 
     modifier isPoolOwner(uint _poolId) {
         require(pools[_poolId].owner == msg.sender, "Not pool owner");
@@ -57,7 +57,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         newPool.id = _poolIDs._value;
         newPool.owner = msg.sender;
         newPool.goal = _goal;
-        newPool.chainID = block.chainid;
+        newPool.chainId = block.chainid;
         return _poolIDs._value;
     }
 
@@ -74,9 +74,9 @@ contract BeeFunded is AutomationCompatibleInterface {
         Pool storage pool = pools[poolId];
         require(pool.owner != address(0), "Pool does not exist");
 
-        if (tokenAddress == address(1)) {
+        if (tokenAddress == address(0)) {
             // Native token (ETH/AVAX/BNB/etc)
-            require(msg.value > 0 && msg.value == amount, "Invalid ETH amount");
+            require(msg.value > 0 && msg.value == amount, "Invalid Native Token amount");
         } else {
             require(amount > 0, "Amount must be > 0");
             IERC20 token = IERC20(tokenAddress);
@@ -90,11 +90,12 @@ contract BeeFunded is AutomationCompatibleInterface {
             message: message
         }));
 
+        poolBalances[poolId][tokenAddress] += amount;
         emit NewDonation(msg.sender, tokenAddress, amount, message); // same event works
     }
 
     function subscribe(
-        uint poolId,
+        uint256 poolId,
         address token,
         uint256 amount,
         uint256 interval
@@ -115,7 +116,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         }));
     }
 
-    function checkUpKeep(bytes calldata) external view override returns (bool upKeepNeeded, bytes memory performData) {
+    function checkUpkeep(bytes calldata) external view returns (bool, bytes memory) {
         for (uint i = 0; i < subscriptions.length; i++) {
             if (subscriptions[i].active && block.timestamp >= subscriptions[i].nextPaymentTime) {
                 return (true, abi.encode(i));
@@ -140,18 +141,18 @@ contract BeeFunded is AutomationCompatibleInterface {
             message: "Recurring donation"
         }));
 
+        poolBalances[sub.poolId][sub.token] += sub.amount;
         sub.nextPaymentTime += sub.interval;
     }
 
     function withdraw(uint poolId, address tokenAddress, uint256 amount) external isPoolOwner(poolId) {
-        Pool storage pool = pools[poolId];
+        require(amount <= poolBalances[poolId][tokenAddress], "Insufficient balance");
+        poolBalances[poolId][tokenAddress] -= amount;
 
-        if (tokenAddress == address(1)) {
-            require(address(this).balance >= amount, "Insufficient ETH");
+        if (tokenAddress == address(0)) {
             payable(msg.sender).transfer(amount);
         } else {
             IERC20 token = IERC20(tokenAddress);
-            require(token.balanceOf(address(this)) >= amount, "Insufficient token balance");
             require(token.transfer(msg.sender, amount), "Transfer failed");
         }
     }
