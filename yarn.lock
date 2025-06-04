@@ -6505,6 +6505,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"beefunded@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "beefunded@workspace:."
+  dependencies:
+    husky: ~9.1.6
+    lint-staged: ~13.2.2
+  languageName: unknown
+  linkType: soft
+
 "better-path-resolve@npm:1.0.0":
   version: 1.0.0
   resolution: "better-path-resolve@npm:1.0.0"
@@ -15389,15 +15398,6 @@ __metadata:
   checksum: b7c7d1a68d6ca946f2fbb0778e0c4ec63c65501b54023b2af7d7e9f48fdb6c6580d6f7675cd53bda5944c5ebc057560d5a6365079752546865defb3b79dea454
   languageName: node
   linkType: hard
-
-"se-2@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "se-2@workspace:."
-  dependencies:
-    husky: ~9.1.6
-    lint-staged: ~13.2.2
-  languageName: unknown
-  linkType: soft
 
 "secp256k1@npm:^4.0.1":
   version: 4.0.4
