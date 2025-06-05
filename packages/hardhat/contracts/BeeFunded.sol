@@ -93,7 +93,7 @@ contract BeeFunded is AutomationCompatibleInterface {
 
     function getSubscription() public view returns (bool, Subscription memory) {
         for (uint i; i < subscriptions.length; i++) {
-            if(subscriptions[i].subscriber == msg.sender) {
+            if (subscriptions[i].subscriber == msg.sender) {
                 return (true, subscriptions[i]);
                 break;
             }
@@ -104,14 +104,14 @@ contract BeeFunded is AutomationCompatibleInterface {
     function getSubscriptions(uint _poolId) public view returns (Subscription[] memory) {
         uint len;
         for (uint i; i < subscriptions.length; i++) {
-            if(subscriptions[i].poolId == _poolId) {
+            if (subscriptions[i].poolId == _poolId) {
                 len++;
             }
         }
 
         Subscription[] memory _subs = new Subscription[](len);
         for (uint i; i < subscriptions.length; i++) {
-            if(subscriptions[i].poolId == _poolId) {
+            if (subscriptions[i].poolId == _poolId) {
                 _subs[i] = subscriptions[i];
             }
         }
@@ -142,10 +142,22 @@ contract BeeFunded is AutomationCompatibleInterface {
 
     function unsubscribe() external {
         for (uint i; i < subscriptions.length; i++) {
-            if(subscriptions[i].subscriber == msg.sender) {
+            if (subscriptions[i].subscriber == msg.sender) {
                 subscriptions[i].active = false;
                 break;
             }
+        }
+    }
+
+    function withdraw(uint poolId, address tokenAddress, uint256 amount) external isPoolOwner(poolId) {
+        require(amount <= poolBalances[poolId][tokenAddress], "Insufficient balance");
+        poolBalances[poolId][tokenAddress] -= amount;
+
+        if (tokenAddress == address(0)) {
+            payable(msg.sender).transfer(amount);
+        } else {
+            IERC20 token = IERC20(tokenAddress);
+            require(token.transfer(msg.sender, amount), "Transfer failed");
         }
     }
 
@@ -176,18 +188,6 @@ contract BeeFunded is AutomationCompatibleInterface {
 
         poolBalances[sub.poolId][sub.token] += sub.amount;
         sub.nextPaymentTime += sub.interval;
-    }
-
-    function withdraw(uint poolId, address tokenAddress, uint256 amount) external isPoolOwner(poolId) {
-        require(amount <= poolBalances[poolId][tokenAddress], "Insufficient balance");
-        poolBalances[poolId][tokenAddress] -= amount;
-
-        if (tokenAddress == address(0)) {
-            payable(msg.sender).transfer(amount);
-        } else {
-            IERC20 token = IERC20(tokenAddress);
-            require(token.transfer(msg.sender, amount), "Transfer failed");
-        }
     }
 
     receive() external payable {}
