@@ -94,6 +94,33 @@ contract BeeFunded is AutomationCompatibleInterface {
         emit NewDonation(msg.sender, tokenAddress, amount, message); // same event works
     }
 
+    function getSubscription() public view returns (bool, Subscription memory) {
+        for (uint i; i < subscriptions.length; i++) {
+            if(subscriptions[i].subscriber == msg.sender) {
+                return (true, subscriptions[i]);
+                break;
+            }
+        }
+        return (false, Subscription(address(0), address(0), 0, 0, 0, 0, false));
+    }
+
+    function getSubscriptions(uint _poolId) public view returns (Subscription[] memory) {
+        uint len;
+        for (uint i; i < subscriptions.length; i++) {
+            if(subscriptions[i].poolId == _poolId) {
+                len++;
+            }
+        }
+
+        Subscription[] memory _subs = new Subscription[](len);
+        for (uint i; i < subscriptions.length; i++) {
+            if(subscriptions[i].poolId == _poolId) {
+                _subs[i] = subscriptions[i];
+            }
+        }
+        return _subs;
+    }
+
     function subscribe(
         uint256 poolId,
         address token,
@@ -114,6 +141,15 @@ contract BeeFunded is AutomationCompatibleInterface {
             poolId: poolId,
             active: true
         }));
+    }
+
+    function unsubscribe() external {
+        for (uint i; i < subscriptions.length; i++) {
+            if(subscriptions[i].subscriber == msg.sender) {
+                subscriptions[i].active = false;
+                break;
+            }
+        }
     }
 
     function checkUpkeep(bytes calldata) external view returns (bool, bytes memory) {
