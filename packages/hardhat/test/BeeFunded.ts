@@ -84,6 +84,12 @@ describe("BeeFunded", function () {
         "Min interval is 1 week",
       );
     });
+
+    it("Checks if user is subscribed", async () => {
+      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, 604800); // 1 week
+      const is = await beeFunded.isSubscribed(addr2, owner);
+      expect(is).to.equal(true);
+    });
   });
 
   describe("Chainlink Upkeep", () => {
