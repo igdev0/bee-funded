@@ -44,7 +44,7 @@ contract BeeFunded is AutomationCompatibleInterface {
     Subscription[] public subscriptions;
 
     using Counters for Counters.Counter;
-    Counters.Counter public poolIDs;
+    Counters.Counter public poolID;
 
     modifier isPoolOwner(uint _poolId) {
         require(pools[_poolId].owner == msg.sender, "Not pool owner");
@@ -52,13 +52,13 @@ contract BeeFunded is AutomationCompatibleInterface {
     }
 
     function createPool(uint _goal) external returns (uint) {
-        poolIDs.increment();
-        Pool storage newPool = pools[poolIDs._value];
-        newPool.id = poolIDs._value;
+        poolID.increment();
+        Pool storage newPool = pools[poolID._value];
+        newPool.id = poolID._value;
         newPool.owner = msg.sender;
         newPool.goal = _goal;
         newPool.chainId = block.chainid;
-        return poolIDs._value;
+        return poolID._value;
     }
 
 
