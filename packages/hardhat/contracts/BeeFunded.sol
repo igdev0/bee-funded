@@ -100,7 +100,8 @@ contract BeeFunded is AutomationCompatibleInterface {
         return false;
     }
 
-    function getSubscriptions(uint[] calldata _poolIds) public view returns (Subscription[] memory) {
+    // This method retrieves the subscriptions, filtered by pool ids
+    function getSubsByPoolIds(uint[] calldata _poolIds) public view returns (Subscription[] memory) {
         uint len;
         for (uint i; i < subscriptions.length; i++) {
             for (uint j; j < _poolIds.length; j++) {
