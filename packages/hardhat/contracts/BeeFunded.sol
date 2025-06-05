@@ -101,6 +101,15 @@ contract BeeFunded is AutomationCompatibleInterface {
         return (false, Subscription(address(0), address(0), 0, 0, 0, 0, false));
     }
 
+    function isSubscribed(address sub, uint256 poolId) external view returns (bool) {
+        for(uint i; i < subscriptions.length; i++) {
+            if(subscriptions[i].poolId == poolId && sub == subscriptions[i].subscriber) {
+                return subscriptions[i].active;
+            }
+        }
+        return false;
+    }
+
     function getSubscriptions(uint _poolId) public view returns (Subscription[] memory) {
         uint len;
         for (uint i; i < subscriptions.length; i++) {
