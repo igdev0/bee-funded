@@ -100,18 +100,22 @@ contract BeeFunded is AutomationCompatibleInterface {
         return false;
     }
 
-    function getSubscriptions(uint _poolId) public view returns (Subscription[] memory) {
+    function getSubscriptions(uint[] _poolIds) public view returns (Subscription[] memory) {
         uint len;
         for (uint i; i < subscriptions.length; i++) {
-            if (subscriptions[i].poolId == _poolId) {
-                len++;
+            for (uint j; j < _poolIDs; j++) {
+                if (subscriptions[i].poolId == _poolIds[j]) {
+                    len++;
+                }
             }
         }
 
         Subscription[] memory _subs = new Subscription[](len);
         for (uint i; i < subscriptions.length; i++) {
-            if (subscriptions[i].poolId == _poolId) {
-                _subs[i] = subscriptions[i];
+            for (uint j; j < _poolIDs; j++) {
+                if (subscriptions[i].poolId == _poolIds[j]) {
+                    _subs[i] = subscriptions[i];
+                }
             }
         }
         return _subs;
