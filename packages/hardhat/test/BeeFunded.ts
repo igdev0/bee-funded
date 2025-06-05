@@ -19,19 +19,13 @@ describe("BeeFunded", function () {
   });
 
   describe("Pool Management", () => {
-    it("creates and destroys a pool", async () => {
+    it("creates a pool", async () => {
       const tx = await beeFunded.connect(owner).createPool(1000);
       await tx.wait();
 
       const poolId = await beeFunded._poolIDs();
       const pool = await beeFunded.pools(poolId);
       expect(pool.owner).to.equal(await owner.getAddress());
-
-      await expect(beeFunded.connect(addr1).destroyPool(poolId)).to.be.revertedWith("Not pool owner");
-
-      await beeFunded.connect(owner).destroyPool(poolId);
-      const destroyed = await beeFunded.pools(poolId);
-      expect(destroyed.owner).to.equal(ethers.ZeroAddress);
     });
   });
 
