@@ -90,6 +90,7 @@ describe("BeeFunded", function () {
       const is = await beeFunded.isSubscribed(addr2, owner);
       expect(is).to.equal(true);
     });
+
     it("List subscriptions for pools", async () => {
       await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, 604800); // every week
       const subs = await beeFunded.connect(addr2).getSubsByPoolIds([1]);
