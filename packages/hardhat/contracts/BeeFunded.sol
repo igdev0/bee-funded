@@ -44,7 +44,7 @@ contract BeeFunded is AutomationCompatibleInterface {
     Subscription[] public subscriptions;
 
     using Counters for Counters.Counter;
-    Counters.Counter public _poolIDs;
+    Counters.Counter public poolIDs;
 
     modifier isPoolOwner(uint _poolId) {
         require(pools[_poolId].owner == msg.sender, "Not pool owner");
@@ -52,13 +52,13 @@ contract BeeFunded is AutomationCompatibleInterface {
     }
 
     function createPool(uint _goal) external returns (uint) {
-        _poolIDs.increment();
-        Pool storage newPool = pools[_poolIDs._value];
-        newPool.id = _poolIDs._value;
+        poolIDs.increment();
+        Pool storage newPool = pools[poolIDs._value];
+        newPool.id = poolIDs._value;
         newPool.owner = msg.sender;
         newPool.goal = _goal;
         newPool.chainId = block.chainid;
-        return _poolIDs._value;
+        return poolIDs._value;
     }
 
 
@@ -100,10 +100,10 @@ contract BeeFunded is AutomationCompatibleInterface {
         return false;
     }
 
-    function getSubscriptions(uint[] _poolIds) public view returns (Subscription[] memory) {
+    function getSubscriptions(uint[] calldata _poolIds) public view returns (Subscription[] memory) {
         uint len;
         for (uint i; i < subscriptions.length; i++) {
-            for (uint j; j < _poolIDs; j++) {
+            for (uint j; j < _poolIds.length; j++) {
                 if (subscriptions[i].poolId == _poolIds[j]) {
                     len++;
                 }
@@ -112,7 +112,7 @@ contract BeeFunded is AutomationCompatibleInterface {
 
         Subscription[] memory _subs = new Subscription[](len);
         for (uint i; i < subscriptions.length; i++) {
-            for (uint j; j < _poolIDs; j++) {
+            for (uint j; j < _poolIds.length; j++) {
                 if (subscriptions[i].poolId == _poolIds[j]) {
                     _subs[i] = subscriptions[i];
                 }
