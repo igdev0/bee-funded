@@ -6,7 +6,7 @@ describe("BeeFunded", function () {
   let beeFunded: BeeFunded;
   let mockToken: MockERC20;
   let owner: any, addr1: any, addr2: any;
-
+  const metadataURL = "https://example.com/meta/...";
   beforeEach(async () => {
     [owner, addr1, addr2] = await ethers.getSigners();
     const MockTokenFactory = await ethers.getContractFactory("MockERC20");
@@ -20,7 +20,7 @@ describe("BeeFunded", function () {
 
   describe("Pool Management", () => {
     it("creates a pool", async () => {
-      const tx = await beeFunded.connect(owner).createPool(1000);
+      const tx = await beeFunded.connect(owner).createPool(1000, metadataURL);
       await tx.wait();
 
       const poolId = await beeFunded.poolID();
@@ -33,7 +33,7 @@ describe("BeeFunded", function () {
     let poolId: number;
 
     beforeEach(async () => {
-      await beeFunded.connect(owner).createPool(500);
+      await beeFunded.connect(owner).createPool(500, metadataURL);
       poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr1.getAddress(), 1000);
@@ -66,7 +66,7 @@ describe("BeeFunded", function () {
     let poolId: number;
 
     beforeEach(async () => {
-      await beeFunded.connect(owner).createPool(1000);
+      await beeFunded.connect(owner).createPool(1000, metadataURL);
       poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr2.getAddress(), 1000);
@@ -102,7 +102,7 @@ describe("BeeFunded", function () {
     let poolId: number;
 
     beforeEach(async () => {
-      await beeFunded.connect(owner).createPool(1000);
+      await beeFunded.connect(owner).createPool(1000, metadataURL);
       poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr2.getAddress(), 1000);
@@ -127,7 +127,7 @@ describe("BeeFunded", function () {
     let poolId: number;
 
     beforeEach(async () => {
-      await beeFunded.connect(owner).createPool(1000);
+      await beeFunded.connect(owner).createPool(1000, metadataURL);
       poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr1.getAddress(), 1000);

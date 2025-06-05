@@ -34,6 +34,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint id;
         address owner;
         uint goal;
+        string metadata_url;
         uint256 chainId;
         Donation[] donations;
     }
@@ -51,10 +52,11 @@ contract BeeFunded is AutomationCompatibleInterface {
         _;
     }
 
-    function createPool(uint _goal) external returns (uint) {
+    function createPool(uint _goal, string calldata metadata) external returns (uint) {
         poolID.increment();
         Pool storage newPool = pools[poolID._value];
         newPool.id = poolID._value;
+        newPool.metadata_url = metadata;
         newPool.owner = msg.sender;
         newPool.goal = _goal;
         newPool.chainId = block.chainid;
