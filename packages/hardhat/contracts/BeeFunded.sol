@@ -95,7 +95,6 @@ contract BeeFunded is AutomationCompatibleInterface {
         for (uint i; i < subscriptions.length; i++) {
             if (subscriptions[i].subscriber == msg.sender) {
                 return (true, subscriptions[i]);
-                break;
             }
         }
         return (false, Subscription(address(0), address(0), 0, 0, 0, 0, false));
