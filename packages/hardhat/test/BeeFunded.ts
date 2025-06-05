@@ -23,7 +23,7 @@ describe("BeeFunded", function () {
       const tx = await beeFunded.connect(owner).createPool(1000);
       await tx.wait();
 
-      const poolId = await beeFunded._poolIDs();
+      const poolId = await beeFunded.poolID();
       const pool = await beeFunded.pools(poolId);
       expect(pool.owner).to.equal(await owner.getAddress());
     });
@@ -34,7 +34,7 @@ describe("BeeFunded", function () {
 
     beforeEach(async () => {
       await beeFunded.connect(owner).createPool(500);
-      poolId = Number(await beeFunded._poolIDs());
+      poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr1.getAddress(), 1000);
       await mockToken.connect(addr1).approve(beeFunded.target, 1000);
@@ -67,7 +67,7 @@ describe("BeeFunded", function () {
 
     beforeEach(async () => {
       await beeFunded.connect(owner).createPool(1000);
-      poolId = Number(await beeFunded._poolIDs());
+      poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr2.getAddress(), 1000);
       await mockToken.connect(addr2).approve(beeFunded.target, 1000);
@@ -90,6 +90,7 @@ describe("BeeFunded", function () {
       const is = await beeFunded.isSubscribed(addr2, owner);
       expect(is).to.equal(true);
     });
+    it("List subscriptions for pools", () => {});
   });
 
   describe("Chainlink Upkeep", () => {
@@ -97,7 +98,7 @@ describe("BeeFunded", function () {
 
     beforeEach(async () => {
       await beeFunded.connect(owner).createPool(1000);
-      poolId = Number(await beeFunded._poolIDs());
+      poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr2.getAddress(), 1000);
       await mockToken.connect(addr2).approve(beeFunded.target, 1000);
@@ -122,7 +123,7 @@ describe("BeeFunded", function () {
 
     beforeEach(async () => {
       await beeFunded.connect(owner).createPool(1000);
-      poolId = Number(await beeFunded._poolIDs());
+      poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr1.getAddress(), 1000);
       await mockToken.connect(addr1).approve(beeFunded.target, 1000);
