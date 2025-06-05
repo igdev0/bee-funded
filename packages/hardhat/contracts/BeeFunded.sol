@@ -91,15 +91,6 @@ contract BeeFunded is AutomationCompatibleInterface {
         emit NewDonation(msg.sender, tokenAddress, amount, message); // same event works
     }
 
-    function getSubscription() public view returns (bool, Subscription memory) {
-        for (uint i; i < subscriptions.length; i++) {
-            if (subscriptions[i].subscriber == msg.sender) {
-                return (true, subscriptions[i]);
-            }
-        }
-        return (false, Subscription(address(0), address(0), 0, 0, 0, 0, false));
-    }
-
     function isSubscribed(address subscriber, address creator) external view returns (bool) {
         for(uint i; i < subscriptions.length; i++) {
             if(subscriptions[i].active && subscriptions[i].subscriber == subscriber && pools[subscriptions[i].poolId].owner == creator) {
