@@ -61,9 +61,6 @@ contract BeeFunded is AutomationCompatibleInterface {
         return _poolIDs._value;
     }
 
-    function destroyPool(uint poolId) external isPoolOwner(poolId) {
-        delete pools[poolId];
-    }
 
     function donate(
         uint poolId,
