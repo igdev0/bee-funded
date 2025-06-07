@@ -1,9 +1,11 @@
+import Navbar from './components/navbar';
+import '@rainbow-me/rainbowkit/styles.css';
 
 function App() {
 
   return (
     <>
-      <h1>Hello</h1>
+      <Navbar/>
     </>
   )
 }
