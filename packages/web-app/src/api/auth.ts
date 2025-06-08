@@ -1,6 +1,11 @@
 import axios from '../axios.ts';
 import {SignInInput, SignOutput, SignUpInput, UserEntity} from './types.ts';
 
+export const getNonce = async (): Promise<string> => {
+  const {data} = await axios.get<string>("/auth/nonce");
+  return data;
+}
+
 export const getUser = async () => {
   const {data} = await axios.get<UserEntity>("/auth/me");
   return data;
