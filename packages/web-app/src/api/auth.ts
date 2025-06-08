@@ -20,3 +20,8 @@ export const userExists = async (address: string): Promise<boolean> => {
   const {data} = await axios.post<boolean>("/auth/exists", {address});
   return data;
 };
+
+export const signOut = async ():Promise<void> => {
+  const {data} = await axios.post("/auth/signout");
+  return data;
+}
