@@ -6,7 +6,7 @@ import {useEffect} from 'react';
 import {useNavigate} from 'react-router';
 import {createAuthApi} from '@/api/auth.ts';
 
-export default function useAuth() {
+export default function useAuth(forRoot = false) {
   const api = createAuthApi();
   const appStore = useAppStore();
   const account = useAccount();
@@ -15,7 +15,9 @@ export default function useAuth() {
 
   const signIn = async () => {
     const nonce = await api.getNonce();
-
+    if (appStore.accessToken) {
+      return null;
+    }
     const rawMessage = new SiweMessage({
       domain: window.location.host,
       address: account.address,
@@ -71,16 +73,19 @@ export default function useAuth() {
   }, [account.isDisconnected, appStore.accessToken]);
 
   useEffect(() => {
-    if(account.isConnected && !appStore.accessToken) {
-      api.userExists(account.address as string).then(exists => {
-        if(exists && !appStore.accessToken) {
-          signIn().then(console.log);
-        } else {
-          navigate("/sign-up")
+    if (forRoot) {
+      (async () => {
+        if (account.address && !appStore.accessToken) {
+          const exists = await api.userExists(account.address as string);
+          if (exists) {
+            await signIn();
+          } else {
+            navigate("/sign-up");
+          }
         }
-      });
+      })();
     }
-  }, [account.isConnected, appStore.accessToken, account.address])
+  }, [appStore.accessToken, account.address, forRoot]);
 
 
   return {signIn, signUp, onDisconnect};

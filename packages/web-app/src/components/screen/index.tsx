@@ -3,7 +3,7 @@ import Navbar from '../navbar';
 import useAuth from '../../hooks/use-auth.ts';
 
 export default function Screen(props: PropsWithChildren) {
-  useAuth();
+  useAuth(true);
   return (
       <div className="w-full h-full absolute left-0 top-0 overflow-auto">
         <Navbar/>

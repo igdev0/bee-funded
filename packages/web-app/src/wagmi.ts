@@ -2,8 +2,8 @@ import {mainnet, sepolia} from 'wagmi/chains';
 import {getDefaultConfig} from '@rainbow-me/rainbowkit';
 
 export const config = getDefaultConfig({
-  appName: "Beefunded",
-  projectId: "BEE_FUNDED",
+  appName: "BeeFunded",
+  projectId: "e27dfcb068ff336529af4a9620b95eea",
   chains: [mainnet, sepolia],
 });
 
