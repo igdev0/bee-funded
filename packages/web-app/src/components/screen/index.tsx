@@ -1,11 +1,15 @@
 import {PropsWithChildren} from 'react';
 import Navbar from '../navbar';
+import useAuth from '../../hooks/use-auth.ts';
 
-export default function Screen(props:PropsWithChildren) {
+export default function Screen(props: PropsWithChildren) {
+  useAuth();
   return (
       <div className="w-full h-full absolute left-0 top-0 overflow-auto">
         <Navbar/>
-        {props.children}
+        <div className="container mx-auto">
+          {props.children}
+        </div>
       </div>
-  )
+  );
 }

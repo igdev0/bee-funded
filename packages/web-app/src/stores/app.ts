@@ -16,19 +16,28 @@ interface AppStore {
   user: UserEntity | null;
   initialized: boolean;
   initialize: () => Promise<void>;
+  updateUser: (user: UserEntity | null) => void;
+  updateAccessToken: (accessToken: string | null) => void;
 }
 
-const useAppStore = create<AppStore>((setState, getState,) => ({
+const useAppStore = create<AppStore>((setState,) => ({
   accessToken: null,
   initialized: false,
   user: null,
+  updateAccessToken(accessToken) {
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    setState({accessToken});
+  },
+  updateUser(user) {
+    setState({user});
+  },
   async initialize() {
     let accessToken: string | null;
     try {
       accessToken = await refreshToken();
       apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       const user = await getUser();
-      setState({ user, accessToken });
+      setState({user, accessToken});
     } catch (_error) {
       // ignore the error
     }

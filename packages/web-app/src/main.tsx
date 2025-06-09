@@ -10,6 +10,7 @@ import App from './app.tsx';
 import {config} from './wagmi.ts';
 import Spinner from './components/spinner';
 
+// @ts-ignore
 globalThis.Buffer = Buffer;
 
 const queryClient = new QueryClient();
