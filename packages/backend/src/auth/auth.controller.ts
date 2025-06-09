@@ -28,6 +28,8 @@ import Redis from 'ioredis';
 import { GetUser } from '../decorators/get-user.decorator';
 import { AuthGuard } from './auth.guard';
 import { User } from '../user/entities/user.entity';
+import SigninDto from './dto/signin.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
@@ -35,6 +37,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly config: ConfigService,
     @InjectRedis()
     private readonly redis: Redis,
   ) {}
@@ -79,7 +82,8 @@ export class AuthController {
         address: siweMessage.address,
         username: body.username,
         email: body.email,
-        complete: body.complete,
+        complete: false,
+        accepted_terms: body.accepted_terms,
       });
 
       const accessTokenPayload: AccessTokenPayload = {
@@ -123,12 +127,12 @@ export class AuthController {
 
   @Post('signin')
   async signIn(
+    @Req() req: Request,
     @Body()
-    body: SignupDto,
+    body: SigninDto,
     @Res() res: Response,
   ) {
     const nonceStatus = await this.redis.get(body.nonce);
-
     if (!nonceStatus)
       return res
         .status(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -197,8 +201,12 @@ export class AuthController {
     const accessToken = this.extractTokenFromHeader(req); // Bearer token
     if (refreshToken) {
       try {
-        const payload: RefreshTokenPayload =
-          await this.jwtService.verifyAsync(refreshToken);
+        const payload: RefreshTokenPayload = await this.jwtService.verifyAsync(
+          refreshToken,
+          {
+            secret: this.config.get('JWT_SECRET'),
+          },
+        );
 
         // Delete the refresh token from Redis
         await this.redis.del(`refresh_token:${payload.jti}`);
@@ -212,7 +220,9 @@ export class AuthController {
     if (accessToken) {
       try {
         const accessPayload: AccessTokenPayload =
-          await this.jwtService.verifyAsync(accessToken);
+          await this.jwtService.verifyAsync(accessToken, {
+            secret: this.config.get('JWT_SECRET'),
+          });
         // Store the jti in Redis with its remaining expiry time
         const remainingExpiry =
           (accessPayload.exp || 0) - Math.floor(Date.now() / 1000);
@@ -254,8 +264,10 @@ export class AuthController {
     const refreshToken = req.cookies['refresh_token'] as string;
 
     try {
-      const payload: RefreshTokenPayload =
-        await this.jwtService.verifyAsync(refreshToken);
+      const payload: RefreshTokenPayload = await this.jwtService.verifyAsync(
+        refreshToken,
+        { secret: this.config.get('JWT_SECRET') },
+      );
 
       const user = await this.userService.findUserByID(payload.sub);
       if (!user) {

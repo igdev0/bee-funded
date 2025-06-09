@@ -1,26 +1,20 @@
 import useAppStore from '../stores/app.ts';
-import {
-  getNonce,
-  getUser,
-  signIn as signInAPI,
-  signOut as signOutAPI,
-  signUp as signUpAPI,
-  userExists
-} from '../api/auth.ts';
-import {SignUpInput} from '../api/types.ts';
+import {SignUpPayload} from '../api/types.ts';
 import {SiweMessage} from 'siwe';
 import {useAccount, useSignMessage} from 'wagmi';
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router';
+import {createAuthApi} from '@/api/auth.ts';
 
 export default function useAuth() {
+  const api = createAuthApi();
   const appStore = useAppStore();
   const account = useAccount();
   const navigate = useNavigate();
   const {signMessageAsync} = useSignMessage();
 
   const signIn = async () => {
-    const nonce = await getNonce();
+    const nonce = await api.getNonce();
 
     const rawMessage = new SiweMessage({
       domain: window.location.host,
@@ -34,15 +28,15 @@ export default function useAuth() {
     const message = rawMessage.prepareMessage();
 
     const signature = await signMessageAsync({message});
-    const {accessToken} = await signInAPI({nonce, signature, address: account.address as string, message});
+    const {accessToken} = await api.signIn({nonce, signature, address: account.address as string, message});
 
-    const user = await getUser();
+    const user = await api.getUser();
     appStore.updateAccessToken(accessToken);
     appStore.updateUser(user);
   };
 
-  const signUp = async (props: Omit<SignUpInput, "signature" | "message" | "nonce" | "address">) => {
-    const nonce = await getNonce();
+  const signUp = async (props: Omit<SignUpPayload, "signature" | "message" | "nonce" | "address">) => {
+    const nonce = await api.getNonce();
 
     const rawMessage = new SiweMessage({
       domain: window.location.host,
@@ -57,15 +51,15 @@ export default function useAuth() {
     const message = rawMessage.prepareMessage();
 
     const signature = await signMessageAsync({message});
-    const {accessToken} = await signUpAPI({message, nonce, signature, address: account.address as string, ...props});
+    const {accessToken} = await api.signUp({message, nonce, signature, address: account.address as string, ...props});
 
     appStore.updateAccessToken(accessToken);
-    const user = await getUser();
+    const user = await api.getUser();
     appStore.updateUser(user);
   };
 
   const onDisconnect = async () => {
-    await signOutAPI();
+    await api.signOut();
     appStore.updateAccessToken(null);
     appStore.updateUser(null);
   };
@@ -78,7 +72,7 @@ export default function useAuth() {
 
   useEffect(() => {
     if(account.isConnected) {
-      userExists(account.address as string).then(exists => {
+      api.userExists(account.address as string).then(exists => {
         if(exists) {
           signIn().then(console.log);
         } else {

@@ -1,37 +1,57 @@
-import {apiClient} from '../stores/app.ts';
-import {SignInInput, SignOutput, SignUpInput, UserEntity} from './types.ts';
+import axios, { AxiosInstance } from 'axios';
+import {
+  SignUpPayload,
+  SignOutput,
+  SignInPayload,
+  UserEntity
+} from './types.ts';
 
-export const getNonce = async (): Promise<string> => {
-  const {data} = await apiClient.get<{ nonce: string }>("/auth/nonce");
-  return data.nonce;
-}
+export const defaultClient = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3000', // Set your API base URL
+  timeout: 10000, // Optional: Set a timeout
+  headers: {
+    'Content-Type': 'application/json', // Optional: Common headers
+  },
+  withCredentials: true,
+})
 
-export const getUser = async () => {
-  const {data} = await apiClient.get<UserEntity>("/auth/me");
-  return data;
-};
+export const createAuthApi = (client = defaultClient ) => ({
 
-export const signIn = async (input: SignInInput): Promise<SignOutput> => {
-  const {data} = await apiClient.post<SignOutput>("/auth/signin", input);
-  return data;
-};
+  getNonce: async (): Promise<string> => {
+    const { data } = await client.get<{ nonce: string }>('/auth/nonce');
+    return data.nonce;
+  },
 
-export const signUp = async (input: SignUpInput): Promise<SignOutput> => {
-  const {data} = await apiClient.post<SignOutput>("/auth/signup", input);
-  return data;
-};
+  getUser: async (): Promise<UserEntity> => {
+    const { data } = await client.get<UserEntity>('/auth/me');
+    return data;
+  },
 
-export const userExists = async (address: string): Promise<boolean> => {
-  const {data} = await apiClient.post<boolean>("/auth/exists", {address});
-  return data;
-};
+  signIn: async (input: SignInPayload): Promise<SignOutput> => {
+    const { data } = await client.post<SignOutput>('/auth/signin', input);
+    defaultClient.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+    return data;
+  },
 
-export const signOut = async ():Promise<void> => {
-  const {data} = await apiClient.post("/auth/signout");
-  return data;
-}
+  signUp: async (input: SignUpPayload): Promise<SignOutput> => {
+    const { data } = await client.post<SignOutput>('/auth/signup', input);
+    defaultClient.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+    return data;
+  },
 
-export const refreshToken = async (): Promise<string> => {
-  const {data} = await apiClient.get<{ access_token: string }>("/auth/refresh-token");
-  return data.access_token;
-}
+  userExists: async (address: string): Promise<boolean> => {
+    const { data } = await client.post<boolean>('/auth/exists', { address });
+    return data;
+  },
+
+  signOut: async (): Promise<void> => {
+    await client.post('/auth/signout');
+  },
+
+  refreshToken: async (): Promise<string> => {
+    const { data } = await client.get<{ access_token: string }>('/auth/refresh-token');
+    return data.access_token;
+  }
+});
+
+export const api = createAuthApi();

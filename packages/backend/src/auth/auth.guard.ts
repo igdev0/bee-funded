@@ -9,13 +9,14 @@ import { Request } from 'express';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-    private readonly redis: Redis,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
