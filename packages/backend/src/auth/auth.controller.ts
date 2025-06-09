@@ -68,6 +68,15 @@ export class AuthController {
         .send({ error: 'Invalid nonce' });
 
     try {
+      const user = await this.userService.findUserByAddress(body.address);
+      if (user) {
+        return res.status(HttpStatus.OK).send({ error: 'User already exists' });
+      }
+    } catch (_err) {
+      console.warn(_err);
+    }
+
+    try {
       const siweMessage = new SiweMessage(body.message);
       const siweResponse = await siweMessage.verify({
         nonce: body.nonce,
@@ -109,6 +118,8 @@ export class AuthController {
       await this.redis.set(
         `refresh_token:${refreshTokenPayload.jti}`,
         accessTokenPayload.sub,
+        'EX',
+        refreshTokenPayload.iat,
       );
 
       res.cookie('refresh_token', refreshToken, {
@@ -120,7 +131,8 @@ export class AuthController {
 
       res.status(HttpStatus.OK).send({ accessToken });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_) {
+    } catch (err) {
+      console.error(err);
       res.status(HttpStatus.BAD_REQUEST).send({ error: 'Invalid signature' });
     }
   }
@@ -179,6 +191,8 @@ export class AuthController {
       await this.redis.set(
         `refresh_token:${refreshTokenPayload.jti}`,
         accessTokenPayload.sub,
+        'EX',
+        refreshTokenPayload.iat,
       );
 
       res.cookie('refresh_token', refreshToken, {
@@ -190,7 +204,8 @@ export class AuthController {
 
       res.status(HttpStatus.OK).send({ accessToken });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_) {
+    } catch (err) {
+      console.log(err);
       res.status(HttpStatus.BAD_REQUEST).send({ error: 'Invalid signature' });
     }
   }

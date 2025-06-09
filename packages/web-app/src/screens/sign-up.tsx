@@ -8,14 +8,12 @@ import * as yup from 'yup';
 import {Button} from '@/components/ui/button.tsx';
 import useAuth from '@/hooks/use-auth.ts';
 import {useMutation} from '@tanstack/react-query';
-import {Checkbox} from '@/components/ui/checkbox.tsx';
 import {SignUpPayload} from '@/api/types.ts';
 
 const schema = yup.object(
     {
       email: yup.string().email().required(),
       username: yup.string().required(),
-      accept_terms: yup.boolean().required(),
     }
 );
 
@@ -30,7 +28,7 @@ export default function SignUpScreen() {
   });
 
   const onValid = async (props: Pick<SignUpPayload, "email" | "username" | "accepted_terms">) => {
-    mutation.mutate(props);
+    mutation.mutate({...props, accepted_terms: true});
   };
 
   return (
@@ -52,12 +50,6 @@ export default function SignUpScreen() {
                   <Input type="email" placeholder="e.g: john@gmail.com" {...form.register("email")} />
                 </Label>
                 <p className="text-red-600 mt-1">{form.formState?.errors?.email?.message ?? ""}</p>
-              </fieldset>
-              <fieldset className="flex gap-2">
-                <Checkbox id="accept_terms" {...form.register("accept_terms")}/>
-                <Label htmlFor="accept_terms">
-                  Accept terms and conditions
-                </Label>
               </fieldset>
               <div className="mt-4">
                 <Button type="submit" disabled={mutation.isPending} className="w-full">Create account</Button>

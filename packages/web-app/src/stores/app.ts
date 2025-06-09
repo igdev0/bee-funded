@@ -27,7 +27,7 @@ const useAppStore = create<AppStore>((setState,) => ({
     try {
       accessToken = await api.refreshToken();
       const user = await api.getUser();
-      setState({user, accessToken});
+      setState({user, accessToken, initialized: true});
     } catch (_error) {
       // ignore the error
     }

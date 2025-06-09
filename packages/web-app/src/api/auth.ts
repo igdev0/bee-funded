@@ -49,8 +49,9 @@ export const createAuthApi = (client = defaultClient ) => ({
   },
 
   refreshToken: async (): Promise<string> => {
-    const { data } = await client.get<{ access_token: string }>('/auth/refresh-token');
-    return data.access_token;
+    const { data } = await client.get<{ accessToken: string }>('/auth/refresh-token');
+    defaultClient.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+    return data.accessToken;
   }
 });
 

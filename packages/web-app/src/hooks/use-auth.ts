@@ -71,16 +71,16 @@ export default function useAuth() {
   }, [account.isDisconnected, appStore.accessToken]);
 
   useEffect(() => {
-    if(account.isConnected) {
+    if(account.isConnected && !appStore.accessToken) {
       api.userExists(account.address as string).then(exists => {
-        if(exists) {
+        if(exists && !appStore.accessToken) {
           signIn().then(console.log);
         } else {
           navigate("/sign-up")
         }
       });
     }
-  }, [account.isConnected, account.address])
+  }, [account.isConnected, appStore.accessToken, account.address])
 
 
   return {signIn, signUp, onDisconnect};
