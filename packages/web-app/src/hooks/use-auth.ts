@@ -42,8 +42,8 @@ export default function useAuth() {
   };
 
   const signUp = async (props: Omit<SignUpInput, "signature" | "message" | "nonce" | "address">) => {
-
     const nonce = await getNonce();
+
     const rawMessage = new SiweMessage({
       domain: window.location.host,
       address: account.address,
