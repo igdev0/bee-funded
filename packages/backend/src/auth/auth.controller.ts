@@ -16,7 +16,7 @@ import {
   REFRESH_TOKEN_TTL,
   RefreshTokenPayload,
 } from './auth.service';
-import { SiweMessage } from 'siwe';
+import { generateNonce, SiweMessage } from 'siwe';
 import { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
@@ -41,7 +41,7 @@ export class AuthController {
 
   @Get('nonce')
   async getNonce(@Res() res: Response) {
-    const nonce = Math.random().toString(36).substring(2);
+    const nonce = generateNonce();
     await this.redis.set(nonce, 'valid');
     res.status(HttpStatus.OK).send({ nonce });
   }
@@ -249,7 +249,7 @@ export class AuthController {
     return user;
   }
 
-  @Post('refresh-token')
+  @Get('refresh-token')
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'] as string;
 
