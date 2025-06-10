@@ -30,6 +30,7 @@ const useAppStore = create<AppStore>((setState,) => ({
       setState({user, accessToken, initialized: true});
     } catch (_error) {
       // ignore the error
+      setState({user: null, accessToken: null, initialized: true});
     }
 
   }

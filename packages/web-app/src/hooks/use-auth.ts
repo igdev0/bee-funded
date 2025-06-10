@@ -3,20 +3,20 @@ import {SignUpPayload} from '../api/types.ts';
 import {SiweMessage} from 'siwe';
 import {useAccount, useSignMessage} from 'wagmi';
 import {useEffect} from 'react';
-import {useNavigate} from 'react-router';
 import {createAuthApi} from '@/api/auth.ts';
+import {useNavigate} from 'react-router';
 
 export function useInitAuth() {
   const api = createAuthApi();
-  const account = useAccount();
-  const appStore = useAppStore();
+  const address = useAccount().address;
+  const accessToken = useAppStore().accessToken;
   const auth = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
-      if (account.address && !appStore.accessToken) {
-        const exists = await api.userExists(account.address as string);
+      if (address && !accessToken) {
+        const exists = await api.userExists(address as string);
         if (exists) {
           await auth.signIn();
         } else {
@@ -24,7 +24,7 @@ export function useInitAuth() {
         }
       }
     })();
-  }, [appStore.accessToken, account.address]);
+  }, [accessToken, address]);
 }
 
 export default function useAuth() {
