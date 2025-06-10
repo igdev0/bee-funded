@@ -28,7 +28,8 @@ export default function SignUpScreen() {
   });
 
   const onValid = async (props: Pick<SignUpPayload, "email" | "username" | "accepted_terms">) => {
-    mutation.mutate({...props, accepted_terms: true});
+    await mutation.mutateAsync({...props, accepted_terms: true});
+    form.reset();
   };
 
   return (
@@ -52,7 +53,7 @@ export default function SignUpScreen() {
                 <p className="text-red-600 mt-1">{form.formState?.errors?.email?.message ?? ""}</p>
               </fieldset>
               <div className="mt-4">
-                <Button type="submit" disabled={mutation.isPending} className="w-full">Create account</Button>
+                <Button type="submit" disabled={mutation.isPending} className="w-full">Sign</Button>
               </div>
             </form>
           </Form>

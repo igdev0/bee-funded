@@ -6,11 +6,31 @@ import {useEffect} from 'react';
 import {useNavigate} from 'react-router';
 import {createAuthApi} from '@/api/auth.ts';
 
-export default function useAuth(forRoot = false) {
+export function useInitAuth() {
+  const api = createAuthApi();
+  const account = useAccount();
+  const appStore = useAppStore();
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    (async () => {
+      if (account.address && !appStore.accessToken) {
+        const exists = await api.userExists(account.address as string);
+        if (exists) {
+          await auth.signIn();
+        } else {
+          navigate("/sign-up");
+        }
+      }
+    })();
+  }, [appStore.accessToken, account.address]);
+}
+
+export default function useAuth() {
   const api = createAuthApi();
   const appStore = useAppStore();
   const account = useAccount();
-  const navigate = useNavigate();
   const {signMessageAsync} = useSignMessage();
 
   const signIn = async () => {
@@ -71,21 +91,6 @@ export default function useAuth(forRoot = false) {
       onDisconnect().then(console.log);
     }
   }, [account.isDisconnected, appStore.accessToken]);
-
-  useEffect(() => {
-    if (forRoot) {
-      (async () => {
-        if (account.address && !appStore.accessToken) {
-          const exists = await api.userExists(account.address as string);
-          if (exists) {
-            await signIn();
-          } else {
-            navigate("/sign-up");
-          }
-        }
-      })();
-    }
-  }, [appStore.accessToken, account.address, forRoot]);
 
 
   return {signIn, signUp, onDisconnect};
