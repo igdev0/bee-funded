@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Or, Repository } from 'typeorm';
 import ExistsDto from '../auth/dto/exists.dto';
 
 @Injectable()
@@ -29,23 +29,7 @@ export class UserService {
   }
 
   async userExists(payload: ExistsDto) {
-    if (payload.address) {
-      return await this.findUserByAddress(payload.address);
-    } else if (payload.username) {
-      return this.findUserByUsername(payload.username);
-    } else if (payload.email) {
-      return this.findUserByEmail(payload.email);
-    }
-
-    throw new NotFoundException('User does not exist');
-  }
-
-  async findUserByUsername(username: string) {
-    return await this.userRepository.findOne({ where: { username } });
-  }
-
-  async findUserByEmail(email: string) {
-    return await this.userRepository.findOne({ where: { email } });
+    return this.userRepository.createQueryBuilder().orWhere(payload).getOne();
   }
 
   async findUserByID(id: string) {
