@@ -19,7 +19,7 @@ const emailDB = debounceValidator();
 
 const schema = yup.object(
     {
-      email: yup.string().email().required().test(async (email: string) => {
+      email: yup.string().email().required().test(async function (email: string) {
         if(!email) {
           return true;
         }
@@ -27,10 +27,13 @@ const schema = yup.object(
           return api.userExists({email: usr});
         };
         const fn = emailDB(cb, 500);
-        const exists = await fn(email);
-        return !exists as boolean;
+        const exists = (await fn(email)) as boolean;
+        const err = this.createError({
+          message: 'Email is already in use',
+        })
+        return exists ? err : true;
       }),
-      username: yup.string().required().test(async (username) => {
+      username: yup.string().required().test(async function (username) {
         if(!username) {
           return true;
         }
@@ -38,8 +41,11 @@ const schema = yup.object(
           return api.userExists({username: usr});
         };
         const fn = usernameDB(cb, 500);
-        const exists = await fn(username);
-        return !exists as boolean;
+        const exists = (await fn(username)) as boolean;
+        const err = this.createError({
+          message: 'Username is already in use',
+        })
+        return exists ? err : true;
       }),
     }
 );
