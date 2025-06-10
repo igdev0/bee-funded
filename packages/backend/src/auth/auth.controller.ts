@@ -126,7 +126,7 @@ export class AuthController {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
-        maxAge: REFRESH_TOKEN_TTL,
+        maxAge: REFRESH_TOKEN_TTL * 1000,
       });
 
       res.status(HttpStatus.OK).send({ accessToken });
@@ -199,11 +199,10 @@ export class AuthController {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
-        maxAge: REFRESH_TOKEN_TTL,
+        maxAge: REFRESH_TOKEN_TTL * 1000,
       });
 
       res.status(HttpStatus.OK).send({ accessToken });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       console.log(err);
       res.status(HttpStatus.BAD_REQUEST).send({ error: 'Invalid signature' });
