@@ -284,7 +284,9 @@ export class AuthController {
       );
 
       const user = await this.userService.findUserByID(payload.sub);
+
       if (!user) {
+        res.clearCookie('refresh_token');
         return res
           .status(HttpStatus.BAD_REQUEST)
           .send({ error: 'Invalid refreshToken' });
