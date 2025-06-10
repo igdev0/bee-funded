@@ -1,6 +1,15 @@
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export default class ExistsDto {
   @IsString()
-  address: string;
+  @IsOptional()
+  address?: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  username?: string;
 }

@@ -51,7 +51,7 @@ export class AuthController {
 
   @Post('exists')
   async exists(@Body() body: ExistsDto) {
-    return !!(await this.userService.findUserByAddress(body.address));
+    return this.userService.userExists(body);
   }
 
   @Post('signup')
