@@ -28,3 +28,9 @@ export interface SignUpPayload extends SignInPayload {
 export interface SignOutput {
   accessToken: string;
 }
+
+export interface UserExistsPayload {
+  address?: string;
+  email?: string;
+  username?: string;
+}

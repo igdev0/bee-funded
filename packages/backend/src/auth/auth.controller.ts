@@ -50,8 +50,9 @@ export class AuthController {
   }
 
   @Post('exists')
-  async exists(@Body() body: ExistsDto) {
-    return this.userService.userExists(body);
+  async exists(@Body() body: ExistsDto, @Res() res: Response) {
+    const user = await this.userService.userExists(body);
+    return res.status(HttpStatus.OK).send({ exists: !!user });
   }
 
   @Post('signup')
@@ -65,12 +66,14 @@ export class AuthController {
     if (!nonceStatus)
       return res
         .status(HttpStatus.UNPROCESSABLE_ENTITY)
-        .send({ error: 'Invalid nonce' });
+        .send({ message: 'Invalid nonce' });
 
     try {
       const user = await this.userService.findUserByAddress(body.address);
       if (user) {
-        return res.status(HttpStatus.OK).send({ error: 'User already exists' });
+        return res
+          .status(HttpStatus.CONFLICT)
+          .send({ message: 'User already exists' });
       }
     } catch (_err) {
       console.warn(_err);
@@ -130,10 +133,9 @@ export class AuthController {
       });
 
       res.status(HttpStatus.OK).send({ accessToken });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       console.error(err);
-      res.status(HttpStatus.BAD_REQUEST).send({ error: 'Invalid signature' });
+      res.status(HttpStatus.BAD_REQUEST).send({ message: 'Invalid signature' });
     }
   }
 
@@ -148,13 +150,13 @@ export class AuthController {
     if (!nonceStatus)
       return res
         .status(HttpStatus.UNPROCESSABLE_ENTITY)
-        .send({ error: 'Invalid nonce' });
+        .send({ message: 'Invalid nonce' });
 
     const user = await this.userService.findUserByAddress(body.address);
     if (!user) {
       return res
         .status(HttpStatus.NOT_FOUND)
-        .send({ error: "Couldn't find user" });
+        .send({ message: "Couldn't find user" });
     }
 
     try {
@@ -205,7 +207,7 @@ export class AuthController {
       res.status(HttpStatus.OK).send({ accessToken });
     } catch (err) {
       console.log(err);
-      res.status(HttpStatus.BAD_REQUEST).send({ error: 'Invalid signature' });
+      res.status(HttpStatus.BAD_REQUEST).send({ message: 'Invalid signature' });
     }
   }
 
@@ -277,6 +279,10 @@ export class AuthController {
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'] as string;
 
+    if (!refreshToken) {
+      return res.status(HttpStatus.BAD_REQUEST).send();
+    }
+
     try {
       const payload: RefreshTokenPayload = await this.jwtService.verifyAsync(
         refreshToken,
@@ -289,7 +295,7 @@ export class AuthController {
         res.clearCookie('refresh_token');
         return res
           .status(HttpStatus.BAD_REQUEST)
-          .send({ error: 'Invalid refreshToken' });
+          .send({ message: 'Invalid refreshToken' });
       }
 
       const newAccessToken = this.authService.generateAccessToken({

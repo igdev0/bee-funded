@@ -21,7 +21,7 @@ export class UserService {
   }
 
   async findUserByAddress(address: string) {
-    return await this.userRepository.findOne({
+    return this.userRepository.findOne({
       where: {
         address,
       },
@@ -37,7 +37,7 @@ export class UserService {
       return this.findUserByEmail(payload.email);
     }
 
-    throw new NotFoundException();
+    throw new NotFoundException('User does not exist');
   }
 
   async findUserByUsername(username: string) {

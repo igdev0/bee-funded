@@ -16,7 +16,7 @@ export function useInitAuth() {
   useEffect(() => {
     (async () => {
       if (address && !accessToken) {
-        const exists = await api.userExists(address as string);
+        const exists = await api.userExists({address});
         if (exists) {
           await auth.signIn();
         } else {

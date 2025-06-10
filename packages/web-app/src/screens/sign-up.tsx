@@ -9,19 +9,48 @@ import {Button} from '@/components/ui/button.tsx';
 import useAuth from '@/hooks/use-auth.ts';
 import {useMutation} from '@tanstack/react-query';
 import {SignUpPayload} from '@/api/types.ts';
+import {createAuthApi} from '@/api/auth.ts';
+import {debounceValidator} from '@/lib/utils.ts';
+
+const api = createAuthApi();
+
+const usernameDB = debounceValidator();
+const emailDB = debounceValidator();
 
 const schema = yup.object(
     {
-      email: yup.string().email().required(),
-      username: yup.string().required(),
+      email: yup.string().email().required().test(async (email: string) => {
+        if(!email) {
+          return true;
+        }
+        const cb = (usr: string) => {
+          return api.userExists({email: usr});
+        };
+        const fn = emailDB(cb, 500);
+        const exists = await fn(email);
+        return !exists as boolean;
+      }),
+      username: yup.string().required().test(async (username) => {
+        if(!username) {
+          return true;
+        }
+        const cb = (usr: string) => {
+          return api.userExists({username: usr});
+        };
+        const fn = usernameDB(cb, 500);
+        const exists = await fn(username);
+        return !exists as boolean;
+      }),
     }
 );
 
 export default function SignUpScreen() {
   const auth = useAuth();
   const form = useForm({
+    mode: 'onChange',
     resolver: yupResolver(schema),
   });
+
   const mutation = useMutation({
     mutationKey: ["signUpForm"],
     mutationFn: auth.signUp
@@ -41,7 +70,8 @@ export default function SignUpScreen() {
               <fieldset className="mt-14">
                 <Label htmlFor="username" className="flex flex-col justify-start items-start">
                   <span>Username</span>
-                  <Input type="text" placeholder="john.doe" {...form.register("username")} />
+                  <Input type="text"
+                         placeholder="john.doe" {...form.register("username")} />
                 </Label>
                 <p className="text-red-600 mt-1">{form.formState?.errors?.username?.message ?? ""}</p>
               </fieldset>

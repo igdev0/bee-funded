@@ -3,7 +3,7 @@ import {
   SignUpPayload,
   SignOutput,
   SignInPayload,
-  UserEntity
+  UserEntity, UserExistsPayload
 } from './types.ts';
 
 export const defaultClient = axios.create({
@@ -39,9 +39,9 @@ export const createAuthApi = (client = defaultClient ) => ({
     return data;
   },
 
-  userExists: async (address: string): Promise<boolean> => {
-    const { data } = await client.post<boolean>('/auth/exists', { address });
-    return data;
+  userExists: async (payload: UserExistsPayload): Promise<boolean> => {
+    const { data } = await client.post<{exists: boolean}>('/auth/exists', payload);
+    return data.exists;
   },
 
   signOut: async (): Promise<void> => {
