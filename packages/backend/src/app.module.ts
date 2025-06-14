@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './user/entities/user.entity';
 import { DatabaseType } from 'typeorm';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { DonationPoolModule } from './donation-pool/donation-pool.module';
+import { DonationPool } from './donation-pool/entities/donation-pool.entity';
 
 @Module({
   imports: [
@@ -37,13 +39,14 @@ import { RedisModule } from '@nestjs-modules/ioredis';
           username: DB_USERNAME,
           password: DB_PASSWORD,
           database: DB_DATABASE,
-          entities: [User],
+          entities: [User, DonationPool],
           synchronize: true,
         };
       },
     }),
     AuthModule,
     UserModule,
+    DonationPoolModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -92,6 +92,7 @@ export class AuthController {
 
       const user = await this.userService.register({
         address: siweMessage.address,
+        pools: [],
         username: body.username,
         email: body.email,
         complete: false,

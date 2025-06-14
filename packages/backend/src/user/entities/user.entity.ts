@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { DonationPool } from '../../donation-pool/entities/donation-pool.entity';
 
 @Entity()
 export class User {
@@ -16,6 +18,9 @@ export class User {
     unique: true,
   })
   address: string;
+
+  @OneToMany(() => DonationPool, (pool) => pool.user)
+  pools: DonationPool[];
 
   @Column({ type: 'text', unique: true })
   email: string;
