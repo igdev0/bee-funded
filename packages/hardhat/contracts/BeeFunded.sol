@@ -8,6 +8,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BeeFunded is AutomationCompatibleInterface {
     event NewDonation(address indexed from, address token, uint256 amount, string message);
+    event SubscriptionExpired(uint poolId, address subscriber, address beneficiary);
+    event SubscriptionPaymentFailed(uint poolId, address subscriber, address beneficiary);
 
     struct Subscription {
         address subscriber;
@@ -16,6 +18,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint256 nextPaymentTime;
         uint256 interval;
         uint256 poolId;
+        uint8 remainingDuration;
         bool active;
     }
 
@@ -95,8 +98,8 @@ contract BeeFunded is AutomationCompatibleInterface {
     }
 
     function isSubscribed(address subscriber, address creator) external view returns (bool) {
-        for(uint i; i < subscriptions.length; i++) {
-            if(subscriptions[i].active && subscriptions[i].subscriber == subscriber && pools[subscriptions[i].poolId].owner == creator) {
+        for (uint i; i < subscriptions.length; i++) {
+            if (subscriptions[i].active && subscriptions[i].subscriber == subscriber && pools[subscriptions[i].poolId].owner == creator) {
                 return true;
             }
         }
@@ -126,22 +129,35 @@ contract BeeFunded is AutomationCompatibleInterface {
     }
 
     function subscribe(
-        uint256 poolId,
-        address token,
-        uint256 amount,
-        uint256 interval
+        uint256 poolId, // The pool at which the user will be subscribed
+        address token, // The token to be donated
+        uint256 amount, // The value of token paid every interval
+        uint256 interval, // This value should be in days
+        uint8 duration // The total amount of intervals user will be subscribed
+
     ) external {
-        require(interval >= 1 weeks, "Min interval is 1 week");
+        // The interval should be at least one day
+        require(interval >= 1 days, "Min interval is 1 week");
         require(amount > 0, "Zero amount");
         require(pools[poolId].owner != address(0), "Pool does not exist");
 
-        // Just a record — payment is processed later
+        // amount = 20ETH
+        // interval = 7 days
+        // duration = 4
+
+        // Approve this contract to spend the total amount user specified + now
+        IERC20.approve(address(this), amount * (duration + 1));
+        // Donate initially the amount specified
+        this.donate(poolID, token, amount, "");
+
+        // Now add the subscription to the subscriptions array
         subscriptions.push(Subscription({
             subscriber: msg.sender,
             token: token,
             amount: amount,
             nextPaymentTime: block.timestamp + interval,
             interval: interval,
+            remainingDuration: duration,
             poolId: poolId,
             active: true
         }));
@@ -184,7 +200,19 @@ contract BeeFunded is AutomationCompatibleInterface {
         require(block.timestamp >= sub.nextPaymentTime, "Not due yet");
 
         IERC20 token = IERC20(sub.token);
-        require(token.transferFrom(sub.subscriber, address(this), sub.amount), "Insufficient funds");
+        bool transferSucceeded = token.transferFrom(sub.subscriber, address(this), sub.amount);
+        if(!transferSucceeded) {
+            emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, pools[sub.poolId].owner);
+            revert("Insufficient funds");
+        }
+        // Set the active to false if this is the last subscription
+        if (sub.remainingDuration == 1) {
+            sub.active = false;
+            // Subscription expired, emit an event and let the user know, perhaps send an email or notify from the app.
+            emit SubscriptionExpired(sub.poolId, sub.subscriber, pools[sub.poolId].owner);
+        }
+
+        sub.remainingDuration -= 1;
 
         pools[sub.poolId].donations.push(Donation({
             donor: sub.subscriber,
