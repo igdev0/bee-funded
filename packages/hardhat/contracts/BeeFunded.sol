@@ -140,7 +140,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         require(interval >= 1 days, "Min interval is 1 week");
         require(amount > 0, "Zero amount");
         require(pools[poolId].owner != address(0), "Pool does not exist");
-
+        // Example:
         // amount = 20ETH
         // interval = 7 days
         // duration = 4
@@ -201,7 +201,7 @@ contract BeeFunded is AutomationCompatibleInterface {
 
         IERC20 token = IERC20(sub.token);
         bool transferSucceeded = token.transferFrom(sub.subscriber, address(this), sub.amount);
-        if(!transferSucceeded) {
+        if (!transferSucceeded) {
             emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, pools[sub.poolId].owner);
             revert("Insufficient funds");
         }
