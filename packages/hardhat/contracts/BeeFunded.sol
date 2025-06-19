@@ -4,20 +4,20 @@ pragma solidity >=0.8.30;
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
+import {console} from "hardhat/console.sol";
 
 contract BeeFunded is AutomationCompatibleInterface {
-    event NewDonation(address indexed from, address token, uint256 amount, string message);
+    event NewDonation(address indexed from, address token, uint amount, string message);
     event SubscriptionExpired(uint poolId, address subscriber, address beneficiary);
     event SubscriptionPaymentFailed(uint poolId, address subscriber, address beneficiary);
 
     struct Subscription {
         address subscriber;
         address token;
-        uint256 amount;
-        uint256 nextPaymentTime;
-        uint256 interval;
-        uint256 poolId;
+        uint amount;
+        uint nextPaymentTime;
+        uint interval;
+        uint poolId;
         uint8 remainingDuration;
         bool active;
     }
@@ -28,7 +28,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         // The token address, address(0) will be used for native token.
         address token;
         // Token amount;
-        uint256 amount;
+        uint amount;
         // Message text
         string message;
     }
@@ -43,7 +43,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         Donation[] donations;
     }
 
-    mapping(uint => mapping(address => uint256)) public poolBalances;
+    mapping(uint => mapping(address => uint)) public poolBalances;
 
     mapping(uint => Pool) public pools;
     Subscription[] public subscriptions;
@@ -71,30 +71,44 @@ contract BeeFunded is AutomationCompatibleInterface {
     function donate(
         uint poolId,
         address tokenAddress,
-        uint256 amount,
+        uint amount,
         string calldata message
-    ) external payable {
+    ) public payable {
+        _donate(msg.sender, poolId, tokenAddress, amount, message, false);
+    }
+
+    function _donate(
+        address donor,
+        uint poolId,
+        address tokenAddress,
+        uint amount,
+        string memory message,
+        bool gasless
+    ) internal {
         Pool storage pool = pools[poolId];
         require(pool.owner != address(0), "Pool does not exist");
 
         if (tokenAddress == address(0)) {
-            // Native token (ETH/AVAX/BNB/etc)
             require(msg.value > 0 && msg.value == amount, "Invalid Native Token amount");
         } else {
             require(amount > 0, "Amount must be > 0");
             IERC20 token = IERC20(tokenAddress);
-            require(token.transferFrom(msg.sender, address(this), amount), "Transfer failed");
+            if(!gasless) {
+                token.transfer(address(this), amount);
+            } else {
+                require(token.transferFrom(donor, address(this), amount), "Transfer failed");
+            }
         }
 
         pool.donations.push(Donation({
-            donor: msg.sender,
+            donor: donor,
             token: tokenAddress,
             amount: amount,
             message: message
         }));
 
         poolBalances[poolId][tokenAddress] += amount;
-        emit NewDonation(msg.sender, tokenAddress, amount, message); // same event works
+        emit NewDonation(donor, tokenAddress, amount, message);
     }
 
     function isSubscribed(address subscriber, address creator) external view returns (bool) {
@@ -129,27 +143,19 @@ contract BeeFunded is AutomationCompatibleInterface {
     }
 
     function subscribe(
-        uint256 poolId, // The pool at which the user will be subscribed
+        uint poolId, // The pool at which the user will be subscribed
         address token, // The token to be donated
-        uint256 amount, // The value of token paid every interval
-        uint256 interval, // This value should be in days
+        uint amount, // The value of token paid every interval
+        uint interval, // This value should be in days
         uint8 duration // The total amount of intervals user will be subscribed
 
     ) external {
         // The interval should be at least one day
-        require(interval >= 1 days, "Min interval is 1 week");
+        require(interval >= 7 days, "Min interval is 1 week");
         require(amount > 0, "Zero amount");
         require(pools[poolId].owner != address(0), "Pool does not exist");
-        // Example:
-        // amount = 20ETH
-        // interval = 7 days
-        // duration = 4
 
-        // Approve this contract to spend the total amount user specified + now
-        IERC20.approve(address(this), amount * (duration + 1));
-        // Donate initially the amount specified
-        this.donate(poolID, token, amount, "");
-
+        require(IERC20(token).allowance(msg.sender, address(this)) > amount, "Insufficient allowance");
         // Now add the subscription to the subscriptions array
         subscriptions.push(Subscription({
             subscriber: msg.sender,
@@ -161,6 +167,11 @@ contract BeeFunded is AutomationCompatibleInterface {
             poolId: poolId,
             active: true
         }));
+
+        console.log("Token = ", token, "msg.sender = ", msg.sender);
+        // Donate initially the amount specified
+        _donate(msg.sender, poolId, token, amount, "Subscription", true);
+
     }
 
     function unsubscribe() external {
@@ -172,16 +183,26 @@ contract BeeFunded is AutomationCompatibleInterface {
         }
     }
 
-    function withdraw(uint poolId, address tokenAddress, uint256 amount) external isPoolOwner(poolId) {
+    function withdraw(uint poolId, address tokenAddress, uint amount) external isPoolOwner(poolId) {
         require(amount <= poolBalances[poolId][tokenAddress], "Insufficient balance");
-        poolBalances[poolId][tokenAddress] -= amount;
+        IERC20 token = IERC20(tokenAddress);
+
+        console.log(token.balanceOf(address(this)), " = The balance of contract");
 
         if (tokenAddress == address(0)) {
             payable(msg.sender).transfer(amount);
         } else {
-            IERC20 token = IERC20(tokenAddress);
             require(token.transfer(msg.sender, amount), "Transfer failed");
         }
+        poolBalances[poolId][tokenAddress] -= amount;
+    }
+
+    function balanceOf(uint poolId, address tokenAddress) external view returns (uint) {
+        return _balanceOf(poolId, tokenAddress);
+    }
+
+    function _balanceOf(uint poolId, address tokenAddress) internal view returns (uint) {
+        return poolBalances[poolId][tokenAddress];
     }
 
     function checkUpkeep(bytes calldata) external view returns (bool, bytes memory) {
@@ -199,12 +220,8 @@ contract BeeFunded is AutomationCompatibleInterface {
         require(sub.active, "Subscription is not active");
         require(block.timestamp >= sub.nextPaymentTime, "Not due yet");
 
-        IERC20 token = IERC20(sub.token);
-        bool transferSucceeded = token.transferFrom(sub.subscriber, address(this), sub.amount);
-        if (!transferSucceeded) {
-            emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, pools[sub.poolId].owner);
-            revert("Insufficient funds");
-        }
+        _donate(sub.subscriber, sub.poolId, sub.token, sub.amount, "Recurring donation", true);
+
         // Set the active to false if this is the last subscription
         if (sub.remainingDuration == 1) {
             sub.active = false;
@@ -214,14 +231,6 @@ contract BeeFunded is AutomationCompatibleInterface {
 
         sub.remainingDuration -= 1;
 
-        pools[sub.poolId].donations.push(Donation({
-            donor: sub.subscriber,
-            token: sub.token,
-            amount: sub.amount,
-            message: "Recurring donation"
-        }));
-
-        poolBalances[sub.poolId][sub.token] += sub.amount;
         sub.nextPaymentTime += sub.interval;
     }
 

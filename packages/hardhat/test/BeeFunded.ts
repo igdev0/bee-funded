@@ -2,6 +2,8 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import { BeeFunded, MockERC20 } from "../typechain-types";
 
+const ONE_WEEK = 60 * 60 * 24 * 7;
+const ONE_DAY = 60 * 60 * 24;
 describe("BeeFunded", function () {
   let beeFunded: BeeFunded;
   let mockToken: MockERC20;
@@ -37,7 +39,7 @@ describe("BeeFunded", function () {
       poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(await addr1.getAddress(), 1000);
-      await mockToken.connect(addr1).approve(beeFunded.target, 1000);
+      await mockToken.connect(addr1).approve(beeFunded.target, 10000);
     });
 
     it("accepts ERC20 donations", async () => {
@@ -69,30 +71,30 @@ describe("BeeFunded", function () {
       await beeFunded.connect(owner).createPool(1000, metadataURL);
       poolId = Number(await beeFunded.poolID());
 
-      await mockToken.mint(await addr2.getAddress(), 1000);
-      await mockToken.connect(addr2).approve(beeFunded.target, 1000);
+      await mockToken.mint(addr2, 100000);
+      await mockToken.connect(addr2).approve(beeFunded.target, 100000);
     });
 
     it("creates a valid subscription", async () => {
-      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, 604800); // 1 week
+      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, ONE_WEEK, 10); // 1 week
       const sub = await beeFunded.subscriptions(0);
       expect(sub.subscriber).to.equal(await addr2.getAddress());
     });
 
     it("rejects interval < 1 week", async () => {
-      await expect(beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, 3600)).to.be.revertedWith(
+      await expect(beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, ONE_DAY, 10)).to.be.revertedWith(
         "Min interval is 1 week",
       );
     });
 
     it("Checks if user is subscribed", async () => {
-      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, 604800); // 1 week
+      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, ONE_WEEK, 10); // 1 week
       const is = await beeFunded.isSubscribed(addr2, owner);
       expect(is).to.equal(true);
     });
 
     it("List subscriptions for pools", async () => {
-      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, 604800); // every week
+      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 100, ONE_WEEK, 10); // every week
       const subs = await beeFunded.connect(addr2).getSubsByPoolIds([1]);
       expect(subs.length).to.equal(1);
     });
@@ -105,10 +107,10 @@ describe("BeeFunded", function () {
       await beeFunded.connect(owner).createPool(1000, metadataURL);
       poolId = Number(await beeFunded.poolID());
 
-      await mockToken.mint(await addr2.getAddress(), 1000);
-      await mockToken.connect(addr2).approve(beeFunded.target, 1000);
-      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 50, 604800); // 1 week
-      await ethers.provider.send("evm_increaseTime", [604800]);
+      await mockToken.mint(addr2, 100000);
+      await mockToken.connect(addr2).approve(beeFunded.target, 100000);
+      await beeFunded.connect(addr2).subscribe(poolId, mockToken.target, 50, ONE_WEEK, 10); // 1 week
+      await ethers.provider.send("evm_increaseTime", [ONE_WEEK]);
       await ethers.provider.send("evm_mine", []);
     });
 
@@ -130,13 +132,14 @@ describe("BeeFunded", function () {
       await beeFunded.connect(owner).createPool(1000, metadataURL);
       poolId = Number(await beeFunded.poolID());
 
-      await mockToken.mint(await addr1.getAddress(), 1000);
-      await mockToken.connect(addr1).approve(beeFunded.target, 1000);
+      await mockToken.mint(addr1, 10000);
       await beeFunded.connect(addr1).donate(poolId, mockToken.target, 100, "Funding");
     });
 
     it("allows pool owner to withdraw tokens", async () => {
-      await expect(beeFunded.connect(owner).withdraw(poolId, mockToken.target, 100)).to.not.be.reverted;
+      const amount = await beeFunded.balanceOf(poolId, mockToken.target);
+      console.log(`amount is ${amount}`);
+      await expect(beeFunded.connect(owner).withdraw(poolId, mockToken.target, amount)).to.not.be.reverted;
     });
 
     it("prevents non-owner from withdrawing", async () => {
