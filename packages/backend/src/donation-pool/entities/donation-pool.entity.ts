@@ -31,6 +31,9 @@ export class DonationPool {
   @Column()
   max_amount?: number;
 
+  @Column()
+  max_amount_token: string;
+
   @CreateDateColumn()
   created_at?: Date;
 

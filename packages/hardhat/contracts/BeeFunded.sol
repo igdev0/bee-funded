@@ -36,8 +36,8 @@ contract BeeFunded is AutomationCompatibleInterface {
     struct Pool {
         uint id;
         address owner;
-        uint maxAmount;
-        address maxAmountToken;
+        uint maxAmountToken;
+        address maxAmountTokenToken;
         string metadataUrl;
         uint chainId;
         Donation[] donations;
@@ -56,13 +56,13 @@ contract BeeFunded is AutomationCompatibleInterface {
         _;
     }
 
-    function createPool(uint _maxAmount, string calldata metadata) external returns (uint) {
+    function createPool(uint _maxAmountToken, string calldata metadata) external returns (uint) {
         poolID.increment();
         Pool storage newPool = pools[poolID._value];
         newPool.id = poolID._value;
         newPool.metadataUrl = metadata;
         newPool.owner = msg.sender;
-        newPool.maxAmount = _maxAmount;
+        newPool.maxAmountToken = _maxAmountToken;
         newPool.chainId = block.chainid;
         return poolID._value;
     }
