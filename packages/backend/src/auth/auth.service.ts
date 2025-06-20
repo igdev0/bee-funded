@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 
 export interface AccessTokenPayload {
   sub: string;
@@ -41,5 +42,8 @@ export class AuthService {
       expiresIn: REFRESH_TOKEN_TTL,
       secret: this.configService.get('JWT_SECRET'),
     });
+  }
+  static extractTokenFromHeader(request: Request): string | undefined {
+    return request.cookies['access_token'] as string | undefined;
   }
 }

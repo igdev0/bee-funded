@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ACCESS_TOKEN_TTL,
   AccessTokenPayload,
   AuthService,
   REFRESH_TOKEN_EXPIRY_THRESHOLD_SECONDS,
@@ -30,6 +31,9 @@ import { AuthGuard } from './auth.guard';
 import { User } from '../user/entities/user.entity';
 import SigninDto from './dto/signin.dto';
 import { ConfigService } from '@nestjs/config';
+import * as process from 'node:process';
+
+const COOKIE_SECURE = process.env.NODE_ENV === 'production';
 
 @Controller('auth')
 export class AuthController {
@@ -128,9 +132,16 @@ export class AuthController {
 
       res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
-        secure: true,
+        secure: COOKIE_SECURE,
         sameSite: 'strict',
         maxAge: REFRESH_TOKEN_TTL * 1000,
+      });
+
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: COOKIE_SECURE,
+        sameSite: 'strict',
+        maxAge: ACCESS_TOKEN_TTL,
       });
 
       res.status(HttpStatus.OK).send({ accessToken });
@@ -205,6 +216,13 @@ export class AuthController {
         maxAge: REFRESH_TOKEN_TTL * 1000,
       });
 
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: COOKIE_SECURE,
+        sameSite: 'strict',
+        maxAge: ACCESS_TOKEN_TTL,
+      });
+
       res.status(HttpStatus.OK).send({ accessToken });
     } catch (err) {
       console.log(err);
@@ -215,7 +233,7 @@ export class AuthController {
   @Post('signout')
   async signOut(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'] as string;
-    const accessToken = this.extractTokenFromHeader(req); // Bearer token
+    const accessToken = AuthService.extractTokenFromHeader(req); // Bearer token
     if (refreshToken) {
       try {
         const payload: RefreshTokenPayload = await this.jwtService.verifyAsync(
@@ -262,7 +280,13 @@ export class AuthController {
     // Clear the refresh token cookie from the client
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Match the options used when setting the cookie
+      secure: COOKIE_SECURE, // Match the options used when setting the cookie
+      sameSite: 'strict',
+    });
+
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: COOKIE_SECURE,
       sameSite: 'strict',
     });
 
@@ -329,9 +353,14 @@ export class AuthController {
 
         res.cookie('refresh_token', refreshToken, {
           httpOnly: true,
-          secure: true,
+          secure: COOKIE_SECURE,
           sameSite: 'strict',
           maxAge: REFRESH_TOKEN_TTL * 1000,
+        });
+        res.clearCookie('access_token', {
+          httpOnly: true,
+          secure: COOKIE_SECURE,
+          sameSite: 'strict',
         });
       }
 
@@ -343,8 +372,4 @@ export class AuthController {
     }
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
-  }
 }

@@ -10,6 +10,7 @@ import { DatabaseType } from 'typeorm';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { DonationPoolModule } from './donation-pool/donation-pool.module';
 import { DonationPool } from './donation-pool/entities/donation-pool.entity';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { DonationPool } from './donation-pool/entities/donation-pool.entity';
     AuthModule,
     UserModule,
     DonationPoolModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

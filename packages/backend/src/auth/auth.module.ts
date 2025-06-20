@@ -12,6 +12,7 @@ import { ConfigModule } from '@nestjs/config';
     JwtModule.register({ secret: 'hard!to-guess_secret' }),
   ],
   controllers: [AuthController],
+  exports: [JwtModule.register({ secret: 'hard!to-guess_secret' })],
   providers: [AuthService],
 })
 export class AuthModule {}

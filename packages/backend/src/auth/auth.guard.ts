@@ -3,7 +3,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AccessTokenPayload } from './auth.service';
+import { AccessTokenPayload, AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { UserService } from '../user/user.service';
@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = AuthService.extractTokenFromHeader(request);
 
     if (!token || token === 'undefined') {
       throw new UnauthorizedException('No token provided');
@@ -48,10 +48,5 @@ export class AuthGuard implements CanActivate {
     request['user'] = user;
 
     return true;
-  }
-
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
   }
 }
