@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 
 /**
- * Deploys a contract named "BeeFunded" using the deployer account and
+ * Deploys a hardhat named "BeeFunded" using the deployer account and
  * constructor arguments set to the deployer address
  *
  * @param hre HardhatRuntimeEnvironment object.
@@ -12,7 +12,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
 
     When deploying to live networks (e.g `yarn deploy --network sepolia`), the deployer account
-    should have sufficient balance to pay for the gas fees for contract creation.
+    should have sufficient balance to pay for the gas fees for hardhat creation.
 
     You can generate a random account with `yarn generate` or `yarn account:import` to import your
     existing PK which will fill DEPLOYER_PRIVATE_KEY_ENCRYPTED in the .env file (then used on hardhat.config.ts)
@@ -27,7 +27,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     args: [],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
-    // automatically mining the contract deployment transaction. There is no effect on live networks.
+    // automatically mining the hardhat deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
 };

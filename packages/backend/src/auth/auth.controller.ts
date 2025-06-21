@@ -303,7 +303,6 @@ export class AuthController {
   @Get('refresh-token')
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'] as string;
-
     if (!refreshToken) {
       return res.status(HttpStatus.BAD_REQUEST).send();
     }
@@ -357,19 +356,18 @@ export class AuthController {
           sameSite: 'strict',
           maxAge: REFRESH_TOKEN_TTL * 1000,
         });
-        res.clearCookie('access_token', {
-          httpOnly: true,
-          secure: COOKIE_SECURE,
-          sameSite: 'strict',
-        });
       }
+      res.cookie('access_token', newAccessToken, {
+        httpOnly: true,
+        secure: COOKIE_SECURE,
+        sameSite: 'strict',
+        maxAge: ACCESS_TOKEN_TTL,
+      });
 
-      // payload.exp
-      return res.json({ accessToken: newAccessToken });
+      res.send('ok');
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
-
 }

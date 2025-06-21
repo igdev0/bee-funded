@@ -7,6 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {console} from "hardhat/console.sol";
 
 contract BeeFunded is AutomationCompatibleInterface {
+    event DonationPoolCreated(uint indexed id, address indexed creator);
     event NewDonation(address indexed from, address token, uint amount, string message);
     event SubscriptionExpired(uint poolId, address subscriber, address beneficiary);
     event SubscriptionPaymentFailed(uint poolId, address subscriber, address beneficiary);
@@ -64,6 +65,8 @@ contract BeeFunded is AutomationCompatibleInterface {
         newPool.owner = msg.sender;
         newPool.maxAmountToken = _maxAmountToken;
         newPool.chainId = block.chainid;
+        emit DonationPoolCreated(poolID._value, msg.sender);
+
         return poolID._value;
     }
 
@@ -93,7 +96,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         } else {
             require(amount > 0, "Amount must be > 0");
             IERC20 token = IERC20(tokenAddress);
-            if(!gasless) {
+            if (!gasless) {
                 token.transfer(address(this), amount);
             } else {
                 require(token.transferFrom(donor, address(this), amount), "Transfer failed");

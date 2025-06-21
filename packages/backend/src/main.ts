@@ -28,7 +28,10 @@ async function bootstrap() {
   //     .get(NotificationsService)
   //     .sendToUser('384a49d6-615d-4409-953e-b054f0d7d547', {
   //       type: 'TEST',
-  //       data: 'This is a test message',
+  //       data: {
+  //         name: 'Some name',
+  //         message: 'This is a test message',
+  //       },
   //     });
   // }, 1000);
   await app.listen(process.env.PORT ?? 3000);

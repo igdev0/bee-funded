@@ -11,6 +11,9 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { DonationPoolModule } from './donation-pool/donation-pool.module';
 import { DonationPool } from './donation-pool/entities/donation-pool.entity';
 import { NotificationsModule } from './notifications/notifications.module';
+import { Notification } from './notifications/entities/notification.entity';
+import { BlockchainListenerModule } from './blockchain-listener/blockchain-listener.module';
+import { ContractsModule } from './contracts/contracts.module';
 
 @Module({
   imports: [
@@ -40,7 +43,7 @@ import { NotificationsModule } from './notifications/notifications.module';
           username: DB_USERNAME,
           password: DB_PASSWORD,
           database: DB_DATABASE,
-          entities: [User, DonationPool],
+          entities: [User, DonationPool, Notification],
           synchronize: true,
         };
       },
@@ -49,6 +52,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     UserModule,
     DonationPoolModule,
     NotificationsModule,
+    BlockchainListenerModule,
+    ContractsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

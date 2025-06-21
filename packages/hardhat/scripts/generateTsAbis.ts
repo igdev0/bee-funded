@@ -77,7 +77,7 @@ function getInheritedFunctions(sources: Record<string, any>, contractName: strin
 
 function getContractDataFromDeployments() {
   if (!fs.existsSync(DEPLOYMENTS_DIR)) {
-    throw Error("At least one other deployment script should exist to generate an actual contract.");
+    throw Error("At least one other deployment script should exist to generate an actual hardhat.");
   }
   const output = {} as Record<string, any>;
   for (const chainName of getDirectories(DEPLOYMENTS_DIR)) {
@@ -96,7 +96,7 @@ function getContractDataFromDeployments() {
 }
 
 /**
- * Generates the TypeScript contract definition file based on the json output of the contract deployment scripts
+ * Generates the TypeScript hardhat definition file based on the json output of the hardhat deployment scripts
  * This script should be run last.
  */
 const generateTsAbis: DeployFunction = async function () {

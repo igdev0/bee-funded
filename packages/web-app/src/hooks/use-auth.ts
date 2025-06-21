@@ -9,13 +9,13 @@ import {useNavigate} from 'react-router';
 export function useInitAuth() {
   const api = createAuthApi();
   const address = useAccount().address;
-  const accessToken = useAppStore().accessToken;
+  const user = useAppStore().user;
   const auth = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
-      if (address && !accessToken) {
+      if (address && !user) {
         const exists = await api.userExists({address});
         if (exists) {
           await auth.signIn();
@@ -24,7 +24,7 @@ export function useInitAuth() {
         }
       }
     })();
-  }, [accessToken, address]);
+  }, [user, address]);
 }
 
 export default function useAuth() {
@@ -35,9 +35,6 @@ export default function useAuth() {
 
   const signIn = async () => {
     const nonce = await api.getNonce();
-    if (appStore.accessToken) {
-      return null;
-    }
     const rawMessage = new SiweMessage({
       domain: window.location.host,
       address: account.address,
@@ -50,10 +47,9 @@ export default function useAuth() {
     const message = rawMessage.prepareMessage();
 
     const signature = await signMessageAsync({message});
-    const {accessToken} = await api.signIn({nonce, signature, address: account.address as string, message});
+    await api.signIn({nonce, signature, address: account.address as string, message});
 
     const user = await api.getUser();
-    appStore.updateAccessToken(accessToken);
     appStore.updateUser(user);
   };
 
@@ -73,24 +69,22 @@ export default function useAuth() {
     const message = rawMessage.prepareMessage();
 
     const signature = await signMessageAsync({message});
-    const {accessToken} = await api.signUp({message, nonce, signature, address: account.address as string, ...props});
+    await api.signUp({message, nonce, signature, address: account.address as string, ...props});
 
-    appStore.updateAccessToken(accessToken);
     const user = await api.getUser();
     appStore.updateUser(user);
   };
 
   const onDisconnect = async () => {
     await api.signOut();
-    appStore.updateAccessToken(null);
     appStore.updateUser(null);
   };
 
   useEffect(() => {
-    if (account.isDisconnected && appStore.accessToken) {
+    if (account.isDisconnected && appStore.user) {
       onDisconnect().then(console.log);
     }
-  }, [account.isDisconnected, appStore.accessToken]);
+  }, [account.isDisconnected, appStore.user]);
 
 
   return {signIn, signUp, onDisconnect};

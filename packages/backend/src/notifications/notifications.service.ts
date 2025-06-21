@@ -1,6 +1,11 @@
 import { Injectable, MessageEvent } from '@nestjs/common';
 import { Subject } from 'rxjs';
 
+export interface NotificationData {
+  type: string;
+  data: any;
+}
+
 @Injectable()
 export class NotificationsService {
   private userStreams = new Map<string, Subject<MessageEvent>>();
@@ -19,11 +24,9 @@ export class NotificationsService {
     }
   }
 
-  sendToUser(userId: string, data: any) {
+  sendToUser(userId: string, data: NotificationData) {
     const stream = this.userStreams.get(userId);
     if (stream) {
-      console.log(data);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       stream.next({ data });
     }
   }
