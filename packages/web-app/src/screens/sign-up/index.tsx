@@ -1,4 +1,4 @@
-import Screen from '../components/screen';
+import Screen from '@/components/screen';
 import {Form} from '@/components/ui/form.tsx';
 import {useForm} from 'react-hook-form';
 import {Input} from '@/components/ui/input.tsx';
@@ -20,7 +20,7 @@ const emailDB = debounceValidator();
 const schema = yup.object(
     {
       email: yup.string().email().required().test(async function (email: string) {
-        if(!email) {
+        if (!email) {
           return true;
         }
         const cb = (usr: string) => {
@@ -30,11 +30,11 @@ const schema = yup.object(
         const exists = (await fn(email)) as boolean;
         const err = this.createError({
           message: 'Email is already in use',
-        })
+        });
         return exists ? err : true;
       }),
       username: yup.string().required().test(async function (username) {
-        if(!username) {
+        if (!username) {
           return true;
         }
         const cb = (usr: string) => {
@@ -44,7 +44,7 @@ const schema = yup.object(
         const exists = (await fn(username)) as boolean;
         const err = this.createError({
           message: 'Username is already in use',
-        })
+        });
         return exists ? err : true;
       }),
     }
