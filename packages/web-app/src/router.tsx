@@ -1,6 +1,6 @@
 import {createBrowserRouter} from 'react-router';
-import LandingScreen from './screens/landing.tsx';
-import SignUpScreen from './screens/sign-up.tsx';
+import LandingScreen from './screens/landing';
+import SignUpScreen from './screens/sign-up';
 
 const router = createBrowserRouter([
   {
