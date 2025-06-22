@@ -1,0 +1,14 @@
+
+@import "tailwindcss";
+.banner {
+    @apply h-[500px] w-full bg-amber-200;
+}
+
+@layer components {
+    .page {
+        .avatar-wrapper {
+            @apply px-4 inline-flex justify-center flex-col items-center;
+            @apply -translate-y-1/2;
+        }
+    }
+}
