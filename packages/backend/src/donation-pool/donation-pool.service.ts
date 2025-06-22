@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { CreateDonationPoolDto } from './dto/create-donation-pool.dto';
 import { UpdateDonationPoolDto } from './dto/update-donation-pool.dto';
 import { Repository } from 'typeorm';
-import { DonationPool } from './entities/donation-pool.entity';
+import {
+  DonationPool,
+  DonationPoolStatus,
+} from './entities/donation-pool.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -13,12 +16,27 @@ export class DonationPoolService {
   ) {}
 
   create(createDonationPoolDto: CreateDonationPoolDto) {
-    const pool = this.donationPoolRepository.create(createDonationPoolDto);
+    const pool = this.donationPoolRepository.create({
+      ...createDonationPoolDto,
+      status: DonationPoolStatus.PENDING,
+    });
     return this.donationPoolRepository.save(pool);
   }
 
   findAll() {
     return this.donationPoolRepository.find();
+  }
+
+  findOwnedByChainId(id: number, userId: string) {
+    return this.donationPoolRepository.findOne({
+      where: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        user: { id: userId },
+        on_chain_pool_id: id,
+      },
+      relations: ['user'],
+    });
   }
 
   findAllByUserId(userId: string) {
@@ -36,6 +54,14 @@ export class DonationPoolService {
   }
 
   update(id: string, updateDonationPoolDto: UpdateDonationPoolDto) {
-    return this.donationPoolRepository.update({ id }, updateDonationPoolDto);
+    return this.donationPoolRepository.update(
+      { id },
+      {
+        ...updateDonationPoolDto,
+        status: updateDonationPoolDto.status
+          ? updateDonationPoolDto.status
+          : DonationPoolStatus.CREATED,
+      },
+    );
   }
 }

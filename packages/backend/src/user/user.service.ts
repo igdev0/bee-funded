@@ -22,9 +22,7 @@ export class UserService {
 
   async findUserByAddress(address: string) {
     return this.userRepository.findOne({
-      where: {
-        address,
-      },
+      where: { address },
     });
   }
 

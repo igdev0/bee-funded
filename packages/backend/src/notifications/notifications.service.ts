@@ -1,9 +1,21 @@
 import { Injectable, MessageEvent } from '@nestjs/common';
 import { Subject } from 'rxjs';
 
+export const NotificationEvents = {
+  POOL_PUBLISHED: 'POOL_PUBLISHED',
+  DONATION_RECEIVED: 'DONATION_RECEIVED',
+};
+
+export type NotificationEvents =
+  (typeof NotificationEvents)[keyof typeof NotificationEvents];
+
+export type NotificationDataType = {
+  message: string;
+};
+
 export interface NotificationData {
-  type: string;
-  data: any;
+  type: NotificationEvents;
+  data: NotificationDataType;
 }
 
 @Injectable()

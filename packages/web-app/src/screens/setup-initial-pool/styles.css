@@ -1,11 +1,24 @@
 @import "tailwindcss";
 
-@layer base {
+@layer components {
     .initial-pool {
-        @apply flex justify-center;
-
+        @apply mt-40;
+        @apply text-center;
         h1 {
-            @apply text-5xl font-bold text-center;
+            @apply text-5xl font-bold mb-4;
         }
+
+        p {
+            @apply text-xl mb-10;
+        }
+    }
+
+    .cards-container {
+        @apply max-w-[960px] mx-auto flex gap-4 flex-col;
+    }
+
+    .card {
+        @apply cursor-pointer transition-all;
+        @apply w-full py-10 bg-amber-50 rounded-lg shadow-md hover:bg-amber-100;
     }
 }

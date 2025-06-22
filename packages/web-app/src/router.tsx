@@ -14,7 +14,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/onboarding/setup-initial-pool",
-    element: <SetupInitialPoolScreen/>
+    element: <SetupInitialPoolScreen/>,
   }
 ]);
 

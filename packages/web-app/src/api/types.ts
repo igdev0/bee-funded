@@ -4,6 +4,7 @@ export interface UserEntity {
   name: string;
   address: string;
   complete: string;
+  has_pool: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -33,4 +34,29 @@ export interface UserExistsPayload {
   address?: string;
   email?: string;
   username?: string;
+}
+
+
+// Donation pools
+
+export interface DonationPoolEntity {
+  id: string;
+  user: string; // or: User if you're referencing the full object elsewhere
+  title: string;
+  description: string;
+  card_image: string;
+  tx_hash: string;
+  max_amount?: number;
+  max_amount_token: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateDonationPoolPayload {
+  id: string;
+  title?: string
+  description?: string
+  card_image?: string
+  tx_hash?: string
+  on_chain_pool_id?: number
 }

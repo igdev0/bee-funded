@@ -18,7 +18,7 @@ async function bootstrap() {
         callback(new Error('Not allowed by CORS'));
       }
     },
-    methods: 'GET,POST,PUT,DELETE', // Allow HTTP methods
+    methods: 'GET,POST,PUT,DELETE,PATCH', // Allow HTTP methods
     credentials: true, // Allow cookies to be sent
     allowedHeaders: 'Content-Type, Authorization', // Permitted request headers
   });

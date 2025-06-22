@@ -20,3 +20,7 @@ export const debounceValidator = (function () {
         });
   };
 });
+
+export const createResourceUrl = (id: string, resource = "donation-pool") => {
+  return `${import.meta.env.VITE_BACKEND_API}/${resource}/${id}`;
+};

@@ -23,11 +23,11 @@ export class NotificationsController {
   @Get()
   @UseGuards(AuthGuard)
   getNotifications(@Req() req: any, @GetUser() user: User) {
-    this.notificationsService.sendToUser(user.id as string, {
-      type: 'test',
-      data: 'this is a test',
-    });
-    console.log('Sending to user');
+    // this.notificationsService.sendToUser(user.id as string, {
+    //   type: 'test',
+    //   data: 'this is a test',
+    // });
+    // console.log('Sending to user');
     return user;
   }
 }
