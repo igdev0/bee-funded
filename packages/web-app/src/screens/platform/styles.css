@@ -6,6 +6,7 @@
 
 @layer components {
     .page {
+        @apply flex items-center flex-col;
         .avatar-wrapper {
             @apply px-4 inline-flex justify-center flex-col items-center;
             @apply -translate-y-1/2;
