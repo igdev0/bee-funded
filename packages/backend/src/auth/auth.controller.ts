@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Inject,
   Post,
   Req,
   Res,
@@ -40,7 +41,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
-    private readonly userService: UserService,
+    @Inject(UserService) private readonly userService: UserService,
     private readonly config: ConfigService,
     @InjectRedis()
     private readonly redis: Redis,

@@ -2,9 +2,10 @@ export interface UserEntity {
   id: string;
   email: string;
   name: string;
+  username: string;
   address: string;
-  complete: string;
-  has_pool: boolean;
+  complete: boolean;
+  is_creator: boolean | null;
   created_at: string;
   updated_at: string;
 }

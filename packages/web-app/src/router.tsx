@@ -2,6 +2,7 @@ import {createBrowserRouter} from 'react-router';
 import LandingScreen from './screens/landing';
 import SignUpScreen from './screens/sign-up';
 import SetupInitialPoolScreen from '@/screens/setup-initial-pool';
+import PlatformScreen from '@/screens/platform';
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: "/onboarding/setup-initial-pool",
     element: <SetupInitialPoolScreen/>,
+  },
+  {
+    path: `/platform/:username`,
+    element: <PlatformScreen/>,
   }
 ]);
 

@@ -15,9 +15,10 @@ export class DonationPoolService {
     private donationPoolRepository: Repository<DonationPool>,
   ) {}
 
-  create(createDonationPoolDto: CreateDonationPoolDto) {
+  create(userId: string, createDonationPoolDto: CreateDonationPoolDto) {
     const pool = this.donationPoolRepository.create({
       ...createDonationPoolDto,
+      user: userId,
       status: DonationPoolStatus.PENDING,
     });
     return this.donationPoolRepository.save(pool);

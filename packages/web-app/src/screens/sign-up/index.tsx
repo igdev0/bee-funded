@@ -11,6 +11,7 @@ import {useMutation} from '@tanstack/react-query';
 import {SignUpPayload} from '@/api/types.ts';
 import {createAuthApi} from '@/api/auth.ts';
 import {debounceValidator} from '@/lib/utils.ts';
+import useAppStore from '@/stores/app.ts';
 
 const api = createAuthApi();
 
@@ -51,6 +52,7 @@ const schema = yup.object(
 );
 
 export default function SignUpScreen() {
+  const user = useAppStore().user;
   const auth = useAuth();
   const form = useForm({
     mode: 'onChange',
@@ -68,7 +70,8 @@ export default function SignUpScreen() {
   };
 
   return (
-      <Screen authenticatedRedirectTo="/onboarding/setup-initial-pool">
+      <Screen
+          authenticatedRedirectTo={user?.is_creator === null ? "/onboarding/setup-initial-pool" : `/platform/${user!.username}`}>
         <div className="max-w-[600px] mx-auto">
           <h1 className="text-5xl text-center font-bold mt-14 text-gray-800">Create account.</h1>
           <Form {...form}>

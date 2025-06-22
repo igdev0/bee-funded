@@ -1,15 +1,37 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { DonationPoolService } from './donation-pool.service';
 import { CreateDonationPoolDto } from './dto/create-donation-pool.dto';
 import { UpdateDonationPoolDto } from './dto/update-donation-pool.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import { UserService } from '../user/user.service';
+import { GetUser } from '../decorators/get-user.decorator';
+import { User } from '../user/entities/user.entity';
 
 @Controller('donation-pool')
 export class DonationPoolController {
-  constructor(private readonly donationPoolService: DonationPoolService) {}
+  constructor(
+    private readonly donationPoolService: DonationPoolService,
+    private readonly userService: UserService,
+  ) {}
 
+  @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createDonationPoolDto: CreateDonationPoolDto) {
-    return this.donationPoolService.create(createDonationPoolDto);
+  async create(
+    @Body() createDonationPoolDto: CreateDonationPoolDto,
+    @GetUser() user: User,
+  ) {
+    await this.userService.updateUser(user.id as string, { is_creator: true });
+    return this.donationPoolService.create(user.id as string, {
+      ...createDonationPoolDto,
+    });
   }
 
   @Get()
@@ -22,6 +44,7 @@ export class DonationPoolController {
     return this.donationPoolService.findOne(id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,

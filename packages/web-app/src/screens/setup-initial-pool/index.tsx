@@ -33,6 +33,11 @@ export default function SetupInitialPoolScreen() {
     });
   };
 
+  if (user?.is_creator !== null) {
+    window.location.replace(`/platform/${user!.username}`);
+    return null;
+  }
+
   return (
       <Screen className="initial-pool" requiresAuth={true}>
         <h1>How are you planning to use this platform?</h1>

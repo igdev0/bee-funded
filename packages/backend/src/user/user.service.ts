@@ -3,6 +3,7 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import ExistsDto from '../auth/dto/exists.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -18,6 +19,10 @@ export class UserService {
       username: userData.username,
     });
     return await this.userRepository.save(user);
+  }
+
+  async updateUser(userId: string, data: UpdateUserDto) {
+    return this.userRepository.update(userId, data);
   }
 
   async findUserByAddress(address: string) {
