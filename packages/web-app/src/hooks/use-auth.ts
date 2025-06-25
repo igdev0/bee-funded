@@ -85,7 +85,5 @@ export default function useAuth() {
       onDisconnect().then(console.log);
     }
   }, [account.isDisconnected, appStore.user]);
-
-
   return {signIn, signUp, onDisconnect};
 }

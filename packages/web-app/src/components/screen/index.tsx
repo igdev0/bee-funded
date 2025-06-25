@@ -2,7 +2,6 @@ import {PropsWithChildren} from 'react';
 import Navbar from '../navbar';
 import useAuth, {useInitAuth} from '../../hooks/use-auth.ts';
 import useAppStore from '@/stores/app.ts';
-import {useNavigate} from 'react-router';
 
 interface ScreenProps {
   className?: string;
@@ -16,18 +15,17 @@ export default function Screen(props: PropsWithChildren<ScreenProps>) {
   useAuth();
   useInitAuth();
   const {initialized, user} = useAppStore();
-  const navigate = useNavigate()
-  if(!initialized) {
+  if (!initialized) {
     return null;
   }
 
-  if(props.requiresAuth && !user) {
-    navigate(props.requiresAuthRedirectTo ??"/");
+  if (props.requiresAuth && !user) {
+    window.location.replace(props.requiresAuthRedirectTo ?? "/");
     return null;
   }
 
-  if(props.authenticatedRedirectTo && user) {
-    navigate(props.authenticatedRedirectTo);
+  if (props.authenticatedRedirectTo && user) {
+    window.location.replace(props.authenticatedRedirectTo);
     return null;
   }
 

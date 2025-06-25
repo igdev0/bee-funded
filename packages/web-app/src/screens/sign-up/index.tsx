@@ -71,7 +71,7 @@ export default function SignUpScreen() {
 
   return (
       <Screen
-          authenticatedRedirectTo={!user || user?.is_creator === null ? "/onboarding/setup-initial-pool" : `/platform/${user!.username}`}>
+          authenticatedRedirectTo={`/platform/${user!.username}`} requiresAuth={false}>
         <div className="max-w-[600px] mx-auto">
           <h1 className="text-5xl text-center font-bold mt-14 text-gray-800">Create account.</h1>
           <Form {...form}>

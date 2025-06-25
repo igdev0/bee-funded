@@ -2,7 +2,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import {RouterProvider} from 'react-router';
 import {use, useEffect} from "react";
 import router from './router.tsx';
-import appLoader from './app-loader.ts';
+import appLoader from '@/app-loader.ts';
 
 function App() {
   use(appLoader);
