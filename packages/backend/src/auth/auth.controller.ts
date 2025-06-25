@@ -196,7 +196,6 @@ export class AuthController {
         jti: uuidv4.v4(),
         iat: nowInSeconds,
       };
-      // this.jwtService.
       // Create session (e.g., JWT or cookie)
       const accessToken =
         this.authService.generateAccessToken(accessTokenPayload);
