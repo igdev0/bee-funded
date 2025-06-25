@@ -133,6 +133,7 @@ describe("BeeFunded", function () {
       poolId = Number(await beeFunded.poolID());
 
       await mockToken.mint(addr1, 10000);
+      await mockToken.connect(addr1).approve(beeFunded.target, 10000);
       await beeFunded.connect(addr1).donate(poolId, mockToken.target, 100, "Funding");
     });
 

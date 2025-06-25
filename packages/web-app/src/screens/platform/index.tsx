@@ -19,7 +19,7 @@ export default function PlatformScreen() {
           <p>@{user?.username}</p>
           <p>Joined {result}</p>
         </div>
-        <Donate address={user.address}/>
+        <Donate address={user.address} donationPoolId={36}/>
       </Screen>
   );
 }

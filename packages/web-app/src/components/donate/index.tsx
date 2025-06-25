@@ -1,18 +1,23 @@
 import {Button} from '@/components/ui/button.tsx';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
 import useTokenBalances from '@/hooks/use-token-balances.ts';
-import {formatUnits} from 'viem';
+import {formatUnits, parseUnits} from 'viem';
 import {useCallback, useMemo, useState} from 'react';
 import "./styles.css";
 import {Input} from '@/components/ui/input.tsx';
 import {Checkbox} from '@/components/ui/checkbox.tsx';
+import {useWriteContract} from 'wagmi';
+import abi, {TESTNET_CONTRACT_ADDRESS} from '@/contracts';
+import {Textarea} from '@/components/ui/textarea.tsx';
 
 export interface DonateProps {
   address: string;
+  donationPoolId: number;
 }
 
 export default function Donate(props: DonateProps) {
   const {tokenBalances, tokenMetadata} = useTokenBalances(props.address);
+  const {writeContractAsync} = useWriteContract();
   const [subscribe, setSubscribe] = useState<boolean>(false);
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
   const selectedTokenMetadata = useMemo(() => {
@@ -31,12 +36,25 @@ export default function Donate(props: DonateProps) {
     setSelectedToken(null);
   };
 
-  const donate = async () => {
+  const donate = async (formData: FormData) => {
+    const amount = formData.get("amount") ?? "0";
+    const message = formData.get("message") ?? "";
+    if (selectedTokenMetadata) {
+      const total = parseUnits(amount as string, selectedTokenMetadata!.decimals as number);
+      const tx = await writeContractAsync({
+        address: TESTNET_CONTRACT_ADDRESS,
+        abi,
+        functionName: "donate",
+        args: [props.donationPoolId, selectedToken, total, message],
+      });
+
+      console.log({tx});
+    }
   };
 
   return (
       <Popover>
-        <PopoverTrigger asChild={true}><Button>Donate</Button></PopoverTrigger>
+        <PopoverTrigger asChild={true}><Button disabled={!tokenBalances}>Donate</Button></PopoverTrigger>
         <PopoverContent updatePositionStrategy="always" avoidCollisions={false}>
           <div className="tokens">
             {selectedToken ?
@@ -76,17 +94,19 @@ export default function Donate(props: DonateProps) {
                       <Checkbox onCheckedChange={event => setSubscribe(!!event)} id="make-it-monthly"/>
                     </div>
                     {
-                      subscribe &&
+                        subscribe &&
                         <>
-                          <label htmlFor="period">
-                            How many months?
-                          </label>
-                          <Input type="number" step="0.1" placeholder="Period of time"
-                                 id="period"
-                                 name="period"
-                                 max={formatUnits(BigInt(selectedTokenMetadata!.balance as string), selectedTokenMetadata!.decimals as number)}/>
+                            <label htmlFor="period">
+                                How many months?
+                            </label>
+                            <Input type="number" step="0.1" placeholder="Period of time"
+                                   id="period"
+                                   name="period"
+                                   max={formatUnits(BigInt(selectedTokenMetadata!.balance as string), selectedTokenMetadata!.decimals as number)}/>
                         </>
                     }
+                    <label htmlFor="message">Message</label>
+                    <Textarea name="message" id="message" placeholder="Type your message ..."/>
                     <Button>Continue</Button>
                   </form>
             }

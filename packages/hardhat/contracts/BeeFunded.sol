@@ -77,7 +77,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint amount,
         string calldata message
     ) public payable {
-        _donate(msg.sender, poolId, tokenAddress, amount, message, false);
+        _donate(msg.sender, poolId, tokenAddress, amount, message);
     }
 
     function _donate(
@@ -85,8 +85,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint poolId,
         address tokenAddress,
         uint amount,
-        string memory message,
-        bool gasless
+        string memory message
     ) internal {
         Pool storage pool = pools[poolId];
         require(pool.owner != address(0), "Pool does not exist");
@@ -96,11 +95,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         } else {
             require(amount > 0, "Amount must be > 0");
             IERC20 token = IERC20(tokenAddress);
-            if (!gasless) {
-                token.transfer(address(this), amount);
-            } else {
-                require(token.transferFrom(donor, address(this), amount), "Transfer failed");
-            }
+            require(token.transferFrom(donor, address(this), amount), "Transfer failed");
         }
 
         pool.donations.push(Donation({
@@ -173,7 +168,7 @@ contract BeeFunded is AutomationCompatibleInterface {
 
         console.log("Token = ", token, "msg.sender = ", msg.sender);
         // Donate initially the amount specified
-        _donate(msg.sender, poolId, token, amount, "Subscription", true);
+        _donate(msg.sender, poolId, token, amount, "Subscription");
 
     }
 
@@ -223,7 +218,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         require(sub.active, "Subscription is not active");
         require(block.timestamp >= sub.nextPaymentTime, "Not due yet");
 
-        _donate(sub.subscriber, sub.poolId, sub.token, sub.amount, "Recurring donation", true);
+        _donate(sub.subscriber, sub.poolId, sub.token, sub.amount, "Recurring donation");
 
         // Set the active to false if this is the last subscription
         if (sub.remainingDuration == 1) {
