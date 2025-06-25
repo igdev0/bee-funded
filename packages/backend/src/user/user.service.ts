@@ -30,6 +30,11 @@ export class UserService {
       where: { address },
     });
   }
+  async findByUsername(username: string) {
+    return this.userRepository.findOne({
+      where: { username },
+    });
+  }
 
   async userExists(payload: ExistsDto) {
     return this.userRepository.createQueryBuilder().orWhere(payload).getOne();

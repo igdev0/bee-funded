@@ -5,8 +5,11 @@
 }
 
 @layer components {
+    .platform {
+        /*@apply bg-amber-50 ;*/
+    }
     .page {
-        @apply flex items-center flex-col;
+        @apply flex flex-col items-center gap-4;
         .avatar-wrapper {
             @apply px-4 inline-flex justify-center flex-col items-center;
             @apply -translate-y-1/2;

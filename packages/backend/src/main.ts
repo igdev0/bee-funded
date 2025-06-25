@@ -22,18 +22,6 @@ async function bootstrap() {
     credentials: true, // Allow cookies to be sent
     allowedHeaders: 'Content-Type, Authorization', // Permitted request headers
   });
-  // Demo
-  // setInterval(() => {
-  //   app
-  //     .get(NotificationsService)
-  //     .sendToUser('384a49d6-615d-4409-953e-b054f0d7d547', {
-  //       type: 'TEST',
-  //       data: {
-  //         name: 'Some name',
-  //         message: 'This is a test message',
-  //       },
-  //     });
-  // }, 1000);
   await app.listen(process.env.PORT ?? 3000);
 }
 
