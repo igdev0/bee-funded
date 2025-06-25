@@ -4,6 +4,7 @@ import {
   Get,
   HttpStatus,
   Inject,
+  Logger,
   Post,
   Req,
   Res,
@@ -38,6 +39,7 @@ const COOKIE_SECURE = process.env.NODE_ENV === 'production';
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
@@ -81,7 +83,7 @@ export class AuthController {
           .send({ message: 'User already exists' });
       }
     } catch (_err) {
-      console.warn(_err);
+      this.logger.warn(_err);
     }
 
     try {
@@ -147,7 +149,7 @@ export class AuthController {
 
       res.status(HttpStatus.OK).send({ accessToken });
     } catch (err) {
-      console.error(err);
+      this.logger.error(err);
       res.status(HttpStatus.BAD_REQUEST).send({ message: 'Invalid signature' });
     }
   }
@@ -225,7 +227,6 @@ export class AuthController {
 
       res.status(HttpStatus.OK).send({ accessToken });
     } catch (err) {
-      console.log(err);
       res.status(HttpStatus.BAD_REQUEST).send({ message: 'Invalid signature' });
     }
   }
@@ -248,7 +249,7 @@ export class AuthController {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         // If the refresh token is invalid/expired, we still want to clear the cookie
-        console.warn('Attempted to sign out with invalid refresh token.');
+        this.logger.warn('Attempted to sign out with invalid refresh token.');
       }
     }
 
@@ -271,7 +272,7 @@ export class AuthController {
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_err) {
-        console.warn(
+        this.logger.warn(
           'Attempted to sign out with invalid access token (for blacklisting).',
         );
       }
