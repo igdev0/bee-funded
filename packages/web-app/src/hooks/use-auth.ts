@@ -58,7 +58,9 @@ export default function useAuth() {
 
   const signUp = async (props: Omit<SignUpPayload, "signature" | "message" | "nonce" | "address">) => {
     const nonce = await api.getNonce();
-
+    if(!currentAccount.address) {
+      throw new Error('Account not found.');
+    }
     const rawMessage = new SiweMessage({
       domain: window.location.host,
       address: currentAccount.address,

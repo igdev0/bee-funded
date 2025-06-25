@@ -12,6 +12,8 @@ import {SignUpPayload} from '@/api/types.ts';
 import {createAuthApi} from '@/api/auth.ts';
 import {debounceValidator} from '@/lib/utils.ts';
 import useAppStore from '@/stores/app.ts';
+import {useAccount} from 'wagmi';
+import WalletConnectButton from '@/components/wallet-connect-button';
 
 const api = createAuthApi();
 
@@ -58,6 +60,7 @@ export default function SignUpScreen() {
     mode: 'onChange',
     resolver: yupResolver(schema),
   });
+  const currentAccount = useAccount();
 
   const mutation = useMutation({
     mutationKey: ["signUpForm"],
@@ -65,13 +68,14 @@ export default function SignUpScreen() {
   });
 
   const onValid = async (props: Pick<SignUpPayload, "email" | "username" | "accepted_terms">) => {
+
     await mutation.mutateAsync({...props, accepted_terms: true});
     form.reset();
   };
 
   return (
       <Screen
-          authenticatedRedirectTo={`/platform/${user?.username??""}`} requiresAuth={false}>
+          authenticatedRedirectTo={`/platform/${user?.username ?? ""}`} requiresAuth={false}>
         <div className="max-w-[600px] mx-auto">
           <h1 className="text-5xl text-center font-bold mt-14 text-gray-800">Create account.</h1>
           <Form {...form}>
@@ -92,7 +96,11 @@ export default function SignUpScreen() {
                 <p className="text-red-600 mt-1">{form.formState?.errors?.email?.message ?? ""}</p>
               </fieldset>
               <div className="mt-4">
-                <Button type="submit" disabled={mutation.isPending} className="w-full">Sign</Button>
+                {
+                  currentAccount.address ?
+                      <Button type="submit" disabled={mutation.isPending} className="w-full">Sign</Button> :
+                      <WalletConnectButton/>
+                }
               </div>
             </form>
           </Form>
