@@ -1,7 +1,6 @@
 import {Button} from '@/components/ui/button.tsx';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
 import useTokenBalances from '@/hooks/use-token-balances.ts';
-import {useEffect} from 'react';
 import {formatUnits} from 'viem';
 
 export interface DonateProps {
@@ -11,9 +10,6 @@ export interface DonateProps {
 export default function Donate(props: DonateProps) {
   const {tokenBalances, tokenMetadata} = useTokenBalances(props.address);
 
-  useEffect(() => {
-    console.log({tokenBalances, tokenMetadata});
-  }, [tokenBalances]);
   return (
       <div>
         <Popover>
