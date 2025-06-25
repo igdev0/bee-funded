@@ -1,6 +1,4 @@
 @import "tailwindcss";
-:root {
-}
 .tokens {
     @apply flex flex-col gap-2;
     .token {
@@ -20,5 +18,13 @@
 
     .token__placeholder {
         @apply w-[2rem] aspect-square rounded-full bg-amber-100 flex justify-center items-center;
+    }
+
+    .form {
+        @apply flex flex-col gap-2;
+
+        .make-it-monthly {
+            @apply flex gap-2 items-center cursor-pointer;
+        }
     }
 }
