@@ -1,7 +1,7 @@
 
 @import "tailwindcss";
 .banner {
-    @apply h-[500px] w-full bg-amber-200;
+    @apply h-[50px] w-full bg-amber-200;
 }
 
 @layer components {

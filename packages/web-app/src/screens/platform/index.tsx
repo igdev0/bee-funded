@@ -16,8 +16,8 @@ export default function PlatformScreen() {
         <div className="banner"/>
         <div className="avatar-wrapper">
           <Avatar imageUrl={DEMO_IMAGE}/>
-          @{user?.username}
-          Joined {result}
+          <p>@{user?.username}</p>
+          <p>Joined {result}</p>
         </div>
         <Donate address={user.address}/>
       </Screen>

@@ -1,0 +1,24 @@
+@import "tailwindcss";
+:root {
+}
+.tokens {
+    @apply flex flex-col gap-2;
+    .token {
+        @apply p-1 cursor-pointer w-full;
+        @apply hover:bg-amber-200;
+        @apply flex gap-3 justify-between;
+        @apply rounded-sm;
+
+        &.selected {
+            @apply bg-amber-200;
+        }
+
+        .token__icon-symbol {
+            @apply flex gap-4;
+        }
+    }
+
+    .token__placeholder {
+        @apply w-[2rem] aspect-square rounded-full bg-amber-100 flex justify-center items-center;
+    }
+}
