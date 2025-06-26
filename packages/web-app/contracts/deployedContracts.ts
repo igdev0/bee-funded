@@ -6,7 +6,7 @@
 const deployedContracts = {
   11155111: {
     BeeFunded: {
-      address: "0x8Db4F2c59dB946daf2857A29d1020c90b9b58c1e",
+      address: "0x508b5645806A68Fb1738F9BD6E08c63eA494506E",
       abi: [
         {
           anonymous: false,
@@ -204,6 +204,39 @@ const deployedContracts = {
             },
           ],
           name: "donate",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_donor",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "poolId",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "tokenAddress",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              internalType: "string",
+              name: "message",
+              type: "string",
+            },
+          ],
+          name: "donateWithDonor",
           outputs: [],
           stateMutability: "payable",
           type: "function",
@@ -511,9 +544,9 @@ const deployedContracts = {
       ],
       inheritedFunctions: {
         checkUpkeep:
-            "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol",
+          "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol",
         performUpkeep:
-            "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol",
+          "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol",
       },
     },
   },

@@ -114,7 +114,7 @@ const generateTsAbis: DeployFunction = async function () {
     `${TARGET_DIR}deployedContracts.ts`,
     await prettier.format(
       `${generatedContractComment} 
-const deployedContracts = {${fileContent}} as const; \n\n export default deployedContracts satisfies GenericContractsDeclaration`,
+const deployedContracts = {${fileContent}} as const; \n\n export default deployedContracts`,
       {
         parser: "typescript",
       },

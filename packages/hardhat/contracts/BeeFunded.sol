@@ -80,6 +80,16 @@ contract BeeFunded is AutomationCompatibleInterface {
         _donate(msg.sender, poolId, tokenAddress, amount, message);
     }
 
+    function donateWithDonor(
+        address _donor, // The address of the user who approved
+        uint poolId,
+        address tokenAddress,
+        uint amount,
+        string calldata message
+    ) public payable {
+        _donate(_donor, poolId, tokenAddress, amount, message);
+    }
+
     function _donate(
         address donor,
         uint poolId,

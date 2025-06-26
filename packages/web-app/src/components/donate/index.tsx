@@ -1,14 +1,14 @@
 import {Button} from '@/components/ui/button.tsx';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
 import useTokenBalances from '@/hooks/use-token-balances.ts';
-import {formatUnits, parseUnits} from 'viem';
+import {Address, formatUnits, parseAbi, parseUnits} from 'viem';
 import {useCallback, useMemo, useState} from 'react';
 import "./styles.css";
 import {Input} from '@/components/ui/input.tsx';
 import {Checkbox} from '@/components/ui/checkbox.tsx';
-import {useWriteContract} from 'wagmi';
-import abi, {TESTNET_CONTRACT_ADDRESS} from '@/contracts';
 import {Textarea} from '@/components/ui/textarea.tsx';
+import {useAccount, useSendCalls} from 'wagmi';
+import {TESTNET_CONTRACT_ADDRESS} from '@/contracts';
 
 export interface DonateProps {
   address: string;
@@ -16,17 +16,18 @@ export interface DonateProps {
 }
 
 export default function Donate(props: DonateProps) {
-  const {tokenBalances, tokenMetadata} = useTokenBalances(props.address);
-  const {writeContractAsync} = useWriteContract();
+  const signedInAccount = useAccount();
+  const {tokenBalances, tokenMetadata} = useTokenBalances(signedInAccount.address as string);
+  const {sendCalls, sendCallsAsync} = useSendCalls();
   const [subscribe, setSubscribe] = useState<boolean>(false);
-  const [selectedToken, setSelectedToken] = useState<string | null>(null);
+  const [selectedToken, setSelectedToken] = useState<Address | null>(null);
   const selectedTokenMetadata = useMemo(() => {
     return selectedToken ? {
       ...tokenMetadata.current.get(selectedToken),
       balance: tokenBalances.find(item => item.contractAddress === selectedToken)?.tokenBalance || null
     } : null;
   }, [selectedToken, tokenMetadata, tokenBalances]);
-  const handleTokenSelection = useCallback((address: string) => {
+  const handleTokenSelection = useCallback((address: Address) => {
     return () => {
       setSelectedToken(address);
     };
@@ -40,17 +41,32 @@ export default function Donate(props: DonateProps) {
     const amount = formData.get("amount") ?? "0";
     const message = formData.get("message") ?? "";
     if (selectedTokenMetadata) {
-      const total = parseUnits(amount as string, selectedTokenMetadata!.decimals as number);
-      const tx = await writeContractAsync({
-        address: TESTNET_CONTRACT_ADDRESS,
-        abi,
-        functionName: "donate",
-        args: [props.donationPoolId, selectedToken, total, message],
-      });
+      const amountParsed = parseUnits(amount as string, selectedTokenMetadata!.decimals as number);
+      const erc20abi = parseAbi([
+        'function approve(address, uint256) returns (bool)',
+        'function transferFrom(address,address,uint256)'
+      ]);
 
-      console.log({tx});
+      const calls = [
+        {
+          to: selectedToken as Address,
+          abi: erc20abi,
+          functionName: 'approve',
+          value: 0n,
+          args: [
+            TESTNET_CONTRACT_ADDRESS,
+            amountParsed
+          ],
+        }
+      ];
+
+      const hash = await sendCallsAsync({
+        calls: calls
+      });
+      console.log(hash);
     }
   };
+
 
   return (
       <Popover>
@@ -67,7 +83,7 @@ export default function Donate(props: DonateProps) {
                     return (
                         <div className={`token ${selectedToken === balance.contractAddress ? "selected" : ""}`}
                              key={balance.contractAddress}
-                             onClick={handleTokenSelection(balance.contractAddress)}
+                             onClick={handleTokenSelection(balance.contractAddress as Address)}
                         >
                           <div className="token__icon-symbol">
                             {metadata?.logo ? <img src={metadata?.logo ?? ""}

@@ -1,4 +1,4 @@
-export const TESTNET_CONTRACT_ADDRESS = "0x8Db4F2c59dB946daf2857A29d1020c90b9b58c1e";
+export const TESTNET_CONTRACT_ADDRESS = "0x508b5645806A68Fb1738F9BD6E08c63eA494506E";
 const abi = [
   {
     anonymous: false,
@@ -196,6 +196,39 @@ const abi = [
       },
     ],
     name: "donate",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_donor",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "poolId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "message",
+        type: "string",
+      },
+    ],
+    name: "donateWithDonor",
     outputs: [],
     stateMutability: "payable",
     type: "function",
