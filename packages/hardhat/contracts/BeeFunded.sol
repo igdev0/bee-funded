@@ -5,6 +5,7 @@ import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/autom
 import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {console} from "hardhat/console.sol";
 
 contract BeeFunded is AutomationCompatibleInterface {
     event DonationPoolCreated(uint indexed id, address indexed creator);
@@ -165,6 +166,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint amount, // The value of token paid every interval
         uint interval, // This value should be in days
         uint8 duration, // The total amount of intervals user will be subscribed
+        uint deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
@@ -174,8 +176,10 @@ contract BeeFunded is AutomationCompatibleInterface {
         require(interval >= 7 days, "Min interval is 1 week");
         require(amount > 0, "Zero amount");
         require(pools[poolId].owner != address(0), "Pool does not exist");
+        console.log(amount * duration);
+        IERC20Permit(token).permit(subscriber, address(this), amount * duration, deadline, v, r, s);
 
-        IERC20Permit(token).permit(subscriber, address(this), amount * duration, block.timestamp + (interval * duration), v, r, s);
+        _donate(subscriber, poolId, token, amount, "Subscription");
 
         // Now add the subscription to the subscriptions array
         subscriptions.push(Subscription({
@@ -184,12 +188,11 @@ contract BeeFunded is AutomationCompatibleInterface {
             amount: amount,
             nextPaymentTime: block.timestamp + interval,
             interval: interval,
-            remainingDuration: duration,
+            remainingDuration: duration - 1,
             poolId: poolId,
             active: true
         }));
 
-        _donate(subscriber, poolId, token, amount, "Subscription");
         emit SubscriptionCreated(poolId, subscriber, pools[poolId].owner, amount, interval, duration);
     }
 
