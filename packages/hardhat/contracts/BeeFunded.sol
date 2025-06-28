@@ -165,7 +165,7 @@ contract BeeFunded is AutomationCompatibleInterface {
         uint amount, // The value of token paid every interval
         uint interval, // This value should be in days
         uint8 duration, // The total amount of intervals user will be subscribed
-        uint v,
+        uint8 v,
         bytes32 r,
         bytes32 s
 
