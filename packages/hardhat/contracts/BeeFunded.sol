@@ -4,13 +4,14 @@ pragma solidity >=0.8.30;
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {console} from "hardhat/console.sol";
+import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 contract BeeFunded is AutomationCompatibleInterface {
     event DonationPoolCreated(uint indexed id, address indexed creator);
-    event NewDonation(address indexed from, address token, uint amount, string message);
-    event SubscriptionExpired(uint poolId, address subscriber, address beneficiary);
-    event SubscriptionPaymentFailed(uint poolId, address subscriber, address beneficiary);
+    event NewDonation(address indexed from, address indexed token, uint amount, string message);
+    event SubscriptionExpired(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
+    event SubscriptionPaymentFailed(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
+    event SubscriptionCreated(uint indexed poolId, address indexed subscriber, address indexed beneficiary, uint amount, uint interval, uint8 duration);
 
     struct Subscription {
         address subscriber;
@@ -80,13 +81,19 @@ contract BeeFunded is AutomationCompatibleInterface {
         _donate(msg.sender, poolId, tokenAddress, amount, message);
     }
 
-    function donateWithDonor(
-        address _donor, // The address of the user who approved
+    function donateWithPermit(
+        address _donor,
         uint poolId,
         address tokenAddress,
         uint amount,
-        string calldata message
-    ) public payable {
+        string calldata message,
+        uint deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        require(tokenAddress != address(0), "Cannot use permit with native token"); // Permit is for ERC-20 tokens only
+        IERC20Permit(tokenAddress).permit(_donor, address(this), amount, deadline, v, r, s);
         _donate(_donor, poolId, tokenAddress, amount, message);
     }
 
@@ -151,11 +158,15 @@ contract BeeFunded is AutomationCompatibleInterface {
     }
 
     function subscribe(
+        address subscriber,
         uint poolId, // The pool at which the user will be subscribed
         address token, // The token to be donated
         uint amount, // The value of token paid every interval
         uint interval, // This value should be in days
-        uint8 duration // The total amount of intervals user will be subscribed
+        uint8 duration, // The total amount of intervals user will be subscribed
+        uint v,
+        bytes32 r,
+        bytes32 s
 
     ) external {
         // The interval should be at least one day
@@ -163,10 +174,11 @@ contract BeeFunded is AutomationCompatibleInterface {
         require(amount > 0, "Zero amount");
         require(pools[poolId].owner != address(0), "Pool does not exist");
 
-        require(IERC20(token).allowance(msg.sender, address(this)) > amount, "Insufficient allowance");
+        IERC20Permit(token).permit(subscriber, address(this), amount * duration, block.timestamp + (interval * duration), v, r, s);
+
         // Now add the subscription to the subscriptions array
         subscriptions.push(Subscription({
-            subscriber: msg.sender,
+            subscriber: subscriber,
             token: token,
             amount: amount,
             nextPaymentTime: block.timestamp + interval,
@@ -176,10 +188,8 @@ contract BeeFunded is AutomationCompatibleInterface {
             active: true
         }));
 
-        console.log("Token = ", token, "msg.sender = ", msg.sender);
-        // Donate initially the amount specified
-        _donate(msg.sender, poolId, token, amount, "Subscription");
-
+        _donate(subscriber, poolId, token, amount, "Subscription");
+        emit SubscriptionCreated(poolId, subscriber, pools[poolId].owner, amount, interval, duration);
     }
 
     function unsubscribe() external {
@@ -194,8 +204,6 @@ contract BeeFunded is AutomationCompatibleInterface {
     function withdraw(uint poolId, address tokenAddress, uint amount) external isPoolOwner(poolId) {
         require(amount <= poolBalances[poolId][tokenAddress], "Insufficient balance");
         IERC20 token = IERC20(tokenAddress);
-
-        console.log(token.balanceOf(address(this)), " = The balance of contract");
 
         if (tokenAddress == address(0)) {
             payable(msg.sender).transfer(amount);
