@@ -9,6 +9,7 @@ import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC2
 contract BeeFunded is AutomationCompatibleInterface {
     event DonationPoolCreated(uint indexed id, address indexed creator);
     event NewDonation(address indexed from, address indexed token, uint amount, string message);
+
     event SubscriptionExpired(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
     event SubscriptionPaymentFailed(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
     event SubscriptionCreated(uint indexed poolId, address indexed subscriber, address indexed beneficiary, uint amount, uint interval, uint8 duration);
