@@ -7,12 +7,13 @@ export const createDonationPoolApi = (client = defaultClient) => ({
     return data;
   },
 
-  async initDonationPool(user: string, title = "", description = "", main = true) {
+  async initDonationPool(user: string, title = "", description = "", main = true, max_amount = 0) {
     const {data} = await client.post<DonationPoolEntity>("/donation-pool", {
       user,
       title,
       description,
       main,
+      max_amount
     });
     return data.id;
   },

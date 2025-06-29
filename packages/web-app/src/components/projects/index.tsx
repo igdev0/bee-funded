@@ -2,7 +2,7 @@ import {DonationPoolEntity} from '@/api/types.ts';
 import "./styles.css";
 import {useCallback} from 'react';
 import Donate from '@/components/donate';
-import {useReadContract, useWriteContract} from 'wagmi';
+import {useAccount, useReadContract, useWriteContract} from 'wagmi';
 import donationPool from '@/api/donation-pool.ts';
 import abi, {TESTNET_CONTRACT_ADDRESS} from '@/contracts';
 import {createResourceUrl} from '@/lib/utils.ts';
@@ -17,22 +17,36 @@ export interface ProjectsProps {
   pools: DonationPoolEntity[];
 }
 
+export function ProjectCard(props: DonationPoolEntity) {
+  return (
+      <div className="bg-white p-4 rounded-md shadow-2xl">
+        <img src="/demo-project.png" alt="demo"/>
+        <h3 className="mt-2 text-right">Max amount: <strong>{props.max_amount} USD</strong> Current value: <strong>3,000 USD</strong></h3>
+        <h3 className="text-lg mt-4 font-bold">{props.title}</h3>
+        <p>{props.description}</p>
+        <Donate donationPoolId={props.on_chain_pool_id} text="Support this project"/>
+      </div>
+  );
+}
+
 export function CreateProject() {
   const {user} = useAppStore();
+  const signedInAccount = useAccount();
   const {revalidate} = useRevalidator();
   const {writeContractAsync} = useWriteContract();
   const {data: onChainPoolId} = useReadContract({abi, address: TESTNET_CONTRACT_ADDRESS, functionName: "poolID"});
   const handleCreate = useCallback(async (formData: FormData) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
+    const goal = formData.get("goal") as string;
+    const poolId = await donationPool.initDonationPool(user?.id as string, title, description, false, Number(goal));
 
-    const poolId = await donationPool.initDonationPool(user?.id as string, title, description, false);
     const tx_hash = await writeContractAsync({
       abi: abi,
       address: TESTNET_CONTRACT_ADDRESS,
       functionName: "createPool",
       args: [
-        "1000000",
+        goal,
         createResourceUrl(poolId),
       ]
     });
@@ -44,6 +58,11 @@ export function CreateProject() {
     });
     await revalidate();
   }, []);
+
+  if (!user || user?.address !== signedInAccount.address) {
+    return null;
+  }
+
   return (
 
       <Popover>
@@ -57,7 +76,8 @@ export function CreateProject() {
             <label className="font-bold inline-block mt-4" htmlFor="title">
               Project Title
             </label>
-            <Input required={true} maxLength={40} className="mt-4" type="text" id="title" name="title" placeholder="Project title"/>
+            <Input required={true} maxLength={40} className="mt-4" type="text" id="title" name="title"
+                   placeholder="Project title"/>
             <label className="font-bold inline-block mt-4" htmlFor="title">
               Funding goal (in USD)
             </label>
@@ -70,7 +90,7 @@ export function CreateProject() {
           </form>
         </PopoverContent>
       </Popover>
-  )
+  );
 }
 
 export default function Projects(props: ProjectsProps) {
@@ -90,13 +110,7 @@ export default function Projects(props: ProjectsProps) {
         <div className="projects-container mt-4">
           {
             props.pools.map((pool: DonationPoolEntity) => (
-                <div className="bg-white p-4 rounded-md shadow-2xl" key={pool.id}>
-                  <img src="/demo-project.png" alt="demo"/>
-                  <h3 className="mt-2 text-right">Total value: <strong>3,000 USD</strong></h3>
-                  <h3 className="text-lg mt-4 font-bold">{pool.title}</h3>
-                  <p>{pool.description}</p>
-                  <Donate donationPoolId={pool.on_chain_pool_id} text="Support this project"/>
-                </div>
+                <ProjectCard key={pool.id} {...pool}/>
             ))
           }
         </div>
