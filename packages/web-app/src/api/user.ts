@@ -7,7 +7,7 @@ export const createUserApi = (client = defaultClient) => ({
     return data;
   },
 
-  async updateCreatorField(creator: boolean) {
+  async updateCreatorField(creator: boolean | null) {
     const {data} = await client.patch("/user/update-is-creator", {
       is_creator: creator
     });

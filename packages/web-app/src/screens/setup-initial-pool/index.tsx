@@ -17,24 +17,28 @@ export default function SetupInitialPoolScreen() {
 
   const handleCreator = async () => {
     const poolId = await donationPool.initDonationPool(user?.id as string);
-    const tx_hash = await writeContractAsync({
-      abi: abi,
-      address: TESTNET_CONTRACT_ADDRESS,
-      functionName: "createPool",
-      args: [
-        "1000000",
-        createResourceUrl(poolId),
-      ]
-    });
 
-    await donationPool.updateDonationPool({
-      id: poolId,
-      title: "",
-      tx_hash,
-      on_chain_pool_id: Number(onChainPoolId) + 1, // next pool id will be this one
-      description: ""
-    });
-    navigate(`/platform/${user?.username}`);
+    try {
+      const tx_hash = await writeContractAsync({
+        abi: abi,
+        address: TESTNET_CONTRACT_ADDRESS,
+        functionName: "createPool",
+        args: [
+          "1000000",
+          createResourceUrl(poolId),
+        ]
+      });
+      await donationPool.updateDonationPool({
+        id: poolId,
+        title: "",
+        tx_hash,
+        on_chain_pool_id: Number(onChainPoolId) + 1, // next pool id will be this one
+        description: ""
+      });
+      navigate(`/platform/${user?.username}`);
+    } catch (err) {
+      await userApi.updateCreatorField(null);
+    }
   };
 
   if (user?.is_creator !== null) {
