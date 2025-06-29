@@ -41,7 +41,8 @@ export function CreateProject() {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const goal = formData.get("goal") as string;
-    const poolId = await donationPool.initDonationPool(user?.id as string, title, description, false, Number(goal));
+    const _onChainPoolId = Number(onChainPoolId) + 1;
+    const poolId = await donationPool.initDonationPool(user?.id as string, title, description, false, Number(goal), _onChainPoolId);
 
     const tx_hash = await writeContractAsync({
       abi: abi,
@@ -56,7 +57,7 @@ export function CreateProject() {
     await donationPool.updateDonationPool({
       id: poolId,
       tx_hash,
-      on_chain_pool_id: Number(onChainPoolId) + 1, // next pool id will be this one
+      on_chain_pool_id: _onChainPoolId, // next pool id will be this one
     });
     await revalidate();
   }, []);
@@ -73,7 +74,7 @@ export function CreateProject() {
             Create new project
           </Button>
         </PopoverTrigger>
-        <PopoverContent>
+        <PopoverContent updatePositionStrategy="always" avoidCollisions={true}>
           <form action={handleCreate}>
             <label className="font-bold inline-block mt-4" htmlFor="title">
               Project Title

@@ -151,9 +151,9 @@ export default function Donate(props: DonateProps) {
   };
 
   return (
-      <Popover>
+      <Popover >
         <PopoverTrigger asChild={true}><Button disabled={!tokenBalances.length || isPending || !props.donationPoolId}>{props.text}</Button></PopoverTrigger>
-        <PopoverContent updatePositionStrategy="always" avoidCollisions={false}>
+        <PopoverContent updatePositionStrategy="always" avoidCollisions={true}>
           <div className="tokens">
             {selectedToken ?
                 <Button
