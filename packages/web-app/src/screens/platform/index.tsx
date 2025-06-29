@@ -6,6 +6,7 @@ import {DonationPoolEntity, UserEntity} from '@/api/types.ts';
 import {formatDistanceToNow} from 'date-fns';
 import Donate from '@/components/donate';
 import Projects, {CreateProject} from '@/components/projects';
+import SettingsBar from '@/components/settings-bar';
 
 const DEMO_IMAGE = "/public/male.png";
 export default function PlatformScreen() {
@@ -22,7 +23,7 @@ export default function PlatformScreen() {
   const result = formatDistanceToNow(joined);
   return (
       <Screen requiresAuth={false} className="page" wrapperClassName="platform">
-        <div className="banner"/>
+        <SettingsBar/>
         <main>
           <header>
             <div className="avatar-wrapper">
