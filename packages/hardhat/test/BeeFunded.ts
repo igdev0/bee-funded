@@ -109,7 +109,6 @@ describe("BeeFunded", function () {
       const donorAmount = ethers.parseUnits("200", 18);
       // Deadline for the permit signature (e.g., a few minutes from now)
       const deadline = BigInt(Math.floor(Date.now() / 1000)) + BigInt(60 * 5); // 5 minutes
-
       const { v, r, s } = await generatePermitSignature(
         addr1,
         await beeFunded.getAddress(), // BeeFunded contract is the spender

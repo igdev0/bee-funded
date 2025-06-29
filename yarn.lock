@@ -1076,6 +1076,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@date-fns/tz@npm:1.2.0":
+  version: 1.2.0
+  resolution: "@date-fns/tz@npm:1.2.0"
+  checksum: 2eb37e63fdbd5d72458c528ded6c2f7bdb76bae9c6875d3b827e33600b807cfbd72ab05c9291f258a6e6b7b360ec03e57f7e7d85fe6e0d5e989476dec908910e
+  languageName: node
+  linkType: hard
+
 "@ecies/ciphers@npm:^0.2.3":
   version: 0.2.3
   resolution: "@ecies/ciphers@npm:0.2.3"
@@ -10174,19 +10181,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"date-fns-jalali@npm:4.1.0-0":
+  version: 4.1.0-0
+  resolution: "date-fns-jalali@npm:4.1.0-0"
+  checksum: cde80e4a87bfd96458ff1edfd5af5fed7ed6e04dd48574ed64d376e37e7689ddee1a7c5a6685f4b93cf3432eac73c51acd786504070a6973a140c5f15163ca39
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:4.1.0, date-fns@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "date-fns@npm:4.1.0"
+  checksum: fb681b242cccabed45494468f64282a7d375ea970e0adbcc5dcc92dcb7aba49b2081c2c9739d41bf71ce89ed68dd73bebfe06ca35129490704775d091895710b
+  languageName: node
+  linkType: hard
+
 "date-fns@npm:^2.29.3":
   version: 2.30.0
   resolution: "date-fns@npm:2.30.0"
   dependencies:
     "@babel/runtime": ^7.21.0
   checksum: f7be01523282e9bb06c0cd2693d34f245247a29098527d4420628966a2d9aad154bd0e90a6b1cf66d37adcb769cd108cf8a7bd49d76db0fb119af5cdd13644f4
-  languageName: node
-  linkType: hard
-
-"date-fns@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "date-fns@npm:4.1.0"
-  checksum: fb681b242cccabed45494468f64282a7d375ea970e0adbcc5dcc92dcb7aba49b2081c2c9739d41bf71ce89ed68dd73bebfe06ca35129490704775d091895710b
   languageName: node
   linkType: hard
 
@@ -17729,6 +17743,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-day-picker@npm:latest":
+  version: 9.7.0
+  resolution: "react-day-picker@npm:9.7.0"
+  dependencies:
+    "@date-fns/tz": 1.2.0
+    date-fns: 4.1.0
+    date-fns-jalali: 4.1.0-0
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 3231bbb9313ca64247d17abada265b58369f46935745da3f029b2969d094077955c07d205c30f554da1fcd534e9698808d62196ecdfd7f73e69bea0fc07c3548
+  languageName: node
+  linkType: hard
+
 "react-dom@npm:19.1":
   version: 19.1.0
   resolution: "react-dom@npm:19.1.0"
@@ -21245,6 +21272,7 @@ shadcn@latest:
     lucide-react: ^0.513.0
     next-themes: ^0.4.6
     react: 19.1
+    react-day-picker: latest
     react-dom: 19.1
     react-hook-form: ^7.57.0
     react-router: ^7.6.2

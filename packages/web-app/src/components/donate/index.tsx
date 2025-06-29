@@ -10,6 +10,7 @@ import {useAccount, useClient, useSignTypedData, useWriteContract} from 'wagmi';
 import abi, {TESTNET_CONTRACT_ADDRESS} from '@/contracts';
 import "./styles.css";
 import {readContract} from 'viem/actions';
+import {Calendar} from '@/components/ui/calendar.tsx';
 
 export interface DonateProps {
   address: string;
@@ -18,11 +19,12 @@ export interface DonateProps {
 
 export default function Donate(props: DonateProps) {
   const signedInAccount = useAccount();
+  const [subscriptionDuration, setSubscriptionDuration] = useState<Date | undefined>(new Date());
   const {tokenBalances, tokenMetadata} = useTokenBalances(props.address as string);
   const {writeContract, isPending} = useWriteContract();
   const {signTypedDataAsync} = useSignTypedData();
   const client = useClient();
-  const [subscribe, setSubscribe] = useState<boolean>(false);
+  const [subscriptionInterval, setSubscriptionInterval] = useState<null | number>(null);
   const [selectedToken, setSelectedToken] = useState<Address | null>(null);
   const selectedTokenMetadata = useMemo(() => {
     return selectedToken ? {
@@ -40,76 +42,113 @@ export default function Donate(props: DonateProps) {
     setSelectedToken(null);
   };
 
-  const donate = async (formData: FormData) => {
-    const amount = formData.get("amount") ?? "0";
-    const message = formData.get("message") ?? "";
-    const deadline = BigInt(Math.floor(Date.now() / 1000)) + BigInt(60 * 5); // 5 minutes
-    if (selectedTokenMetadata && signedInAccount.chainId) {
-
-      const domain = {
-        name: selectedTokenMetadata.name as string, // Name of the ERC20Permit token (e.g., "MockToken")
-        version: "1", // EIP-2612 standard version
-        chainId: signedInAccount.chainId,
-        verifyingContract: selectedToken as Address, // Address of the ERC20Permit token contract
-      };
-
-      const permitAbi = parseAbi([
-        'function nonces(address owner) external view returns (uint256)'
-      ]);
-
-      const nonce = await readContract(client as keyof object, {
-        address: selectedToken as Address,
-        abi: permitAbi,
-        functionName: "nonces",
-        args: [signedInAccount.address as Address],
-      });
-
-      const types = {
-        Permit: [
-          {name: "owner", type: "address"},
-          {name: "spender", type: "address"},
-          {name: "value", type: "uint256"},
-          {name: "nonce", type: "uint256"},
-          {name: "deadline", type: "uint256"},
-        ],
-      };
-
-      const parsedAmount = parseUnits(amount as string, selectedTokenMetadata!.decimals as number);
-
-      const signMessage = {
-        owner: signedInAccount.address,
-        spender: TESTNET_CONTRACT_ADDRESS,
-        value: parsedAmount,
-        nonce: nonce,
-        deadline,
-      };
-
-      const sign = await signTypedDataAsync({
-        types,
-        primaryType: "Permit",
-        message: signMessage,
-        domain
-      });
-      const {v, r, s} = parseSignature(sign);
-      writeContract({
-        abi,
-        address: TESTNET_CONTRACT_ADDRESS,
-        functionName: 'donateWithPermit',
-        args: [
-          signedInAccount.address as Address,
-          props.donationPoolId,
-          selectedToken,
-          parsedAmount,
-          message,
-          deadline,
-          v,
-          r,
-          s
-        ],
-      });
+  const handleSignPermit = async (amount: bigint, deadline: bigint) => {
+    if (!selectedTokenMetadata) {
+      throw new Error("You must select a token");
     }
+    const domain = {
+      name: selectedTokenMetadata.name as string, // Name of the ERC20Permit token (e.g., "MockToken")
+      version: "1", // EIP-2612 standard version
+      chainId: signedInAccount.chainId,
+      verifyingContract: selectedToken as Address, // Address of the ERC20Permit token contract
+    };
+
+    const permitAbi = parseAbi([
+      'function nonces(address owner) external view returns (uint256)'
+    ]);
+
+    const nonce = await readContract(client as keyof object, {
+      address: selectedToken as Address,
+      abi: permitAbi,
+      functionName: "nonces",
+      args: [signedInAccount.address as Address],
+    });
+
+    const types = {
+      Permit: [
+        {name: "owner", type: "address"},
+        {name: "spender", type: "address"},
+        {name: "value", type: "uint256"},
+        {name: "nonce", type: "uint256"},
+        {name: "deadline", type: "uint256"},
+      ],
+    };
+
+    const signMessage = {
+      owner: signedInAccount.address,
+      spender: TESTNET_CONTRACT_ADDRESS,
+      value: amount,
+      nonce: nonce,
+      deadline,
+    };
+
+    const sign = await signTypedDataAsync({
+      types,
+      primaryType: "Permit",
+      message: signMessage,
+      domain
+    });
+    return parseSignature(sign);
   };
 
+  const donate = async (formData: FormData) => {
+    const amount = formData.get("amount") ?? "0";
+    const parsedAmount = parseUnits(amount as string, selectedTokenMetadata!.decimals as number);
+    const message = formData.get("message") ?? "";
+    let deadline = BigInt(Math.floor(Date.now() / 1000)) + BigInt(60 * 5); // 5 default time minutes
+    const ONE_DAY = 60 * 60 * 24;
+    const SUBSCRIPTION_PADDING = ONE_DAY * 7;
+    let intervalTimes: null | number = null;
+    if (subscriptionInterval && subscriptionDuration) {
+      const durationInSeconds = (subscriptionDuration.getTime() / 1000);
+      deadline = BigInt(durationInSeconds + SUBSCRIPTION_PADDING);
+      intervalTimes = Math.floor((durationInSeconds - (Date.now() / 1000)) / (subscriptionInterval * ONE_DAY));
+    }
+
+    if (selectedTokenMetadata && signedInAccount.chainId) {
+      const totalAmount = parsedAmount * BigInt(intervalTimes ?? 0);
+      const {v, r, s} = await handleSignPermit(totalAmount, deadline);
+
+      if (subscriptionInterval) {
+
+        writeContract({
+          abi,
+          address: TESTNET_CONTRACT_ADDRESS,
+          functionName: 'subscribe',
+          args: [
+            signedInAccount.address as Address,
+            props.donationPoolId,
+            selectedToken,
+            parsedAmount,
+            subscriptionInterval * ONE_DAY,
+            intervalTimes,
+            deadline,
+            v,
+            r,
+            s
+          ],
+        });
+      } else {
+
+        writeContract({
+          abi,
+          address: TESTNET_CONTRACT_ADDRESS,
+          functionName: 'donateWithPermit',
+          args: [
+            signedInAccount.address as Address,
+            props.donationPoolId,
+            selectedToken,
+            parsedAmount,
+            message,
+            deadline,
+            v,
+            r,
+            s
+          ],
+        });
+      }
+    }
+  };
 
   return (
       <Popover>
@@ -148,20 +187,35 @@ export default function Donate(props: DonateProps) {
                            max={formatUnits(BigInt(selectedTokenMetadata!.balance as string), selectedTokenMetadata!.decimals as number)}/>
                     <div className="make-it-monthly">
                       <label>
-                        Make it monthly
+                        Make it every 7 days (weekly)
                       </label>
-                      <Checkbox onCheckedChange={event => setSubscribe(!!event)} id="make-it-monthly"/>
+                      <Checkbox onCheckedChange={event => setSubscriptionInterval(event ? 7 : null)}
+                                checked={subscriptionInterval === 7}
+                                id="make-it-monthly"/>
+                    </div>
+                    <div className="make-it-monthly">
+                      <label>
+                        Make it every 30 days (monthly)
+                      </label>
+                      <Checkbox onCheckedChange={event => setSubscriptionInterval(event ? 30 : null)}
+                                checked={subscriptionInterval === 30}
+                                id="make-it-monthly"/>
                     </div>
                     {
-                        subscribe &&
+                        subscriptionInterval &&
                         <>
                             <label htmlFor="period">
-                                How many months?
+                                Subscribe until when?
                             </label>
-                            <Input type="number" step="0.1" placeholder="Period of time"
-                                   id="period"
-                                   name="period"
-                                   max={formatUnits(BigInt(selectedTokenMetadata!.balance as string), selectedTokenMetadata!.decimals as number)}/>
+                            <Calendar
+                                mode="single"
+                                disabled={date => date.getTime() < new Date().getTime()}
+                                modifiers={{}}
+                                showOutsideDays={false}
+                                selected={subscriptionDuration}
+                                onSelect={setSubscriptionDuration}
+                                className="rounded-lg border"
+                            />
                         </>
                     }
                     <label htmlFor="message">Message</label>
