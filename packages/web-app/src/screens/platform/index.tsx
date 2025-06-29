@@ -28,7 +28,7 @@ export default function PlatformScreen() {
             </div>
           </header>
           <section>
-
+            <h1 className="text-3xl font-bold">Projects</h1>
           </section>
         </main>
       </Screen>

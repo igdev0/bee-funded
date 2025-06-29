@@ -1,20 +1,23 @@
 
 @import "tailwindcss";
 .banner {
-    @apply h-[100px] w-full bg-amber-200;
+    @apply h-[100px] w-full bg-gray-200 p-4 rounded-md;
 }
 
 @layer components {
-    .platform {
-
-    }
     .page {
         main {
-            @apply flex justify-between mt-10;
+            @apply flex justify-between mt-4 gap-4;
+
+            header {
+                @apply flex-0 bg-gray-200 p-4 rounded-md min-w-[250px];
+            }
+            section {
+                @apply flex-1 bg-gray-200 p-4 rounded-md;
+            }
         }
         .avatar-wrapper {
             @apply px-4 inline-flex justify-center flex-col items-center;
-            @apply -mt-[6rem];
         }
     }
 }
