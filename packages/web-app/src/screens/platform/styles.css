@@ -1,15 +1,17 @@
 
 @import "tailwindcss";
 .banner {
-    @apply h-[80px] w-full bg-amber-200;
+    @apply h-[100px] w-full bg-amber-200;
 }
 
 @layer components {
     .platform {
-        /*@apply bg-amber-50 ;*/
+
     }
     .page {
-        @apply flex flex-col items-center gap-4;
+        main {
+            @apply flex justify-between mt-10;
+        }
         .avatar-wrapper {
             @apply px-4 inline-flex justify-center flex-col items-center;
             @apply -mt-[6rem];

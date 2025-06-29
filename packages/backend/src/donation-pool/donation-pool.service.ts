@@ -43,8 +43,12 @@ export class DonationPoolService {
   findAllByUserId(userId: string) {
     return this.donationPoolRepository.find({
       where: {
-        user: userId,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        user: { id: userId },
+        main: false,
       },
+      relations: ['user'],
     });
   }
 

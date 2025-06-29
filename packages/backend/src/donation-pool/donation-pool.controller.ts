@@ -34,9 +34,9 @@ export class DonationPoolController {
     });
   }
 
-  @Get()
-  findAll() {
-    return this.donationPoolService.findAll();
+  @Get('user/:userId')
+  findAll(@Param('userId') userId: string) {
+    return this.donationPoolService.findAllByUserId(userId);
   }
 
   @Get(':id')

@@ -25,9 +25,11 @@ const router = createBrowserRouter([
     async loader(args) {
       const user = await userApi.getUserByUsername(args.params.username as string);
       const mainPoolChainId = user ? await donationPool.findMainPoolChainId(user.id) : 0;
+      const pools =await donationPool.findPoolsForUser(user.id)
       return {
         user,
-        mainPoolChainId
+        mainPoolChainId,
+        pools
       };
     }
   }
