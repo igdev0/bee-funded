@@ -19,7 +19,7 @@ export interface DonateProps {
 export default function Donate(props: DonateProps) {
   const signedInAccount = useAccount();
   const {tokenBalances, tokenMetadata} = useTokenBalances(props.address as string);
-  const {writeContractAsync, isPending} = useWriteContract();
+  const {writeContract, isPending} = useWriteContract();
   const {signTypedDataAsync} = useSignTypedData();
   const client = useClient();
   const [subscribe, setSubscribe] = useState<boolean>(false);
@@ -43,7 +43,7 @@ export default function Donate(props: DonateProps) {
   const donate = async (formData: FormData) => {
     const amount = formData.get("amount") ?? "0";
     const message = formData.get("message") ?? "";
-    const deadline = 60 * 5; // five minutes;
+    const deadline = BigInt(Math.floor(Date.now() / 1000)) + BigInt(60 * 5); // 5 minutes
     if (selectedTokenMetadata && signedInAccount.chainId) {
 
       const domain = {
@@ -81,7 +81,7 @@ export default function Donate(props: DonateProps) {
         spender: TESTNET_CONTRACT_ADDRESS,
         value: parsedAmount,
         nonce: nonce,
-        deadline: BigInt(deadline),
+        deadline,
       };
 
       const sign = await signTypedDataAsync({
@@ -91,8 +91,7 @@ export default function Donate(props: DonateProps) {
         domain
       });
       const {v, r, s} = parseSignature(sign);
-
-      const hash = await writeContractAsync({
+      writeContract({
         abi,
         address: TESTNET_CONTRACT_ADDRESS,
         functionName: 'donateWithPermit',
@@ -108,7 +107,6 @@ export default function Donate(props: DonateProps) {
           s
         ],
       });
-      console.log({hash});
     }
   };
 
