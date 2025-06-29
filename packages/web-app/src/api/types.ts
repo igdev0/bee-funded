@@ -44,6 +44,7 @@ export interface DonationPoolEntity {
   id: string;
   user: string; // or: User if you're referencing the full object elsewhere
   title: string;
+  on_chain_pool_id: number | null;
   description: string;
   card_image: string;
   tx_hash: string;

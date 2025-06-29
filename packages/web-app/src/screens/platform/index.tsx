@@ -5,10 +5,15 @@ import {useLoaderData} from 'react-router';
 import {DonationPoolEntity, UserEntity} from '@/api/types.ts';
 import {formatDistanceToNow} from 'date-fns';
 import Donate from '@/components/donate';
+import Projects, {CreateProject} from '@/components/projects';
 
 const DEMO_IMAGE = "/public/male.png";
 export default function PlatformScreen() {
-  const {user, mainPoolChainId, pools} = useLoaderData<{ user: UserEntity, mainPoolChainId: number, pools: DonationPoolEntity[] }>();
+  const {user, mainPoolChainId, pools} = useLoaderData<{
+    user: UserEntity,
+    mainPoolChainId: number,
+    pools: DonationPoolEntity[]
+  }>();
 
   if (!user) {
     return <h1>User Not found</h1>;
@@ -24,11 +29,15 @@ export default function PlatformScreen() {
               <Avatar imageUrl={DEMO_IMAGE}/>
               <p>@{user?.username}</p>
               <p>Joined {result} ago</p>
-              <Donate address={user.address} donationPoolId={mainPoolChainId}/>
+              <Donate text="Donate" donationPoolId={mainPoolChainId}/>
             </div>
           </header>
           <section>
-            <h1 className="text-3xl font-bold">Projects</h1>
+            <div className="flex justify-between">
+              <h1 className="text-3xl font-bold">Projects</h1>
+              <CreateProject/>
+            </div>
+            <Projects pools={pools}/>
           </section>
         </main>
       </Screen>

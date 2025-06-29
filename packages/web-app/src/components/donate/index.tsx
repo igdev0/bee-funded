@@ -13,14 +13,14 @@ import {readContract} from 'viem/actions';
 import {Calendar} from '@/components/ui/calendar.tsx';
 
 export interface DonateProps {
-  address: string;
-  donationPoolId: number;
+  donationPoolId: number | null;
+  text: string;
 }
 
 export default function Donate(props: DonateProps) {
   const signedInAccount = useAccount();
   const [subscriptionDuration, setSubscriptionDuration] = useState<Date | undefined>(new Date());
-  const {tokenBalances, tokenMetadata} = useTokenBalances(props.address as string);
+  const {tokenBalances, tokenMetadata} = useTokenBalances(signedInAccount.address as string);
   const {writeContract, isPending} = useWriteContract();
   const {signTypedDataAsync} = useSignTypedData();
   const client = useClient();
@@ -152,7 +152,7 @@ export default function Donate(props: DonateProps) {
 
   return (
       <Popover>
-        <PopoverTrigger asChild={true}><Button disabled={!tokenBalances || isPending}>Donate</Button></PopoverTrigger>
+        <PopoverTrigger asChild={true}><Button disabled={!tokenBalances || isPending || !props.donationPoolId}>{props.text}</Button></PopoverTrigger>
         <PopoverContent updatePositionStrategy="always" avoidCollisions={false}>
           <div className="tokens">
             {selectedToken ?
