@@ -15,7 +15,7 @@ export default function PlatformScreen() {
     mainPoolChainId: number,
     pools: DonationPoolEntity[]
   }>();
-
+  console.log({mainPoolChainId})
   if (!user) {
     return <h1>User Not found</h1>;
   }

@@ -2,7 +2,7 @@ import {DonationPoolEntity} from '@/api/types.ts';
 import "./styles.css";
 import {useCallback} from 'react';
 import Donate from '@/components/donate';
-import {useAccount, useReadContract, useWriteContract} from 'wagmi';
+import {useReadContract, useWriteContract} from 'wagmi';
 import donationPool from '@/api/donation-pool.ts';
 import abi, {TESTNET_CONTRACT_ADDRESS} from '@/contracts';
 import {createResourceUrl} from '@/lib/utils.ts';
@@ -11,7 +11,8 @@ import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.t
 import {Button} from '@/components/ui/button.tsx';
 import {Input} from '@/components/ui/input.tsx';
 import {Textarea} from '@/components/ui/textarea.tsx';
-import {useRevalidator} from 'react-router';
+import {useParams, useRevalidator} from 'react-router';
+import useIsCurrentUser from '@/hooks/use-is-current-user.ts';
 
 export interface ProjectsProps {
   pools: DonationPoolEntity[];
@@ -21,7 +22,8 @@ export function ProjectCard(props: DonationPoolEntity) {
   return (
       <div className="bg-white p-4 rounded-md shadow-2xl">
         <img src="/demo-project.png" alt="demo"/>
-        <h3 className="mt-2 text-right">Max amount: <strong>{props.max_amount} USD</strong> Current value: <strong>3,000 USD</strong></h3>
+        <h3 className="mt-2 text-right">Max amount: <strong>{props.max_amount} USD</strong> Current value: <strong>3,000
+          USD</strong></h3>
         <h3 className="text-lg mt-4 font-bold">{props.title}</h3>
         <p>{props.description}</p>
         <Donate donationPoolId={props.on_chain_pool_id} text="Support this project"/>
@@ -31,7 +33,7 @@ export function ProjectCard(props: DonationPoolEntity) {
 
 export function CreateProject() {
   const {user} = useAppStore();
-  const signedInAccount = useAccount();
+  const isCurrent = useIsCurrentUser();
   const {revalidate} = useRevalidator();
   const {writeContractAsync} = useWriteContract();
   const {data: onChainPoolId} = useReadContract({abi, address: TESTNET_CONTRACT_ADDRESS, functionName: "poolID"});
@@ -59,7 +61,7 @@ export function CreateProject() {
     await revalidate();
   }, []);
 
-  if (!user || user?.address !== signedInAccount.address) {
+  if (!isCurrent) {
     return null;
   }
 
@@ -94,13 +96,21 @@ export function CreateProject() {
 }
 
 export default function Projects(props: ProjectsProps) {
-
-
+  const isCurrent = useIsCurrentUser();
+  const params = useParams<{ username: string }>();
   if (props.pools.length === 0) {
     return (
         <div className="projects-not-found">
-          <h1 className="text-2xl font-bold">Looks like you haven't got any projects 😳</h1>
-          <CreateProject/>
+          {
+            isCurrent ? (
+                <>
+                  <h1 className="text-2xl font-bold">Looks like you haven't got any projects 😳</h1>
+                  <CreateProject/>
+                </>
+            ) : (
+                <h1 className="text-2xl font-bold">{params.username} does not have any projects. </h1>
+            )
+          }
         </div>
     );
   }
