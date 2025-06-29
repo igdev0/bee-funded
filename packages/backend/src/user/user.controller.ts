@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { GetUser } from '../decorators/get-user.decorator';
@@ -9,7 +9,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @UseGuards(AuthGuard)
-  @Post('update-is-creator')
+  @Patch('update-is-creator')
   async updateIsCreator(
     @Body() body: { is_creator: boolean },
     @GetUser() user: User,
