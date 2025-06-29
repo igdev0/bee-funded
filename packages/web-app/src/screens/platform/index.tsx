@@ -9,10 +9,10 @@ import Donate from '@/components/donate';
 const DEMO_IMAGE = "/public/male.png";
 export default function PlatformScreen() {
   const {user, mainPoolChainId, pools} = useLoaderData<{ user: UserEntity, mainPoolChainId: number, pools: DonationPoolEntity[] }>();
+
   if (!user) {
     return <h1>User Not found</h1>;
   }
-  console.log(pools)
   const joined = new Date(user.created_at);
   const result = formatDistanceToNow(joined);
   return (
