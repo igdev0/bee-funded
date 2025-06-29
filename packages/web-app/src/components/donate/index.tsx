@@ -106,7 +106,7 @@ export default function Donate(props: DonateProps) {
     }
 
     if (selectedTokenMetadata && signedInAccount.chainId) {
-      const totalAmount = parsedAmount * BigInt(intervalTimes ?? 0);
+      const totalAmount = subscriptionInterval ? parsedAmount * BigInt(intervalTimes ?? 0) : parsedAmount;
       const {v, r, s} = await handleSignPermit(totalAmount, deadline);
 
       if (subscriptionInterval) {
