@@ -44,6 +44,12 @@ export class DonationPoolController {
     return this.donationPoolService.findOne(id);
   }
 
+  @Get('main/:userId')
+  async findMain(@Param('userId') userId: string) {
+    const data = await this.donationPoolService.findMain(userId);
+    return data?.on_chain_pool_id ?? null;
+  }
+
   @UseGuards(AuthGuard)
   @Patch(':id')
   update(

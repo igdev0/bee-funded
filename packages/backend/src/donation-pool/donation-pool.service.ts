@@ -48,6 +48,18 @@ export class DonationPoolService {
     });
   }
 
+  findMain(userId: string) {
+    return this.donationPoolRepository.findOne({
+      where: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        user: { id: userId },
+        main: true,
+      },
+      relations: ['user'],
+    });
+  }
+
   findOne(id: string) {
     return this.donationPoolRepository.findOneBy({
       id,

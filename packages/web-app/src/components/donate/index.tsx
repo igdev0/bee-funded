@@ -18,7 +18,7 @@ export interface DonateProps {
 
 export default function Donate(props: DonateProps) {
   const signedInAccount = useAccount();
-  const {tokenBalances, tokenMetadata} = useTokenBalances(signedInAccount.address as string);
+  const {tokenBalances, tokenMetadata} = useTokenBalances(props.address as string);
   const {writeContractAsync, isPending} = useWriteContract();
   const {signTypedDataAsync} = useSignTypedData();
   const client = useClient();

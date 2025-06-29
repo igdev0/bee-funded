@@ -16,6 +16,11 @@ export const createDonationPoolApi = (client = defaultClient) => ({
     });
     return data.id;
   },
+
+  async findMainPoolChainId(userId: string) {
+    const {data} = await client.get<number>(`/donation-pool/main/${userId}`);
+    return data;
+  }
 });
 
 

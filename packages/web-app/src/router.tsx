@@ -3,7 +3,8 @@ import LandingScreen from './screens/landing';
 import SignUpScreen from './screens/sign-up';
 import SetupInitialPoolScreen from '@/screens/setup-initial-pool';
 import PlatformScreen from '@/screens/platform';
-import user from '@/api/user.ts';
+import userApi from '@/api/user.ts';
+import donationPool from '@/api/donation-pool.ts';
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,12 @@ const router = createBrowserRouter([
     path: `/platform/:username`,
     element: <PlatformScreen/>,
     async loader(args) {
-      return user.getUserByUsername(args.params.username as string);
+      const user = await userApi.getUserByUsername(args.params.username as string);
+      const mainPoolChainId = user ? await donationPool.findMainPoolChainId(user.id) : 0;
+      return {
+        user,
+        mainPoolChainId
+      };
     }
   }
 ]);

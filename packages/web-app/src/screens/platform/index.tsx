@@ -8,11 +8,10 @@ import {formatDistanceToNow} from 'date-fns';
 
 const DEMO_IMAGE = "/public/male.png";
 export default function PlatformScreen() {
-  const user = useLoaderData<UserEntity>();
+  const {user, mainPoolChainId} = useLoaderData<{ user: UserEntity, mainPoolChainId: number }>();
   if (!user) {
     return <h1>User Not found</h1>;
   }
-
   const joined = new Date(user.created_at);
   const result = formatDistanceToNow(joined);
   return (
@@ -23,7 +22,7 @@ export default function PlatformScreen() {
           <p>@{user?.username}</p>
           <p>Joined {result}</p>
         </div>
-        <Donate address={user.address} donationPoolId={2}/>
+        <Donate address={user.address} donationPoolId={mainPoolChainId}/>
       </Screen>
   );
 }
