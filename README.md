@@ -1,5 +1,5 @@
 <h1 align="center">
-<img src="public/beefunded-logo-buzz.png" width="300">
+<img src="packages/web-app/public/beefunded-logo-buzz.png" width="300">
 </h1>
 
 # 🐝 BeeFunded: A web3 donation platform.
