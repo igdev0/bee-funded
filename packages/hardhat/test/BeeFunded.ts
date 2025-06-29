@@ -23,7 +23,6 @@ describe("BeeFunded", function () {
     const ownerAddress = await ownerSigner.getAddress();
     const nonce = await tokenContract.nonces(ownerAddress); // Get current nonce for the owner
     const chainId = (await ethers.provider.getNetwork()).chainId; // Get current chain ID
-
     const domain = {
       name: await tokenContract.name(), // Name of the ERC20Permit token (e.g., "MockToken")
       version: "1", // EIP-2612 standard version

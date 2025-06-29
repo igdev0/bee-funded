@@ -1,14 +1,15 @@
 import {Button} from '@/components/ui/button.tsx';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
 import useTokenBalances from '@/hooks/use-token-balances.ts';
-import {Address, formatUnits, parseAbi, parseUnits} from 'viem';
+import {Address, formatUnits, parseAbi, parseSignature, parseUnits} from 'viem';
 import {useCallback, useMemo, useState} from 'react';
-import "./styles.css";
 import {Input} from '@/components/ui/input.tsx';
 import {Checkbox} from '@/components/ui/checkbox.tsx';
 import {Textarea} from '@/components/ui/textarea.tsx';
-import {useAccount, useSendCalls} from 'wagmi';
-import {TESTNET_CONTRACT_ADDRESS} from '@/contracts';
+import {useAccount, useClient, useSignTypedData, useWriteContract} from 'wagmi';
+import abi, {TESTNET_CONTRACT_ADDRESS} from '@/contracts';
+import "./styles.css";
+import {readContract} from 'viem/actions';
 
 export interface DonateProps {
   address: string;
@@ -18,7 +19,9 @@ export interface DonateProps {
 export default function Donate(props: DonateProps) {
   const signedInAccount = useAccount();
   const {tokenBalances, tokenMetadata} = useTokenBalances(signedInAccount.address as string);
-  const {sendCalls, sendCallsAsync} = useSendCalls();
+  const {writeContractAsync, isPending} = useWriteContract();
+  const {signTypedDataAsync} = useSignTypedData();
+  const client = useClient();
   const [subscribe, setSubscribe] = useState<boolean>(false);
   const [selectedToken, setSelectedToken] = useState<Address | null>(null);
   const selectedTokenMetadata = useMemo(() => {
@@ -40,37 +43,79 @@ export default function Donate(props: DonateProps) {
   const donate = async (formData: FormData) => {
     const amount = formData.get("amount") ?? "0";
     const message = formData.get("message") ?? "";
-    if (selectedTokenMetadata) {
-      const amountParsed = parseUnits(amount as string, selectedTokenMetadata!.decimals as number);
-      const erc20abi = parseAbi([
-        'function approve(address, uint256) returns (bool)',
-        'function transferFrom(address,address,uint256)'
+    const deadline = 60 * 5; // five minutes;
+    if (selectedTokenMetadata && signedInAccount.chainId) {
+
+      const domain = {
+        name: selectedTokenMetadata.name as string, // Name of the ERC20Permit token (e.g., "MockToken")
+        version: "1", // EIP-2612 standard version
+        chainId: signedInAccount.chainId,
+        verifyingContract: selectedToken as Address, // Address of the ERC20Permit token contract
+      };
+
+      const permitAbi = parseAbi([
+        'function nonces(address owner) external view returns (uint256)'
       ]);
 
-      const calls = [
-        {
-          to: selectedToken as Address,
-          abi: erc20abi,
-          functionName: 'approve',
-          value: 0n,
-          args: [
-            TESTNET_CONTRACT_ADDRESS,
-            amountParsed
-          ],
-        }
-      ];
-
-      const hash = await sendCallsAsync({
-        calls: calls
+      const nonce = await readContract(client as keyof object, {
+        address: selectedToken as Address,
+        abi: permitAbi,
+        functionName: "nonces",
+        args: [signedInAccount.address as Address],
       });
-      console.log(hash);
+
+      const types = {
+        Permit: [
+          {name: "owner", type: "address"},
+          {name: "spender", type: "address"},
+          {name: "value", type: "uint256"},
+          {name: "nonce", type: "uint256"},
+          {name: "deadline", type: "uint256"},
+        ],
+      };
+
+      const parsedAmount = parseUnits(amount as string, selectedTokenMetadata!.decimals as number);
+
+      const signMessage = {
+        owner: signedInAccount.address,
+        spender: TESTNET_CONTRACT_ADDRESS,
+        value: parsedAmount,
+        nonce: nonce,
+        deadline: BigInt(deadline),
+      };
+
+      const sign = await signTypedDataAsync({
+        types,
+        primaryType: "Permit",
+        message: signMessage,
+        domain
+      });
+      const {v, r, s} = parseSignature(sign);
+
+      const hash = await writeContractAsync({
+        abi,
+        address: TESTNET_CONTRACT_ADDRESS,
+        functionName: 'donateWithPermit',
+        args: [
+          signedInAccount.address as Address,
+          props.donationPoolId,
+          selectedToken,
+          parsedAmount,
+          message,
+          deadline,
+          v,
+          r,
+          s
+        ],
+      });
+      console.log({hash});
     }
   };
 
 
   return (
       <Popover>
-        <PopoverTrigger asChild={true}><Button disabled={!tokenBalances}>Donate</Button></PopoverTrigger>
+        <PopoverTrigger asChild={true}><Button disabled={!tokenBalances || isPending}>Donate</Button></PopoverTrigger>
         <PopoverContent updatePositionStrategy="always" avoidCollisions={false}>
           <div className="tokens">
             {selectedToken ?

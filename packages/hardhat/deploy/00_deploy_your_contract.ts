@@ -30,6 +30,18 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     // automatically mining the hardhat deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
+
+  // Deploy the test permit token
+  const result = await deploy("MockERC20", {
+    from: deployer,
+    args: ["MockToken", "MTK"],
+    log: true,
+    autoMine: true,
+  });
+
+  const contract = new hre.ethers.Contract(result.address, result.abi, await hre.ethers.getSigner(deployer));
+  console.log(`Minting new tokens to ${process.env.MOCKED_TOKEN_MINT_TO}`);
+  await contract.mint(process.env.MOCKED_TOKEN_MINT_TO, BigInt(1000000000000000000000));
 };
 
 export default deployYourContract;

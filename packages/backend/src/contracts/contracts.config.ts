@@ -33,7 +33,7 @@ export default registerAs('contracts', () => {
             type: 'address',
           },
           {
-            indexed: false,
+            indexed: true,
             internalType: 'address',
             name: 'token',
             type: 'address',
@@ -58,19 +58,62 @@ export default registerAs('contracts', () => {
         anonymous: false,
         inputs: [
           {
-            indexed: false,
+            indexed: true,
             internalType: 'uint256',
             name: 'poolId',
             type: 'uint256',
           },
           {
-            indexed: false,
+            indexed: true,
             internalType: 'address',
             name: 'subscriber',
             type: 'address',
           },
           {
+            indexed: true,
+            internalType: 'address',
+            name: 'beneficiary',
+            type: 'address',
+          },
+          {
             indexed: false,
+            internalType: 'uint256',
+            name: 'amount',
+            type: 'uint256',
+          },
+          {
+            indexed: false,
+            internalType: 'uint256',
+            name: 'interval',
+            type: 'uint256',
+          },
+          {
+            indexed: false,
+            internalType: 'uint8',
+            name: 'duration',
+            type: 'uint8',
+          },
+        ],
+        name: 'SubscriptionCreated',
+        type: 'event',
+      },
+      {
+        anonymous: false,
+        inputs: [
+          {
+            indexed: true,
+            internalType: 'uint256',
+            name: 'poolId',
+            type: 'uint256',
+          },
+          {
+            indexed: true,
+            internalType: 'address',
+            name: 'subscriber',
+            type: 'address',
+          },
+          {
+            indexed: true,
             internalType: 'address',
             name: 'beneficiary',
             type: 'address',
@@ -83,19 +126,19 @@ export default registerAs('contracts', () => {
         anonymous: false,
         inputs: [
           {
-            indexed: false,
+            indexed: true,
             internalType: 'uint256',
             name: 'poolId',
             type: 'uint256',
           },
           {
-            indexed: false,
+            indexed: true,
             internalType: 'address',
             name: 'subscriber',
             type: 'address',
           },
           {
-            indexed: false,
+            indexed: true,
             internalType: 'address',
             name: 'beneficiary',
             type: 'address',
@@ -202,6 +245,59 @@ export default registerAs('contracts', () => {
         name: 'donate',
         outputs: [],
         stateMutability: 'payable',
+        type: 'function',
+      },
+      {
+        inputs: [
+          {
+            internalType: 'address',
+            name: '_donor',
+            type: 'address',
+          },
+          {
+            internalType: 'uint256',
+            name: 'poolId',
+            type: 'uint256',
+          },
+          {
+            internalType: 'address',
+            name: 'tokenAddress',
+            type: 'address',
+          },
+          {
+            internalType: 'uint256',
+            name: 'amount',
+            type: 'uint256',
+          },
+          {
+            internalType: 'string',
+            name: 'message',
+            type: 'string',
+          },
+          {
+            internalType: 'uint256',
+            name: 'deadline',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint8',
+            name: 'v',
+            type: 'uint8',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'r',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 's',
+            type: 'bytes32',
+          },
+        ],
+        name: 'donateWithPermit',
+        outputs: [],
+        stateMutability: 'nonpayable',
         type: 'function',
       },
       {
@@ -386,6 +482,11 @@ export default registerAs('contracts', () => {
       {
         inputs: [
           {
+            internalType: 'address',
+            name: 'subscriber',
+            type: 'address',
+          },
+          {
             internalType: 'uint256',
             name: 'poolId',
             type: 'uint256',
@@ -409,6 +510,26 @@ export default registerAs('contracts', () => {
             internalType: 'uint8',
             name: 'duration',
             type: 'uint8',
+          },
+          {
+            internalType: 'uint256',
+            name: 'deadline',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint8',
+            name: 'v',
+            type: 'uint8',
+          },
+          {
+            internalType: 'bytes32',
+            name: 'r',
+            type: 'bytes32',
+          },
+          {
+            internalType: 'bytes32',
+            name: 's',
+            type: 'bytes32',
           },
         ],
         name: 'subscribe',
