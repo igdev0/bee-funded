@@ -10,7 +10,7 @@
             @apply flex justify-between mt-4 gap-4;
 
             header {
-                @apply flex-0 bg-gray-200 p-4 rounded-md min-w-[250px] flex flex-col justify-center;
+                @apply flex-0 bg-gray-200 p-4 rounded-md min-w-[250px] flex flex-col justify-center shadow-md;
             }
             section {
                 @apply flex-1 p-4 rounded-md;
