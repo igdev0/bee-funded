@@ -60,7 +60,7 @@ and rewarding for everyone involved.
 | 🏅 **Project Spotlight** | ❌ Not yet | ❌ Not yet | ❌ Not yet |
 # Architecture
 
-![beefunded-architecture.png](public/beefunded-architecture.png)
+![beefunded-architecture.png](packages/web-app/public/beefunded-architecture.png)
 
 # 🗒️ Prerequisites
 
