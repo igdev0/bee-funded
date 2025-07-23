@@ -27,12 +27,11 @@ describe('NotificationService', () => {
       id: 'some-uuid',
       type: 'system',
       is_read: false,
-      user: { id: userId, notifications: [] },
       title: 'Some title',
       message: 'Some message',
       created_at: new Date(),
       updated_at: new Date(),
-      metadata: JSON.parse(JSON.stringify({})) as JSON,
+      metadata: {},
     } as NotificationEntity;
 
     notificationRepository.create.mockReturnValue(notification);

@@ -129,6 +129,7 @@ describe('AuthService', () => {
       user = {
         id: crypto.randomUUID(),
         wallet_address: '0x00000',
+        profile: null,
         created_at: new Date('20-05-1995'),
         updated_at: new Date('20-05-1995'),
         notifications: [],
@@ -246,6 +247,7 @@ describe('AuthService', () => {
       it('should query the user database if the access token is not passed', async () => {
         const user: UserEntity = {
           notifications: [],
+          profile: null,
           updated_at: new Date(),
           created_at: new Date(),
           wallet_address: '0x000',

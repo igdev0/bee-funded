@@ -4,12 +4,13 @@ import { ModuleMocker } from 'jest-mock';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
-import { UserEntity } from '../user/entities/user.entity';
 import { NotificationService } from './notification.service';
+import { UserI } from '../user/user.interface';
 import NotificationEntity from './entities/notification.entity';
 
-const user: UserEntity = {
+const user: UserI = {
   id: 'user-id',
+  profile: null,
   notifications: [],
   wallet_address: '0x000',
   created_at: new Date(),
@@ -23,7 +24,6 @@ const notificationRes = {
       message: 'Some message',
       updated_at: new Date(),
       created_at: new Date(),
-      user: { id: 'some-id', notifications: [] },
       title: 'Some title',
       type: 'system',
       is_read: false,
@@ -70,7 +70,7 @@ describe('NotificationController', () => {
   it('should be able to get notifications', async () => {
     const res = jest
       .spyOn(service, 'getNotifications')
-      .mockReturnValue(Promise.resolve(notificationRes));
+      .mockReturnValue(Promise.resolve(notificationRes as keyof object));
     await controller.getNotifications(user);
     expect(res).toHaveBeenCalledWith(user.id, 0, 20); // defaults
   });

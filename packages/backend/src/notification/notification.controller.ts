@@ -12,6 +12,7 @@ import { NotificationService } from './notification.service';
 import { GetUser } from '../user/user.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { UserEntity } from '../user/entities/user.entity';
+import { UserI } from '../user/user.interface';
 
 const MAX_LIMIT = 20;
 
@@ -23,7 +24,7 @@ export class NotificationController {
   // SSE (Server-Sent Events) endpoint for streaming real-time notifications to authenticated users
   @UseGuards(AuthGuard) // Ensures the user is authenticated
   @Sse('sse')
-  stream(@Req() req: any, @GetUser() user: UserEntity) {
+  stream(@Req() req: any, @GetUser() user: UserI) {
     // Connects the user to the notification stream (returns an Observable)
     const stream$ = this.notificationService.connectUser(user.id);
 
@@ -39,7 +40,7 @@ export class NotificationController {
 
   @Get('/count-unread')
   @UseGuards(AuthGuard) // Protects the route with authentication
-  async getTotalUnread(@GetUser() user: UserEntity) {
+  async getTotalUnread(@GetUser() user: UserI) {
     return await this.notificationService.getTotalUnread(user.id);
   }
 
@@ -47,7 +48,7 @@ export class NotificationController {
   @Get()
   @UseGuards(AuthGuard) // Protects the route with authentication
   async getNotifications(
-    @GetUser() user: UserEntity,
+    @GetUser() user: UserI,
     @Query('offset') offset?: number,
     @Query('limit') limit?: number,
   ) {

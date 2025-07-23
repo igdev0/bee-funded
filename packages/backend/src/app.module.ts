@@ -10,6 +10,7 @@ import { ChainListenerModule } from './chain-listener/chain-listener.module';
 import { ProfileModule } from './profile/profile.module';
 import databaseConfig from './database.config';
 import NotificationEntity from './notification/entities/notification.entity';
+import ProfileEntity from './profile/entities/profile.entity';
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import NotificationEntity from './notification/entities/notification.entity';
           password,
           database,
           synchronize,
-          entities: [UserEntity, NotificationEntity],
+          entities: [UserEntity, ProfileEntity, NotificationEntity],
         };
       },
     }),
