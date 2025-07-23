@@ -26,13 +26,13 @@ export class NotificationController {
   @Sse('sse')
   stream(@Req() req: any, @GetUser() user: UserI) {
     // Connects the user to the notification stream (returns an Observable)
-    const stream$ = this.notificationService.connectUser(user.id);
+    const stream$ = this.notificationService.connectUser(user.profile.id);
 
     // Handles client disconnects (e.g., tab close or network interruption)
     // and removes the user from the stream to free up resources
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
     req.on('close', () => {
-      this.notificationService.disconnectUser(user.id);
+      this.notificationService.disconnectUser(user.profile.id);
     });
 
     return stream$; // Return the stream to the client

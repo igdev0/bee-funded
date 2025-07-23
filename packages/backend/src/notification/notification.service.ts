@@ -30,13 +30,13 @@ export class NotificationService {
   /**
    * Disconnects a user by completing their stream and removing it from memory.
    * Called when a client disconnects from the SSE endpoint.
-   * @param userId - The user's ID
+   * @param profileId - The user's profile ID
    */
-  disconnectUser(userId: string) {
-    const stream = this.userStreams.get(userId);
+  disconnectUser(profileId: string) {
+    const stream = this.userStreams.get(profileId);
     if (stream) {
       stream.complete();
-      this.userStreams.delete(userId);
+      this.userStreams.delete(profileId);
     }
   }
 
