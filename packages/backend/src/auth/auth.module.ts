@@ -6,8 +6,6 @@ import authConfig from './auth.config';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '../user/user.module';
 import { CacheModule } from '@nestjs/cache-manager';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '../user/entities/user.entity';
 import { AuthGuard } from './auth.guard';
 
 @Module({
@@ -15,7 +13,6 @@ import { AuthGuard } from './auth.guard';
     UserModule,
     CacheModule.register(),
     ConfigModule.forFeature(authConfig),
-    TypeOrmModule.forFeature([UserEntity]),
     JwtModule.registerAsync({
       imports: [ConfigModule.forFeature(authConfig)],
       inject: [ConfigService],

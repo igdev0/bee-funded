@@ -10,7 +10,7 @@ import { AuthModule } from '../auth/auth.module';
     TypeOrmModule.forFeature([UserEntity]),
     forwardRef(() => AuthModule),
   ],
-  exports: [UserService],
+  exports: [UserService, TypeOrmModule.forFeature([UserEntity])],
   controllers: [UserController],
   providers: [UserService],
 })
