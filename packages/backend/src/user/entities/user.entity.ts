@@ -17,11 +17,10 @@ export class UserEntity {
   id!: string;
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user, {
-    nullable: true,
-    cascade: true,
+    cascade: ['insert'],
   })
   @JoinColumn()
-  profile: ProfileEntity | null;
+  profile: ProfileEntity;
 
   @Column({
     unique: true,

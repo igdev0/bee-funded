@@ -18,12 +18,12 @@ export class NotificationService {
   /**
    * Establishes a new SSE stream for a user and stores it in memory.
    * Called when a client connects to the SSE endpoint.
-   * @param userId - The user's ID
+   * @param profileID - The user's profile ID
    * @returns A Subject stream to send MessageEvents to the user
    */
-  connectUser(userId: string): Subject<MessageEvent<NotificationI>> {
+  connectUser(profileID: string): Subject<MessageEvent<NotificationI>> {
     const stream = new Subject<MessageEvent<NotificationI>>();
-    this.userStreams.set(userId, stream);
+    this.userStreams.set(profileID, stream);
     return stream;
   }
 

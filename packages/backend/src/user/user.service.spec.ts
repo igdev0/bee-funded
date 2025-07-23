@@ -58,6 +58,8 @@ describe('UserService', () => {
 
       expect(userRepository.findOne).toHaveBeenCalledWith({
         where: { id: userId },
+        relationLoadStrategy: 'join',
+        relations: ['profile'],
       });
       expect(result).toEqual(foundUser);
     });
@@ -70,6 +72,8 @@ describe('UserService', () => {
 
       expect(userRepository.findOne).toHaveBeenCalledWith({
         where: { id: userId },
+        relationLoadStrategy: 'join',
+        relations: ['profile'],
       });
       expect(result).toBeNull();
     });
@@ -89,6 +93,8 @@ describe('UserService', () => {
 
       expect(userRepository.findOne).toHaveBeenCalledWith({
         where: { wallet_address: walletAddress },
+        relationLoadStrategy: 'join',
+        relations: ['profile'],
       });
       expect(result).toEqual(foundUser);
     });
@@ -101,6 +107,8 @@ describe('UserService', () => {
 
       expect(userRepository.findOne).toHaveBeenCalledWith({
         where: { wallet_address: walletAddress },
+        relationLoadStrategy: 'join',
+        relations: ['profile'],
       });
       expect(result).toBeNull();
     });

@@ -7,10 +7,11 @@ import { UserModule } from '../user/user.module';
 import { NotificationService } from './notification.service';
 import { UserI } from '../user/user.interface';
 import NotificationEntity from './entities/notification.entity';
+import ProfileEntity from '../profile/entities/profile.entity';
 
 const user: UserI = {
   id: 'user-id',
-  profile: null,
+  profile: new ProfileEntity(),
   notifications: [],
   wallet_address: '0x000',
   created_at: new Date(),

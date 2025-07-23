@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { getMockReq } from '@jest-mock/express';
+import ProfileEntity from '../profile/entities/profile.entity';
 
 const MOCKED_CONFIG = {
   refreshTokenTTL: 60 * 60 * 24 * 7, // 7 days in seconds
@@ -129,7 +130,7 @@ describe('AuthService', () => {
       user = {
         id: crypto.randomUUID(),
         wallet_address: '0x00000',
-        profile: null,
+        profile: new ProfileEntity(),
         created_at: new Date('20-05-1995'),
         updated_at: new Date('20-05-1995'),
         notifications: [],
@@ -247,7 +248,7 @@ describe('AuthService', () => {
       it('should query the user database if the access token is not passed', async () => {
         const user: UserEntity = {
           notifications: [],
-          profile: null,
+          profile: new ProfileEntity(),
           updated_at: new Date(),
           created_at: new Date(),
           wallet_address: '0x000',
