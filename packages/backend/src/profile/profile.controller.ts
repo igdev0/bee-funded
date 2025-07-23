@@ -17,4 +17,9 @@ export class ProfileController {
   ) {
     return this.profileService.update(user.profile.id, updateProfileDto);
   }
+
+  @Patch('verify-email')
+  verifyEmail() {
+    return 'Verify Email';
+  }
 }
