@@ -13,6 +13,12 @@ export class ProfileService {
     private readonly profileRepository: Repository<ProfileEntity>,
   ) {}
 
+  /**
+   * It updates the profile database and returns the ProfileEntity
+   * @param profileId – The profile id obtained from user.profile.id
+   * @param updateProfileDto - The data that must be updated.
+   * @returns Promise<ProfileEntity> - Needed to make updates on the frontend state.
+   */
   async update(profileId: string, updateProfileDto: UpdateProfileDto) {
     await this.profileRepository.update(profileId, updateProfileDto);
     return this.profileRepository.findOne({ where: { id: profileId } });
