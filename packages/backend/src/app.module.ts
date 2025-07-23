@@ -7,6 +7,7 @@ import { DatabaseType } from 'typeorm';
 import { User } from './user/entities/user.entity';
 import { NotificationModule } from './notification/notification.module';
 import { ChainListenerModule } from './chain-listener/chain-listener.module';
+import { ProfileModule } from './profile/profile.module';
 import databaseConfig from './database.config';
 import NotificationEntity from './notification/entities/notification.entity';
 
@@ -42,6 +43,7 @@ import NotificationEntity from './notification/entities/notification.entity';
     }),
     NotificationModule,
     ChainListenerModule,
+    ProfileModule,
   ],
 })
 export class AppModule {}
