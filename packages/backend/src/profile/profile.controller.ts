@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -31,5 +31,21 @@ export class ProfileController {
   @Patch('update-cover')
   updateCover() {
     return 'Update Cover';
+  }
+
+  @Patch('follow')
+  follow() {
+    return 'follow';
+  }
+
+  @Patch('unfollow')
+  unfollow() {
+    return 'unfollow';
+  }
+
+  @Get()
+  @UseGuards(AuthGuard)
+  getProfile() {
+    return 'Get profile';
   }
 }
