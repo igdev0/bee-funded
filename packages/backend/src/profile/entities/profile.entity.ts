@@ -36,6 +36,15 @@ export default class ProfileEntity {
     unique: true,
   })
   username: string;
+  /**
+   * Unique email for the profile
+   */
+  @Column({
+    type: 'string',
+    unique: true,
+    nullable: true,
+  })
+  email: string | null = null;
 
   /**
    * Display name shown on the profile.
@@ -52,7 +61,7 @@ export default class ProfileEntity {
     type: 'text',
     nullable: true,
   })
-  bio: string | null;
+  bio?: string | null = null;
 
   /**
    * URL or path to the avatar image.
@@ -72,11 +81,11 @@ export default class ProfileEntity {
   @Column({
     type: 'array',
   })
-  social_links: string[];
+  social_links: string[] = [];
   /**
    * Profiles that follow this profile.
    */
-  @ManyToMany(() => ProfileEntity, (profile) => profile.following, {})
+  @ManyToMany(() => ProfileEntity, (profile) => profile.following)
   @JoinTable()
   followers: ProfileEntity[];
 
