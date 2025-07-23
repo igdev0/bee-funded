@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../../user/entities/user.entity';
 import { NotificationType } from '../notification.interface';
+import ProfileEntity from '../../profile/entities/profile.entity';
 
 @Entity('notification')
 export default class NotificationEntity {
@@ -20,8 +20,8 @@ export default class NotificationEntity {
   @Column({ type: 'text' })
   message: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.notifications)
-  user: UserEntity;
+  @ManyToOne(() => ProfileEntity, (profile) => profile.notifications)
+  profile: ProfileEntity;
 
   @Column({ type: 'text' })
   type: NotificationType;

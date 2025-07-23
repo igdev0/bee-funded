@@ -133,7 +133,6 @@ describe('AuthService', () => {
         profile: new ProfileEntity(),
         created_at: new Date('20-05-1995'),
         updated_at: new Date('20-05-1995'),
-        notifications: [],
       };
       accessTokenPayload = {
         wallet_address: user.wallet_address as string,
@@ -247,7 +246,6 @@ describe('AuthService', () => {
 
       it('should query the user database if the access token is not passed', async () => {
         const user: UserEntity = {
-          notifications: [],
           profile: new ProfileEntity(),
           updated_at: new Date(),
           created_at: new Date(),

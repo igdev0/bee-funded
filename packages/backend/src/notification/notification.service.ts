@@ -42,18 +42,18 @@ export class NotificationService {
 
   /**
    * Saves a new notification in the database and pushes it to the user's SSE stream if connected.
-   * @param userId - The user to send the notification to
+   * @param profileId - The user profile to send the notification to
    * @param data - The notification payload (excluding id, created_at, updated_at)
    */
   async saveAndSend(
-    userId: string,
+    profileId: string,
     data: Omit<NotificationI, 'id' | 'created_at' | 'updated_at' | 'is_read'>,
   ) {
-    const stream = this.userStreams.get(userId);
+    const stream = this.userStreams.get(profileId);
     const entity = this.notificationRepository.create({
       ...data,
       is_read: false,
-      user: { id: userId },
+      profile: { id: profileId },
     });
     const saved = await this.notificationRepository.save(entity);
 

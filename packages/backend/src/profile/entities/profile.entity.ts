@@ -4,11 +4,13 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
+import NotificationEntity from '../../notification/entities/notification.entity';
 
 /**
  * Profile entity representing additional user information.
@@ -78,6 +80,11 @@ export default class ProfileEntity {
   @JoinTable()
   followers: ProfileEntity[];
 
+  /**
+   * Profile notifications
+   */
+  @OneToMany(() => NotificationEntity, (notification) => notification.profile)
+  notifications: NotificationEntity[];
   /**
    * Profiles this profile is following.
    */

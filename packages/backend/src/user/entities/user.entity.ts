@@ -3,12 +3,10 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import NotificationEntity from '../../notification/entities/notification.entity';
 import ProfileEntity from '../../profile/entities/profile.entity';
 
 @Entity('user')
@@ -26,9 +24,6 @@ export class UserEntity {
     unique: true,
   })
   wallet_address?: string;
-
-  @OneToMany(() => NotificationEntity, (notification) => notification.user)
-  notifications: NotificationEntity[];
 
   @CreateDateColumn()
   created_at?: Date;
