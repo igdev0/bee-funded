@@ -18,12 +18,6 @@ export class UserEntity {
   })
   wallet_address?: string;
 
-  @Column({
-    unique: true,
-    nullable: true,
-  })
-  username: string;
-
   @OneToMany(() => NotificationEntity, (notification) => notification.user)
   notifications: NotificationEntity[];
 
