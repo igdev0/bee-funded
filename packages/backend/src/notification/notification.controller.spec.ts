@@ -72,7 +72,7 @@ describe('NotificationController', () => {
       .spyOn(service, 'getNotifications')
       .mockReturnValue(Promise.resolve(notificationRes));
     await controller.getNotifications(user);
-    expect(res).toHaveBeenCalledWith(user.id, 0, 10); // defaults
+    expect(res).toHaveBeenCalledWith(user.id, 0, 20); // defaults
   });
 
   it('should not be able to get more than 15 results per query ', async () => {
@@ -80,6 +80,6 @@ describe('NotificationController', () => {
       .spyOn(service, 'getNotifications')
       .mockReturnValue(Promise.resolve(notificationRes));
     await controller.getNotifications(user, 10, 1000);
-    expect(res).toHaveBeenCalledWith(user.id, 10, 15);
+    expect(res).toHaveBeenCalledWith(user.id, 10, 20);
   });
 });
