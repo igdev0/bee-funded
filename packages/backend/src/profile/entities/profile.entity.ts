@@ -46,6 +46,9 @@ export default class ProfileEntity {
   })
   email: string | null = null;
 
+  /**
+   * This will be set to true once the user verifies the email
+   */
   @Column('boolean', { default: false })
   email_verified?: boolean = false;
   /**
