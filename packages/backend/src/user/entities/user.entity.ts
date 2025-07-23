@@ -6,53 +6,20 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { DonationPool } from '../../donation-pool/entities/donation-pool.entity';
+import NotificationEntity from '../../notification/entities/notification.entity';
 
-@Entity()
+@Entity('user')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  id!: string;
 
   @Column({
-    nullable: false,
     unique: true,
   })
-  address: string;
+  wallet_address?: string;
 
-  @OneToMany(() => DonationPool, (pool) => pool.user)
-  pools: DonationPool[];
-
-  @Column({ type: 'text', unique: true })
-  email: string;
-
-  @Column({ type: 'varchar', length: 255, unique: true })
-  username: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  bio?: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  avatar_url?: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  display_name?: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  banner_url?: string;
-
-  @Column({ type: 'boolean', nullable: true, default: null })
-  is_creator?: boolean;
-
-  @Column({ type: 'json', nullable: true, default: [] })
-  categories?: string[];
-
-  @Column({
-    default: false,
-  })
-  complete?: boolean;
-
-  @Column({ type: 'boolean', default: false })
-  accepted_terms: boolean;
+  @OneToMany(() => NotificationEntity, (notification) => notification.user)
+  notifications: NotificationEntity[];
 
   @CreateDateColumn()
   created_at?: Date;

@@ -1,61 +1,47 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from './user/entities/user.entity';
 import { DatabaseType } from 'typeorm';
-import { RedisModule } from '@nestjs-modules/ioredis';
-import { DonationPoolModule } from './donation-pool/donation-pool.module';
-import { DonationPool } from './donation-pool/entities/donation-pool.entity';
-import { NotificationsModule } from './notifications/notifications.module';
-import { Notification } from './notifications/entities/notification.entity';
-import { BlockchainListenerModule } from './blockchain-listener/blockchain-listener.module';
-import { ContractsModule } from './contracts/contracts.module';
+import { User } from './user/entities/user.entity';
+import { NotificationModule } from './notification/notification.module';
+import { ChainListenerModule } from './chain-listener/chain-listener.module';
+import databaseConfig from './database.config';
+import NotificationEntity from './notification/entities/notification.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    RedisModule.forRootAsync({
-      imports: [ConfigModule.forRoot()],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'single',
-        url: config?.get('REDIS_URL') ?? 'redis://localhost:6379',
-      }),
-    }),
+    AuthModule,
+    UserModule,
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule.forRoot()],
+      imports: [ConfigModule.forFeature(databaseConfig)],
       inject: [ConfigService],
       useFactory(config: ConfigService) {
-        const DB_TYPE: DatabaseType = config?.get('DB_TYPE') ?? 'postgres';
-        const DB_HOST: string = config?.get('DB_HOST') ?? 'localhost';
-        const DB_PORT: number = config?.get('DB_PORT') ?? 5432;
-        const DB_DATABASE: string = config?.get('DB_DATABASE') ?? 'yourdb';
-        const DB_USERNAME: string = config?.get('DB_USERNAME') ?? 'admin';
-        const DB_PASSWORD: string = config?.get('DB_PASSWORD') ?? 'admin';
+        const type = config.get<DatabaseType>('db.type');
+        const host: string = config.get('db.host') ?? 'localhost';
+        const port: number = config.get('db.port') ?? 5432;
+        const database: string = config.get('db.database') ?? 'yourdb';
+        const username: string = config.get('db.username') ?? 'admin';
+        const password: string = config.get('db.password') ?? 'admin';
+        const synchronize: boolean = config.get('db.sync') ?? false;
+        if (!type) {
+          throw new Error('Database type must be set');
+        }
         return {
-          type: DB_TYPE as keyof object, // or mysql, sqlite, etc.
-          host: DB_HOST,
-          port: DB_PORT,
-          username: DB_USERNAME,
-          password: DB_PASSWORD,
-          database: DB_DATABASE,
-          entities: [User, DonationPool, Notification],
-          synchronize: true,
+          type: type as keyof object, // or mysql, sqlite, etc.
+          host,
+          port,
+          username,
+          password,
+          database,
+          synchronize,
+          entities: [User, NotificationEntity],
         };
       },
     }),
-    AuthModule,
-    UserModule,
-    DonationPoolModule,
-    NotificationsModule,
-    BlockchainListenerModule,
-    ContractsModule,
+    NotificationModule,
+    ChainListenerModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

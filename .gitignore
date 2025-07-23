@@ -1,4 +1,6 @@
-# dependencies
+
+packages/.env
+
 node_modules
 
 # yarn
@@ -8,9 +10,6 @@ node_modules
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-
-# eslint
-.eslintcache
 
 # misc
 .DS_Store

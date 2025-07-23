@@ -1,24 +1,45 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Patch,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { GetUser } from '../decorators/get-user.decorator';
+import { GetUser } from './user.decorator';
 import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Patch(':id')
   @UseGuards(AuthGuard)
-  @Patch('update-is-creator')
-  async updateIsCreator(
-    @Body() body: { is_creator: boolean },
+  update(
+    @Param('id') id: string,
     @GetUser() user: User,
+    @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.userService.updateUser(user.id as string, body);
+    if (user.id !== id) {
+      throw new UnauthorizedException(
+        "You're not authorized to make updates to this account",
+      );
+    }
+    return this.userService.update(id, updateUserDto);
   }
 
-  @Get(':username')
-  async getUserByUsername(@Param('username') username: string) {
-    return this.userService.findByUsername(username);
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  remove(@Param('id') id: string, @GetUser() user: User) {
+    if (user.id !== id) {
+      throw new UnauthorizedException(
+        "You're not authorized to remove this user",
+      );
+    }
+    return this.userService.remove(id);
   }
 }

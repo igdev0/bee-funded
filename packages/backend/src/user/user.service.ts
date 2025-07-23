@@ -1,46 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import ExistsDto from '../auth/dto/exists.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  async register(userData: User) {
-    const user = this.userRepository.create({
-      complete: userData.complete,
-      address: userData.address,
-      email: userData.email,
-      username: userData.username,
-    });
-    return await this.userRepository.save(user);
+  create(createUserDto: CreateUserDto) {
+    const user = this.userRepository.create(createUserDto);
+    return this.userRepository.save(user);
   }
 
-  async updateUser(userId: string, data: UpdateUserDto) {
-    return this.userRepository.update(userId, data);
-  }
-
-  async findUserByAddress(address: string) {
+  findOneById(id: string) {
     return this.userRepository.findOne({
-      where: { address },
+      where: { id },
     });
   }
-  async findByUsername(username: string) {
+
+  findOneByWalletAddress(walletAddress: string) {
     return this.userRepository.findOne({
-      where: { username },
+      where: { wallet_address: walletAddress },
     });
   }
 
-  async userExists(payload: ExistsDto) {
-    return this.userRepository.createQueryBuilder().orWhere(payload).getOne();
+  update(id: string, updateUserDto: UpdateUserDto) {
+    return this.userRepository.update(id, updateUserDto);
   }
 
-  async findUserByID(id: string) {
-    return await this.userRepository.findOne({ where: { id } });
+  remove(id: string) {
+    return this.userRepository.delete(id);
   }
 }
