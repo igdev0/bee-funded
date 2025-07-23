@@ -22,4 +22,9 @@ export class ProfileController {
   verifyEmail() {
     return 'Verify Email';
   }
+
+  @Patch('update-avatar')
+  updateAvatar() {
+    return 'Update Avatar';
+  }
 }
