@@ -4,7 +4,7 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseType } from 'typeorm';
-import { User } from './user/entities/user.entity';
+import { UserEntity } from './user/entities/user.entity';
 import { NotificationModule } from './notification/notification.module';
 import { ChainListenerModule } from './chain-listener/chain-listener.module';
 import { ProfileModule } from './profile/profile.module';
@@ -37,7 +37,7 @@ import NotificationEntity from './notification/entities/notification.entity';
           password,
           database,
           synchronize,
-          entities: [User, NotificationEntity],
+          entities: [UserEntity, NotificationEntity],
         };
       },
     }),

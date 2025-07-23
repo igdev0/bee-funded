@@ -1,17 +1,17 @@
 import { Mocked, TestBed } from '@suites/unit';
 import { UserService } from './user.service';
-import { User } from './entities/user.entity';
+import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 
 describe('UserService', () => {
   let userService: UserService;
-  let userRepository: Mocked<Repository<User>>;
+  let userRepository: Mocked<Repository<UserEntity>>;
 
   beforeEach(async () => {
     const { unit, unitRef } = await TestBed.solitary(UserService).compile();
     userService = unit;
-    userRepository = unitRef.get('UserRepository');
+    userRepository = unitRef.get('UserEntityRepository');
   });
 
   afterEach(() => {
@@ -28,7 +28,7 @@ describe('UserService', () => {
       const createUserDto: CreateUserDto = {
         wallet_address: '0x123abc',
       };
-      const createdUser = { id: '1', ...createUserDto } as User;
+      const createdUser = { id: '1', ...createUserDto } as UserEntity;
 
       // Mock the behavior of userRepository.create
       userRepository.create.mockReturnValue(createdUser);
@@ -49,7 +49,7 @@ describe('UserService', () => {
       const foundUser = {
         id: userId,
         wallet_address: '0x456def',
-      } as User;
+      } as UserEntity;
 
       // Mock the behavior of userRepository.findOne
       userRepository.findOne.mockResolvedValue(foundUser);
@@ -81,7 +81,7 @@ describe('UserService', () => {
       const foundUser = {
         id: 'some-uuid-2',
         wallet_address: walletAddress,
-      } as User;
+      } as UserEntity;
 
       userRepository.findOne.mockResolvedValue(foundUser);
 

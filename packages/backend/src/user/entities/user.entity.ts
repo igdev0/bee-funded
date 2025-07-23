@@ -9,7 +9,7 @@ import {
 import NotificationEntity from '../../notification/entities/notification.entity';
 
 @Entity('user')
-export class User {
+export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

@@ -8,7 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { User } from '../user/entities/user.entity';
+import { UserEntity } from '../user/entities/user.entity';
 import { CacheManagerStore } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -52,7 +52,8 @@ export class AuthService {
     @Inject(JwtService) private readonly jwtService: JwtService,
     private readonly config: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cache: CacheManagerStore,
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   /**
@@ -110,7 +111,7 @@ export class AuthService {
    *    accessTokenTTL: number
    * }>}
    * */
-  async signIn(user: User): Promise<{
+  async signIn(user: UserEntity): Promise<{
     accessToken: string;
     refreshToken: string;
     refreshTokenTTL: number;

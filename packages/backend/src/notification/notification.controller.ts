@@ -11,7 +11,7 @@ import {
 import { NotificationService } from './notification.service';
 import { GetUser } from '../user/user.decorator';
 import { AuthGuard } from '../auth/auth.guard';
-import { User } from '../user/entities/user.entity';
+import { UserEntity } from '../user/entities/user.entity';
 
 const MAX_LIMIT = 20;
 
@@ -23,7 +23,7 @@ export class NotificationController {
   // SSE (Server-Sent Events) endpoint for streaming real-time notifications to authenticated users
   @UseGuards(AuthGuard) // Ensures the user is authenticated
   @Sse('sse')
-  stream(@Req() req: any, @GetUser() user: User) {
+  stream(@Req() req: any, @GetUser() user: UserEntity) {
     // Connects the user to the notification stream (returns an Observable)
     const stream$ = this.notificationService.connectUser(user.id);
 
@@ -39,7 +39,7 @@ export class NotificationController {
 
   @Get('/count-unread')
   @UseGuards(AuthGuard) // Protects the route with authentication
-  async getTotalUnread(@GetUser() user: User) {
+  async getTotalUnread(@GetUser() user: UserEntity) {
     return await this.notificationService.getTotalUnread(user.id);
   }
 
@@ -47,7 +47,7 @@ export class NotificationController {
   @Get()
   @UseGuards(AuthGuard) // Protects the route with authentication
   async getNotifications(
-    @GetUser() user: User,
+    @GetUser() user: UserEntity,
     @Query('offset') offset?: number,
     @Query('limit') limit?: number,
   ) {
@@ -63,7 +63,7 @@ export class NotificationController {
   // PATCH endpoint to mark a specific notification as read
   @Patch(':id')
   @UseGuards(AuthGuard) // Ensures only authenticated users can access
-  markAsRead(@Param('id') id: string, @GetUser() user: User) {
+  markAsRead(@Param('id') id: string, @GetUser() user: UserEntity) {
     return this.notificationService.markAsRead(id, user.id);
   }
 }

@@ -4,11 +4,11 @@ import { ModuleMocker } from 'jest-mock';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
-import { User } from '../user/entities/user.entity';
+import { UserEntity } from '../user/entities/user.entity';
 import { NotificationService } from './notification.service';
 import NotificationEntity from './entities/notification.entity';
 
-const user: User = {
+const user: UserEntity = {
   id: 'user-id',
   notifications: [],
   wallet_address: '0x000',

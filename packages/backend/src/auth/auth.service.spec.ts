@@ -5,7 +5,7 @@ import {
 } from './auth.service';
 import { Mocked, TestBed } from '@suites/unit';
 import { CacheManagerStore } from 'cache-manager';
-import { User } from '../user/entities/user.entity';
+import { UserEntity } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -27,7 +27,7 @@ describe('AuthService', () => {
   let jwtService: Mocked<JwtService>;
   let configService: Mocked<ConfigService>;
   let cacheManager: Mocked<CacheManagerStore>;
-  let userRepository: Mocked<Repository<User>>;
+  let userRepository: Mocked<Repository<UserEntity>>;
 
   beforeEach(async () => {
     const { unit, unitRef } = await TestBed.solitary(AuthService).compile();
@@ -36,7 +36,7 @@ describe('AuthService', () => {
     configService = unitRef.get(ConfigService);
     jwtService = unitRef.get(JwtService);
     cacheManager = unitRef.get(CACHE_MANAGER);
-    userRepository = unitRef.get('UserRepository');
+    userRepository = unitRef.get('UserEntityRepository');
 
     configService.get.mockImplementation((property: string) => {
       return MOCKED_CONFIG[property.split('.')[1]];
@@ -116,7 +116,7 @@ describe('AuthService', () => {
   });
 
   describe('Auth', () => {
-    let user: User;
+    let user: UserEntity;
     const refreshToken = 'mocked_refresh_token';
     const accessToken = 'mocked_access_token';
     let accessTokenPayload: AccessTokenPayload;
@@ -244,7 +244,7 @@ describe('AuthService', () => {
       });
 
       it('should query the user database if the access token is not passed', async () => {
-        const user: User = {
+        const user: UserEntity = {
           notifications: [],
           updated_at: new Date(),
           created_at: new Date(),
