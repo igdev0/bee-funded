@@ -9,6 +9,12 @@ import { UserEntity } from '../user/entities/user.entity';
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
+  @Get()
+  @UseGuards(AuthGuard)
+  getProfile() {
+    return 'Get profile';
+  }
+
   @Patch()
   @UseGuards(AuthGuard)
   update(
@@ -41,11 +47,5 @@ export class ProfileController {
   @Patch('unfollow')
   unfollow() {
     return 'unfollow';
-  }
-
-  @Get()
-  @UseGuards(AuthGuard)
-  getProfile() {
-    return 'Get profile';
   }
 }
