@@ -46,6 +46,8 @@ export default class ProfileEntity {
   })
   email: string | null = null;
 
+  @Column('boolean', { default: false })
+  email_verified?: boolean = false;
   /**
    * Display name shown on the profile.
    */
