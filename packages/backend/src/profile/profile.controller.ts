@@ -27,4 +27,9 @@ export class ProfileController {
   updateAvatar() {
     return 'Update Avatar';
   }
+
+  @Patch('update-cover')
+  updateCover() {
+    return 'Update Cover';
+  }
 }
