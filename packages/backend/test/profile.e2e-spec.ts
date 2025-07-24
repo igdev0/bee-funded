@@ -26,10 +26,15 @@ function deleteAllUploads() {
 
     for (const userId of userDirs) {
       const userPath = path.join(uploadsDir, userId);
-
       const stat = fs.lstatSync(userPath);
+
       if (stat.isDirectory()) {
-        fs.unlinkSync(userPath);
+        const file = fs.readdirSync(userPath);
+
+        file.forEach((filePath) => {
+          fs.unlinkSync(path.join(userPath, filePath));
+        });
+        fs.rmdirSync(userPath);
       }
     }
   } catch (err) {
@@ -163,6 +168,17 @@ describe('ProfileController (e2e)', () => {
       'https://www.facebook.com',
       'https://www.instagram.com',
     ]);
+  });
+
+  it('should be able to update avatar', async () => {
+    const res = await request(httpServer)
+      .post('/profile/update-avatar')
+      .attach('avatar', `${process.cwd()}/assets/default-avatar.png`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(201);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(res.body.avatar).toContain('default-avatar.png');
   });
 
   afterAll(async () => {

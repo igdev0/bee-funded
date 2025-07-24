@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Patch,
+  Post,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -39,7 +40,7 @@ export class ProfileController {
     return 'Verify Email';
   }
 
-  @Patch('update-avatar')
+  @Post('update-avatar')
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('avatar'))
   updateAvatar(
