@@ -3,9 +3,15 @@ import { ProfileService } from './profile.service';
 import { ProfileController } from './profile.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import ProfileEntity from './entities/profile.entity';
+import { AuthModule } from '../auth/auth.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProfileEntity])],
+  imports: [
+    AuthModule,
+    CacheModule.register(),
+    TypeOrmModule.forFeature([ProfileEntity]),
+  ],
   controllers: [ProfileController],
   providers: [ProfileService],
 })

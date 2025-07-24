@@ -162,7 +162,6 @@ export class AuthController {
         maxAge: (this.config.get('auth.refreshTokenTTL') as number) * 1000,
       });
     }
-
     res.status(HttpStatus.OK).json({
       accessToken: newAccessToken,
       ttl: this.config.get('auth.accessTokenTTL') as number,

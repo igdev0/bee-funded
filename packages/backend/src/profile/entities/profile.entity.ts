@@ -34,6 +34,7 @@ export default class ProfileEntity {
    */
   @Column({
     type: 'text',
+    nullable: true,
     unique: true,
   })
   username: string;

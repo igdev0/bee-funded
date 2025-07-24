@@ -20,7 +20,9 @@ export default class NotificationEntity {
   @Column({ type: 'text' })
   message: string;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.notifications)
+  @ManyToOne(() => ProfileEntity, (profile) => profile.notifications, {
+    onDelete: 'CASCADE',
+  })
   profile: ProfileEntity;
 
   @Column({ type: 'text' })

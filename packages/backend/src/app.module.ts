@@ -6,11 +6,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseType } from 'typeorm';
 import { UserEntity } from './user/entities/user.entity';
 import { NotificationModule } from './notification/notification.module';
-import { ChainListenerModule } from './chain-listener/chain-listener.module';
 import { ProfileModule } from './profile/profile.module';
 import databaseConfig from './database.config';
 import NotificationEntity from './notification/entities/notification.entity';
 import ProfileEntity from './profile/entities/profile.entity';
+import { ChainListenerModule } from './chain-listener/chain-listener.module';
 
 @Module({
   imports: [
