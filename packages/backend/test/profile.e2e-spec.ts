@@ -181,6 +181,16 @@ describe('ProfileController (e2e)', () => {
     expect(res.body.avatar).toContain('default-avatar.png');
   });
 
+  it('should be able to update cover', async () => {
+    const res = await request(httpServer)
+      .patch('/profile/update-cover')
+      .attach('cover', `${process.cwd()}/assets/default-cover.png`)
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(res.body.cover).toContain('default-cover.png');
+  });
+
   afterAll(async () => {
     const datasource = app.get(DataSource);
     await datasource.dropDatabase();

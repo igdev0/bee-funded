@@ -60,7 +60,7 @@ export class ProfileController {
     @UploadedFile() uploadedFile: Express.Multer.File,
   ) {
     return this.profileService.update(user.profile.id, {
-      avatar: `${uploadedFile.destination}/${uploadedFile.filename}`,
+      cover: `${uploadedFile.destination}/${uploadedFile.filename}`,
     });
   }
 
