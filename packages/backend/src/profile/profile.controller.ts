@@ -11,8 +11,8 @@ export class ProfileController {
 
   @Get()
   @UseGuards(AuthGuard)
-  getProfile() {
-    return 'Get profile';
+  getProfile(@GetUser() user: UserEntity) {
+    return this.profileService.getProfile(user.profile.id);
   }
 
   @Patch()

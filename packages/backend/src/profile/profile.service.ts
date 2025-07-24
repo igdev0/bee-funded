@@ -23,4 +23,12 @@ export class ProfileService {
     await this.profileRepository.update(profileId, updateProfileDto);
     return this.profileRepository.findOne({ where: { id: profileId } });
   }
+
+  /**
+   * Gets the profile
+   * @param id – The profile id obtained from user.profile.id
+   */
+  getProfile(id: string): Promise<ProfileEntity | null> {
+    return this.profileRepository.findOne({ where: { id } });
+  }
 }

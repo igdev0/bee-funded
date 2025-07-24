@@ -33,4 +33,12 @@ describe('ProfileService', () => {
       where: { id: profileId },
     });
   });
+
+  it('should be able to get profile', async () => {
+    const profileId = 'some-uuid';
+    await service.getProfile(profileId);
+    expect(profileRepository.findOne).toHaveBeenCalledWith({
+      where: { id: profileId },
+    });
+  });
 });
