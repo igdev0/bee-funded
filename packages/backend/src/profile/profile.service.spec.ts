@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProfileService } from './profile.service';
+import { ModuleMocker } from 'jest-mock';
 
 describe('ProfileService', () => {
   let service: ProfileService;
@@ -7,7 +8,9 @@ describe('ProfileService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [ProfileService],
-    }).compile();
+    })
+      .useMocker(() => new ModuleMocker(global))
+      .compile();
 
     service = module.get<ProfileService>(ProfileService);
   });
