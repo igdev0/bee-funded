@@ -5,7 +5,6 @@ import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/autom
 import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {console} from "hardhat/console.sol";
 
 contract BeeFunded is AutomationCompatibleInterface {
     event DonationPoolCreated(uint indexed id, address indexed creator);
@@ -176,7 +175,6 @@ contract BeeFunded is AutomationCompatibleInterface {
         require(interval >= 7 days, "Min interval is 1 week");
         require(amount > 0, "Zero amount");
         require(pools[poolId].owner != address(0), "Pool does not exist");
-        console.log(amount * duration);
         IERC20Permit(token).permit(subscriber, address(this), amount * duration, deadline, v, r, s);
 
         _donate(subscriber, poolId, token, amount, "Subscription");

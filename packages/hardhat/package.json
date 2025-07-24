@@ -1,5 +1,5 @@
 {
-  "name": "beefunded-contract",
+  "name": "hardhat",
   "version": "0.0.1",
   "scripts": {
     "account": "hardhat run scripts/listAccount.ts",
