@@ -42,8 +42,13 @@ export class ProfileController {
   @Patch('update-avatar')
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('avatar'))
-  updateAvatar(@UploadedFile() uploadedFile: Express.Multer.File) {
-    return 'Update Avatar';
+  updateAvatar(
+    @GetUser() user: UserEntity,
+    @UploadedFile() uploadedFile: Express.Multer.File,
+  ) {
+    return this.profileService.update(user.profile.id, {
+      avatar: `${uploadedFile.destination}/${uploadedFile.filename}`,
+    });
   }
 
   @Patch('update-cover')
