@@ -1,9 +1,18 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { GetUser } from '../user/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('profile')
 export class ProfileController {
@@ -32,7 +41,8 @@ export class ProfileController {
 
   @Patch('update-avatar')
   @UseGuards(AuthGuard)
-  updateAvatar() {
+  @UseInterceptors(FileInterceptor('avatar'))
+  updateAvatar(@UploadedFile() uploadedFile: Express.Multer.File) {
     return 'Update Avatar';
   }
 
