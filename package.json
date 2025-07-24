@@ -1,5 +1,5 @@
 {
-  "name": "react-redux-dapp-template",
+  "name": "beefunded",
   "version": "1.0.0",
   "description": "A React-Redux-Hardhat template",
   "main": "index.ts",
@@ -29,6 +29,7 @@
     "backend:format": "yarn workspace backend format",
     "backend:test": "yarn workspace backend test",
     "backend:test:watch": "yarn workspace backend test:watch",
+    "backend:test:e2e": "yarn workspace backend test:e2e",
     "backend:test:cov": "yarn workspace backend test:cov",
     "backend:dev": "yarn workspace backend start:dev",
     "backend:start": "yarn workspace backend start",
