@@ -8926,47 +8926,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"beefunded-contract@workspace:packages/hardhat":
+"beefunded@workspace:.":
   version: 0.0.0-use.local
-  resolution: "beefunded-contract@workspace:packages/hardhat"
+  resolution: "beefunded@workspace:."
   dependencies:
-    "@chainlink/contracts": ^1.4.0
-    "@chainlink/contracts-ccip": ^1.6.0
-    "@ethersproject/abi": ~5.7.0
-    "@ethersproject/providers": ~5.7.2
-    "@inquirer/password": ^4.0.2
-    "@nomicfoundation/hardhat-chai-matchers": ~2.0.7
-    "@nomicfoundation/hardhat-ethers": ~3.0.8
-    "@nomicfoundation/hardhat-network-helpers": ~1.0.11
-    "@nomicfoundation/hardhat-verify": ~2.0.10
-    "@openzeppelin/contracts": ~5.0.2
-    "@typechain/ethers-v5": ~11.1.2
-    "@typechain/ethers-v6": ~0.5.1
-    "@typechain/hardhat": ~9.1.0
-    "@types/eslint": ~9.6.1
-    "@types/mocha": ~10.0.10
-    "@types/prettier": ~3.0.0
-    "@types/qrcode": ~1.5.5
-    "@typescript-eslint/eslint-plugin": ~8.27.0
-    "@typescript-eslint/parser": ~8.27.0
-    chai: ~4.5.0
-    dotenv: ~16.4.5
-    envfile: ~7.1.0
-    eslint: ~9.23.0
-    eslint-config-prettier: ~10.1.1
-    eslint-plugin-prettier: ~5.2.4
-    ethers: ~6.13.2
-    hardhat: ~2.22.10
-    hardhat-deploy: ~0.12.4
-    hardhat-deploy-ethers: ~0.4.2
-    hardhat-gas-reporter: ~2.2.1
-    prettier: ^3.5.3
-    prettier-plugin-solidity: ~1.4.1
-    qrcode: ~1.5.4
-    solidity-coverage: ~0.8.13
-    ts-node: ~10.9.1
-    typechain: ~8.3.2
-    typescript: ^5.8.2
+    "@nestjs/jwt": ^11.0.0
+    backend: "workspace:^"
+    husky: ^9.1.7
+    lint-staged: ^16.1.2
+    workspace: ^0.0.1-preview.2
+    yarn-run-all: ^3.1.1
   languageName: unknown
   linkType: soft
 
@@ -13485,6 +13454,50 @@ __metadata:
   checksum: 08b6c1912528ed3c013d731a312836e22ad5bdbbce27a78f8dc395154548f723c6b13af90dcee71401bfd1ee910005ab252aafb44cc5e42daaee8a41e5b4c739
   languageName: node
   linkType: hard
+
+"hardhat@workspace:packages/hardhat":
+  version: 0.0.0-use.local
+  resolution: "hardhat@workspace:packages/hardhat"
+  dependencies:
+    "@chainlink/contracts": ^1.4.0
+    "@chainlink/contracts-ccip": ^1.6.0
+    "@ethersproject/abi": ~5.7.0
+    "@ethersproject/providers": ~5.7.2
+    "@inquirer/password": ^4.0.2
+    "@nomicfoundation/hardhat-chai-matchers": ~2.0.7
+    "@nomicfoundation/hardhat-ethers": ~3.0.8
+    "@nomicfoundation/hardhat-network-helpers": ~1.0.11
+    "@nomicfoundation/hardhat-verify": ~2.0.10
+    "@openzeppelin/contracts": ~5.0.2
+    "@typechain/ethers-v5": ~11.1.2
+    "@typechain/ethers-v6": ~0.5.1
+    "@typechain/hardhat": ~9.1.0
+    "@types/eslint": ~9.6.1
+    "@types/mocha": ~10.0.10
+    "@types/prettier": ~3.0.0
+    "@types/qrcode": ~1.5.5
+    "@typescript-eslint/eslint-plugin": ~8.27.0
+    "@typescript-eslint/parser": ~8.27.0
+    chai: ~4.5.0
+    dotenv: ~16.4.5
+    envfile: ~7.1.0
+    eslint: ~9.23.0
+    eslint-config-prettier: ~10.1.1
+    eslint-plugin-prettier: ~5.2.4
+    ethers: ~6.13.2
+    hardhat: ~2.22.10
+    hardhat-deploy: ~0.12.4
+    hardhat-deploy-ethers: ~0.4.2
+    hardhat-gas-reporter: ~2.2.1
+    prettier: ^3.5.3
+    prettier-plugin-solidity: ~1.4.1
+    qrcode: ~1.5.4
+    solidity-coverage: ~0.8.13
+    ts-node: ~10.9.1
+    typechain: ~8.3.2
+    typescript: ^5.8.2
+  languageName: unknown
+  linkType: soft
 
 "has-ansi@npm:^2.0.0":
   version: 2.0.0
@@ -18116,19 +18129,6 @@ __metadata:
   checksum: e20fe84c86ff172fc8d898251b7cc2c43645d108bf96d0b8edf39b98f9a2cae97b40520ee7ed8ee0085ccc94736c4886294456033304151c3f94978cec03df21
   languageName: node
   linkType: hard
-
-"react-redux-dapp-template@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "react-redux-dapp-template@workspace:."
-  dependencies:
-    "@nestjs/jwt": ^11.0.0
-    backend: "workspace:^"
-    husky: ^9.1.7
-    lint-staged: ^16.1.2
-    workspace: ^0.0.1-preview.2
-    yarn-run-all: ^3.1.1
-  languageName: unknown
-  linkType: soft
 
 "react-redux@npm:^9.2.0":
   version: 9.2.0
