@@ -25,26 +25,31 @@ export class ProfileController {
   }
 
   @Patch('verify-email')
+  @UseGuards(AuthGuard)
   verifyEmail() {
     return 'Verify Email';
   }
 
   @Patch('update-avatar')
+  @UseGuards(AuthGuard)
   updateAvatar() {
     return 'Update Avatar';
   }
 
   @Patch('update-cover')
+  @UseGuards(AuthGuard)
   updateCover() {
     return 'Update Cover';
   }
 
   @Patch('follow')
+  @UseGuards(AuthGuard)
   follow() {
     return 'follow';
   }
 
   @Patch('unfollow')
+  @UseGuards(AuthGuard)
   unfollow() {
     return 'unfollow';
   }
