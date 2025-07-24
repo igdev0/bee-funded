@@ -6,7 +6,7 @@ import ProfileEntity from './entities/profile.entity';
 import { AuthModule } from '../auth/auth.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { MulterModule } from '@nestjs/platform-express';
-import multer from 'multer';
+import * as multer from 'multer';
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

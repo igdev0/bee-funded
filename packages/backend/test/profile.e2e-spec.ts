@@ -1,0 +1,173 @@
+import { INestApplication } from '@nestjs/common';
+import { App } from 'supertest/types';
+import { ethers } from 'ethers';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import DatabaseConfig from '../src/database.config';
+import { DatabaseType, DataSource } from 'typeorm';
+import { UserEntity } from '../src/user/entities/user.entity';
+import ProfileEntity from '../src/profile/entities/profile.entity';
+import NotificationEntity from '../src/notification/entities/notification.entity';
+import * as cookieParser from 'cookie-parser';
+import { ProfileModule } from '../src/profile/profile.module';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as request from 'supertest';
+import { AuthModule } from '../src/auth/auth.module';
+import { SiweMessage } from 'siwe';
+import * as process from 'node:process';
+
+const uploadsDir = process.cwd() + '/uploads';
+
+function deleteAllUploads() {
+  try {
+    const userDirs = fs.readdirSync(uploadsDir);
+
+    for (const userId of userDirs) {
+      const userPath = path.join(uploadsDir, userId);
+
+      const stat = fs.lstatSync(userPath);
+      if (stat.isDirectory()) {
+        fs.unlinkSync(userPath);
+      }
+    }
+  } catch (err) {
+    console.error('Error deleting uploads:', err);
+  }
+}
+
+describe('ProfileController (e2e)', () => {
+  let app: INestApplication<App>;
+  let httpServer: App;
+  const wallet = ethers.Wallet.createRandom();
+  let accessToken: string;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [
+        await ConfigModule.forRoot({
+          envFilePath: '.env.test.local',
+          isGlobal: true,
+        }),
+        TypeOrmModule.forRootAsync({
+          imports: [ConfigModule.forFeature(DatabaseConfig)],
+          inject: [ConfigService],
+          useFactory(config: ConfigService) {
+            const type = config.get<DatabaseType>('db.type');
+            const host: string = config.get('db.host') ?? 'localhost';
+            const port: number = config.get('db.port') ?? 5432;
+            const database: string = config.get('db.database') ?? 'yourdb';
+            const username: string = config.get('db.username') ?? 'admin';
+            const password: string = config.get('db.password') ?? 'admin';
+            const synchronize: boolean = config.get('db.sync') ?? false;
+            if (!type) {
+              throw new Error('Database type must be set');
+            }
+            return {
+              type: type as keyof object, // or mysql, sqlite, etc.
+              host,
+              port,
+              username,
+              password,
+              database,
+              synchronize,
+              entities: [UserEntity, ProfileEntity, NotificationEntity],
+            };
+          },
+        }),
+        AuthModule,
+        ProfileModule,
+      ],
+    }).compile();
+    app = moduleFixture.createNestApplication();
+    app.use(cookieParser());
+    await app.init();
+    httpServer = app.getHttpServer();
+
+    // Let's authenticate now
+    const res = await request(httpServer).get('/auth/nonce').expect(200);
+    const message = new SiweMessage({
+      uri: 'http://localhost:3000',
+      domain: 'localhost',
+      chainId: 1337,
+      version: '1',
+      address: wallet.address,
+      statement: 'Sign in with Ethereum to the app.',
+      nonce: res.text,
+    });
+    const signature = await wallet.signMessage(message.prepareMessage());
+    const authRes = await request(httpServer)
+      .post('/auth/signin')
+      .send({ signature, message })
+      .expect(200);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+    accessToken = authRes.body.accessToken;
+  });
+
+  it('should be able to update bio', async () => {
+    const res = await request(httpServer)
+      .patch('/profile')
+      .send({ bio: 'My personal bio' })
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(res.body.bio).toEqual('My personal bio');
+  });
+
+  it('should be able to update username', async () => {
+    const res = await request(httpServer)
+      .patch('/profile')
+      .send({ username: 'igdev' })
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(res.body.username).toEqual('igdev');
+  });
+
+  it('should be able to update username', async () => {
+    const res = await request(httpServer)
+      .patch('/profile')
+      .send({ email: 'igdev@gmail.com' })
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(res.body.email).toEqual('igdev@gmail.com');
+  });
+
+  it('should be able to update displayName', async () => {
+    const res = await request(httpServer)
+      .patch('/profile')
+      .send({ display_name: 'Ianos' })
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(res.body.display_name).toEqual('Ianos');
+  });
+
+  it('should be able to update socialLinks', async () => {
+    const res = await request(httpServer)
+      .patch('/profile')
+      .send({
+        social_links: ['https://www.facebook.com', 'https://www.instagram.com'],
+      })
+      .set('authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(res.body.social_links).toEqual([
+      'https://www.facebook.com',
+      'https://www.instagram.com',
+    ]);
+  });
+
+  afterAll(async () => {
+    const datasource = app.get(DataSource);
+    await datasource.dropDatabase();
+    deleteAllUploads();
+  });
+});

@@ -23,9 +23,9 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
-  displayName?: string;
+  display_name?: string;
 
   @IsOptional()
   @IsArray()
-  socialLinks?: string[];
+  social_links?: string[];
 }
