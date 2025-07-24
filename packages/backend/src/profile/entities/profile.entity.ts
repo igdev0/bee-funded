@@ -33,6 +33,7 @@ export default class ProfileEntity {
    * Unique username for the profile.
    */
   @Column({
+    type: 'text',
     unique: true,
   })
   username: string;
@@ -40,7 +41,7 @@ export default class ProfileEntity {
    * Unique email for the profile
    */
   @Column({
-    type: 'string',
+    type: 'text',
     unique: true,
     nullable: true,
   })
@@ -55,6 +56,7 @@ export default class ProfileEntity {
    * Display name shown on the profile.
    */
   @Column({
+    type: 'text',
     nullable: true,
   })
   display_name: string | null = null;
@@ -71,20 +73,24 @@ export default class ProfileEntity {
   /**
    * URL or path to the avatar image.
    */
-  @Column()
+  @Column({
+    type: 'text',
+  })
   avatar: string;
 
   /**
    * URL or path to the cover image.
    */
-  @Column()
+  @Column({
+    type: 'text',
+  })
   cover: string;
 
   /**
    * List of social media links associated with the profile.
    */
   @Column({
-    type: 'array',
+    type: 'json',
   })
   social_links: string[] = [];
   /**
