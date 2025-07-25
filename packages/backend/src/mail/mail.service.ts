@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 export interface EmailVerification {
   code: string;
   name: string;
+  expiresIn: string;
 }
 
 export interface Envelope {
@@ -44,6 +45,7 @@ export class MailService {
       to,
       context: {
         name: context.name,
+        expiresIn: context.expiresIn,
         verificationCode: context.code,
         verificationUrl: `${appFrontendUrl}/verify-email?code=${context.code}`,
       },

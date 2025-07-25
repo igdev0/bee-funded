@@ -69,6 +69,7 @@ describe('MailService', () => {
     const response = await service.sendEmailVerification('test@gmail.com', {
       code: '0x0d03',
       name: 'Ianos',
+      expiresIn: '5 minutes',
     });
     expect(response.envelope.to).toEqual(['test@gmail.com']);
     expect(response.envelope.from).toEqual('noreply@dorultanianos.dev');
