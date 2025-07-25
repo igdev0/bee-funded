@@ -41,4 +41,31 @@ describe('ProfileService', () => {
       where: { id: profileId },
     });
   });
+
+  it('should be able to follow a profile', async () => {
+    const folowerProfile = {
+      id: 'some-folower-profile-uuid',
+      following: [],
+      followers: [],
+    };
+
+    const foloweeProfile = {
+      id: 'some-folowee-profile-uuid',
+      following: [],
+      followers: [],
+    };
+    profileRepository.findOneOrFail
+      .mockResolvedValueOnce(folowerProfile as unknown as ProfileEntity)
+      .mockResolvedValueOnce(foloweeProfile as unknown as ProfileEntity);
+
+    await service.follow(folowerProfile.id, foloweeProfile.id);
+
+    expect(profileRepository.update).toHaveBeenCalledWith(folowerProfile.id, {
+      following: [{ id: foloweeProfile.id }],
+    });
+
+    expect(profileRepository.update).toHaveBeenCalledWith(foloweeProfile.id, {
+      followers: [{ id: folowerProfile.id }],
+    });
+  });
 });
