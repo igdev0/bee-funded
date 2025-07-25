@@ -29,6 +29,19 @@ export class ProfileService {
   ) {}
 
   /**
+   * It looks up the profile db to find a username matching
+   * @description This function is used when user attempts to change username
+   * @param username – The username of the profile
+   * @returns Promise<boolean>
+   */
+  async usernameExists(username: string): Promise<boolean> {
+    const profile = await this.profileRepository.findOne({
+      where: { username },
+    });
+    return !!profile;
+  }
+
+  /**
    * Sends a verification email to the user if their email is not already verified.
    *
    * Validates the presence and verification status of the email, then generates a
