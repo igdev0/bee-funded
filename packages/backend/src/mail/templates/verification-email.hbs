@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Verify Your Email</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        margin-top: 20px;
+        background-color: #2d6cdf;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+      }
+      .code-box {
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        background-color: #f1f3f5;
+        padding: 12px 18px;
+        display: inline-block;
+        margin-top: 16px;
+        border-radius: 4px;
+      }
+      .footer {
+        margin-top: 40px;
+        font-size: 12px;
+        color: #6c757d;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Hi {{name}},</h2>
+      <p>Thanks for signing up! Please confirm your email address by clicking the button below:</p>
+
+      <a href="{{verificationUrl}}" class="button">Verify Email</a>
+
+      <p>Or use this verification code:</p>
+      <div class="code-box">{{verificationCode}}</div>
+
+      <p>If the button doesn't work, copy and paste this URL into your browser:</p>
+      <p><a href="{{verificationUrl}}">{{verificationUrl}}</a></p>
+
+      <div class="footer">
+        <p>If you didn’t request this, you can safely ignore this email.</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -6,18 +6,17 @@ export default registerAs('mail', () => ({
     host: process.env.MAIL_HOST ?? 'localhost',
     port: process.env.MAIL_PORT ?? 1025,
     secure: process.env.MAIL_SECURE ?? true,
+    jsonTransport: !!process.env.MAIL_PREVIEW,
     auth: {
       user: process.env.MAIL_AUTH_USER,
       pass: process.env.MAIL_AUTH_PASSWORD,
     },
   },
-  preview: process.env.NODE_ENV !== 'production',
   template: {
-    dir: `${process.cwd()}/templates`,
+    dir: `${process.cwd()}/src/mail/templates`,
   },
-  options: {
-    defaults: {
-      from: '"No Reply" <no-reply@localhost>',
-    },
+  preview: false,
+  defaults: {
+    from: process.env.MAIL_SENDER ?? 'noreply@dorultanianos.dev',
   },
 }));

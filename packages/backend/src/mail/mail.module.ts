@@ -7,6 +7,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MailerModule.forRootAsync({
       imports: [ConfigModule.forFeature(mailConfig)],
       inject: [ConfigService],
