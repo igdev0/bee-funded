@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import ProfileEntity from './entities/profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -40,33 +44,21 @@ export class ProfileService {
   async follow(followerId: string, followeeId: string) {
     const followerProfile = await this.profileRepository.findOneOrFail({
       where: { id: followerId },
+      relationLoadStrategy: 'query',
+      relations: ['following'],
     });
-    const followeeProfile = await this.profileRepository.findOneOrFail({
-      where: { id: followeeId },
-    });
-
-    const currentFollowing = followerProfile.following;
-    const isAlreadyFollowing = currentFollowing.some(
-      (p) => p.id === followeeId,
-    );
-
-    if (!isAlreadyFollowing) {
-      currentFollowing.push({ id: followeeId } as ProfileEntity);
-      await this.profileRepository.update(followerId, {
-        following: currentFollowing,
-      });
+    if (followerId === followeeId) {
+      throw new UnprocessableEntityException('You cannot follow yourself');
     }
 
-    // Update "followers" list
-    const currentFollowers = followeeProfile.followers;
-    const isAlreadyFollowed = currentFollowers.some((p) => p.id === followerId);
-
-    if (!isAlreadyFollowed) {
-      currentFollowers.push({ id: followerId } as ProfileEntity);
-      await this.profileRepository.update(followeeId, {
-        followers: currentFollowers,
-      });
+    if (!followerProfile.following.some((p) => p.id === followeeId)) {
+      await this.profileRepository
+        .createQueryBuilder()
+        .relation(ProfileEntity, 'following')
+        .of(followerId)
+        .add(followeeId);
     }
+
     return true;
   }
 
@@ -78,23 +70,20 @@ export class ProfileService {
   async unfollow(followerId: string, followeeId: string) {
     const followerProfile = await this.profileRepository.findOneOrFail({
       where: { id: followerId },
-    });
-    const followeeProfile = await this.profileRepository.findOneOrFail({
-      where: { id: followeeId },
+      relationLoadStrategy: 'query',
+      relations: ['following'],
     });
 
-    if (followerProfile.following.some((p) => p.id === followeeId)) {
-      await this.profileRepository.update(followerId, {
-        following: followerProfile.following.filter((p) => p.id !== followeeId),
-      });
+    if (followerId === followeeId) {
+      throw new UnprocessableEntityException('You cannot unfollow yourself');
     }
 
-    // Update "followers" list
-
-    if (followeeProfile.followers.some((p) => p.id === followerId)) {
-      await this.profileRepository.update(followeeId, {
-        followers: followeeProfile.followers.filter((p) => p.id !== followerId),
-      });
+    if (!followerProfile.following.some((p) => p.id === followeeId)) {
+      await this.profileRepository
+        .createQueryBuilder()
+        .relation(ProfileEntity, 'following')
+        .of(followerId)
+        .remove(followeeId);
     }
     return true;
   }
