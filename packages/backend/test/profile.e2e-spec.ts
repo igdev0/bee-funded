@@ -257,6 +257,13 @@ describe('ProfileController (e2e)', () => {
     });
   });
 
+  it('should find be able to find if username is taken ', async () => {
+    const res = await request(httpServer)
+      .get('/profile/igdev-0/taken')
+      .expect(200);
+    expect(JSON.parse(res.text)).toEqual(true);
+  });
+
   afterAll(async () => {
     const datasource = app.get(DataSource);
     await datasource.dropDatabase();
