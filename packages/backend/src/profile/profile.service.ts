@@ -23,6 +23,7 @@ export class ProfileService {
   ) {}
 
   /**
+   * It generates a verification code and then caches the value for 5 minutes
    * @param email – Profile email to be verified
    * @returns Promise<string> – The generated verification code
    */
