@@ -11,6 +11,7 @@ import databaseConfig from './database.config';
 import NotificationEntity from './notification/entities/notification.entity';
 import ProfileEntity from './profile/entities/profile.entity';
 import { ChainListenerModule } from './chain-listener/chain-listener.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ChainListenerModule } from './chain-listener/chain-listener.module';
     NotificationModule,
     ChainListenerModule,
     ProfileModule,
+    MailModule,
   ],
 })
 export class AppModule {}
