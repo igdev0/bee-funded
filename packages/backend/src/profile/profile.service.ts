@@ -36,8 +36,11 @@ export class ProfileService {
     const code = Array.from(bytes)
       .map((byte) => chars[byte % chars.length])
       .join('');
-
     await this.cacheService.set(email, code, 5 * 60);
+    this.logger.log('Generated a verification Code for user');
+    this.logger.log('Verification code:', code);
+    this.logger.log('Profile email:', email);
+    this.logger.log('=======================================');
     return code;
   }
 
