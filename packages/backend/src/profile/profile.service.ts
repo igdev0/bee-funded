@@ -33,7 +33,7 @@ export class ProfileService {
   }
 
   /**
-   *
+   * It follows a profile
    * @param folowerId – The profile id of the person who is following someone else.
    * @param foloweeId – The profile id of the person who is being followed.
    */
@@ -45,8 +45,7 @@ export class ProfileService {
       where: { id: foloweeId },
     });
 
-    // Update "following" list
-    const currentFollowing = followerProfile.following || [];
+    const currentFollowing = followerProfile.following;
     const isAlreadyFollowing = currentFollowing.some((p) => p.id === foloweeId);
 
     if (!isAlreadyFollowing) {
@@ -57,7 +56,7 @@ export class ProfileService {
     }
 
     // Update "followers" list
-    const currentFollowers = followeeProfile.followers || [];
+    const currentFollowers = followeeProfile.followers;
     const isAlreadyFollowed = currentFollowers.some((p) => p.id === folowerId);
 
     if (!isAlreadyFollowed) {
