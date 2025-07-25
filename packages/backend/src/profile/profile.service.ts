@@ -41,6 +41,11 @@ export class ProfileService {
     return code;
   }
 
+  /**
+   * It verifies the verification code sent to the user by email, or in dev mode to the console.
+   * @param email – The profile email obtained from user.profile.email
+   * @param code – The code generated using the utility above
+   */
   async verifyVerificationCode(email: string, code: string): Promise<boolean> {
     const cachedCode = (await this.cacheService.get(email)) as
       | string
