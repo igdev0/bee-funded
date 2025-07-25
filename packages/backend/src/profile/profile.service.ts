@@ -34,7 +34,7 @@ export class ProfileService {
    * @param username – The username of the profile
    * @returns Promise<boolean>
    */
-  async usernameExists(username: string): Promise<boolean> {
+  async usernameTaken(username: string): Promise<boolean> {
     const profile = await this.profileRepository.findOne({
       where: { username },
     });
