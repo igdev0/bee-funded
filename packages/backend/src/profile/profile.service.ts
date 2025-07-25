@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
@@ -37,6 +39,22 @@ export class ProfileService {
 
     await this.cacheService.set(email, code, 5 * 60);
     return code;
+  }
+
+  async verifyVerificationCode(email: string, code: string): Promise<boolean> {
+    const cachedCode = (await this.cacheService.get(email)) as
+      | string
+      | undefined;
+    if (!cachedCode)
+      throw new NotFoundException(
+        'The verification code does not exist, or it expired',
+      );
+
+    if (cachedCode !== code) {
+      throw new BadRequestException('Verification code is incorrect');
+    }
+
+    return true;
   }
 
   /**
