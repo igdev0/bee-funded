@@ -14,6 +14,7 @@ import * as crypto from 'node:crypto';
 import { CacheManagerStore } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MailService } from '../mail/mail.service';
+import * as process from 'node:process';
 
 @Injectable()
 export class ProfileService {
@@ -52,7 +53,7 @@ export class ProfileService {
       code,
       name: profile.display_name ?? profile.email?.split('@')[0],
     });
-    return true;
+    return process.env.NODE_ENV === 'test' ? code : true;
   }
 
   /**

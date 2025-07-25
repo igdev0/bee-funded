@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  UnprocessableEntityException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -37,8 +38,26 @@ export class ProfileController {
 
   @Patch('verify-email')
   @UseGuards(AuthGuard)
-  verifyEmail() {
-    return 'Verify Email';
+  verifyEmail(
+    @GetUser() user: UserEntity,
+    @Param('verificationCode') verificationCode: string,
+  ) {
+    if (!user.profile.email) {
+      throw new UnprocessableEntityException('You must first save your email');
+    }
+    return this.profileService.verifyEmail(
+      user.profile.email,
+      verificationCode,
+    );
+  }
+
+  @Patch('send-email-verification')
+  @UseGuards(AuthGuard)
+  sendVerificationEmail(@GetUser() user: UserEntity) {
+    if (!user.profile.email) {
+      throw new UnprocessableEntityException('You must first save your email');
+    }
+    return this.profileService.sendVerificationEmail(user.profile);
   }
 
   @Post('update-avatar')
