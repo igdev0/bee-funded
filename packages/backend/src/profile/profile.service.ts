@@ -66,6 +66,31 @@ export class ProfileService {
   }
 
   /**
+   * Verifies the user's email using a verification code and updates their profile accordingly.
+   *
+   * @param email – The email address associated with the profile to be verified.
+   * @param code – The verification code to validate against the cached entry.
+   *
+   * @throws NotFoundException if the code is missing or expired.
+   * @throws BadRequestException if the code is invalid.
+   */
+  async verifyEmail(email: string, code: string) {
+    const valid = await this.verifyVerificationCode(email, code);
+
+    await this.profileRepository.update(
+      {
+        email,
+      },
+      {
+        email_verified: valid,
+      },
+    );
+
+    // Delete the code, because is no longer needed
+    await this.cacheService.del(email);
+  }
+
+  /**
    * It updates the profile database and returns the ProfileEntity
    * @param profileId – The profile id obtained from user.profile.id
    * @param updateProfileDto - The data that must be updated.
