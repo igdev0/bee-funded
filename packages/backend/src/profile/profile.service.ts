@@ -44,22 +44,23 @@ export class ProfileService {
   async follow(followerId: string, followeeId: string) {
     const followerProfile = await this.profileRepository.findOneOrFail({
       where: { id: followerId },
-      relationLoadStrategy: 'query',
+      select: ['id'],
       relations: ['following'],
     });
     if (followerId === followeeId) {
       throw new UnprocessableEntityException('You cannot follow yourself');
     }
-
-    if (!followerProfile.following.some((p) => p.id === followeeId)) {
-      await this.profileRepository
-        .createQueryBuilder()
-        .relation(ProfileEntity, 'following')
-        .of(followerId)
-        .add(followeeId);
+    if (followerProfile.following.some((p) => p.id === followeeId)) {
+      throw new UnprocessableEntityException('You already follow this profile');
     }
-
-    return true;
+    await this.profileRepository
+      .createQueryBuilder()
+      .relation(ProfileEntity, 'following')
+      .of(followerId)
+      .add(followeeId);
+    // Update manually the following
+    followerProfile.following.push({ id: followeeId } as ProfileEntity);
+    return followerProfile;
   }
 
   /**
@@ -70,7 +71,7 @@ export class ProfileService {
   async unfollow(followerId: string, followeeId: string) {
     const followerProfile = await this.profileRepository.findOneOrFail({
       where: { id: followerId },
-      relationLoadStrategy: 'query',
+      select: ['id'],
       relations: ['following'],
     });
 
@@ -79,12 +80,17 @@ export class ProfileService {
     }
 
     if (!followerProfile.following.some((p) => p.id === followeeId)) {
-      await this.profileRepository
-        .createQueryBuilder()
-        .relation(ProfileEntity, 'following')
-        .of(followerId)
-        .remove(followeeId);
+      throw new UnprocessableEntityException('You do not follow this profile');
     }
-    return true;
+    await this.profileRepository
+      .createQueryBuilder()
+      .relation(ProfileEntity, 'following')
+      .of(followerId)
+      .remove(followeeId);
+    // Update manually the follower ids
+    followerProfile.following = followerProfile.following.filter(
+      (item) => item.id !== followeeId,
+    );
+    return followerProfile;
   }
 }
