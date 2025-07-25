@@ -1,6 +1,6 @@
 import { ProfileService } from './profile.service';
 import { Mocked, TestBed } from '@suites/unit';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import ProfileEntity from './entities/profile.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -54,48 +54,50 @@ describe('ProfileService', () => {
       following: [],
       followers: [],
     };
+    const mockAdd = jest.fn();
+    const mockOf = jest.fn().mockReturnValue({ add: mockAdd });
+    const mockRelation = jest.fn().mockReturnValue({ of: mockOf });
+    profileRepository.createQueryBuilder.mockReturnValue({
+      // @ts-expect-error test won't run
+      relation: mockRelation as unknown as SelectQueryBuilder<ProfileEntity>,
+    });
     profileRepository.findOneOrFail
       .mockResolvedValueOnce(followerProfile as unknown as ProfileEntity)
       .mockResolvedValueOnce(followeeProfile as unknown as ProfileEntity);
 
     await service.follow(followerProfile.id, followeeProfile.id);
 
-    expect(profileRepository.update).toHaveBeenCalledWith(followerProfile.id, {
-      following: [{ id: followeeProfile.id }],
-    });
-
-    expect(profileRepository.update).toHaveBeenCalledWith(followeeProfile.id, {
-      followers: [{ id: followerProfile.id }],
-    });
+    expect(mockOf).toHaveBeenCalledWith(followerProfile.id);
+    expect(mockAdd).toHaveBeenCalledWith(followeeProfile.id);
   });
 
   it('should be able to unfollow a profile', async () => {
     const followerProfile = {
       id: 'some-follower-profile-uuid',
-      following: [{ id: 'some-followee-profile-uuid' }],
+      following: ['some-followee-profile-uuid'],
       followers: [],
     };
 
     const followeeProfile = {
       id: 'some-followee-profile-uuid',
       following: [],
-      followers: [
-        { id: 'some-follower-profile-uuid' },
-        { id: 'some-other-follower' },
-      ],
+      followers: ['some-follower-profile-uuid'],
     };
+    const mockRemove = jest.fn();
+    const mockOf = jest.fn().mockReturnValue({ remove: mockRemove });
+    const mockRelation = jest.fn().mockReturnValue({ of: mockOf });
+    profileRepository.createQueryBuilder.mockReturnValue({
+      // @ts-expect-error test won't run
+      relation: mockRelation as unknown as SelectQueryBuilder<ProfileEntity>,
+    });
+
     profileRepository.findOneOrFail
       .mockResolvedValueOnce(followerProfile as unknown as ProfileEntity)
       .mockResolvedValueOnce(followeeProfile as unknown as ProfileEntity);
 
     await service.unfollow(followerProfile.id, followeeProfile.id);
 
-    expect(profileRepository.update).toHaveBeenCalledWith(followerProfile.id, {
-      following: [],
-    });
-
-    expect(profileRepository.update).toHaveBeenCalledWith(followeeProfile.id, {
-      followers: [{ id: 'some-other-follower' }],
-    });
+    expect(mockOf).toHaveBeenCalledWith(followerProfile.id);
+    expect(mockRemove).toHaveBeenCalledWith(followeeProfile.id);
   });
 });
