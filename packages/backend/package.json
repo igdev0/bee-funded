@@ -20,6 +20,7 @@
     "test:e2e": "NODE_ENV=test jest --config ./test/jest-e2e.json --detectOpenHandles"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -33,6 +34,7 @@
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "ethers": "^6.15.0",
+    "nodemailer": "^7.0.5",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -59,6 +61,7 @@
     "@types/jest": "^29.5.14",
     "@types/multer": "^2.0.0",
     "@types/node": "^22.10.7",
+    "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.15.4",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
