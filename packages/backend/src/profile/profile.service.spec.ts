@@ -43,58 +43,58 @@ describe('ProfileService', () => {
   });
 
   it('should be able to follow a profile', async () => {
-    const folowerProfile = {
-      id: 'some-folower-profile-uuid',
+    const followerProfile = {
+      id: 'some-follower-profile-uuid',
       following: [],
       followers: [],
     };
 
-    const foloweeProfile = {
-      id: 'some-folowee-profile-uuid',
+    const followeeProfile = {
+      id: 'some-followee-profile-uuid',
       following: [],
       followers: [],
     };
     profileRepository.findOneOrFail
-      .mockResolvedValueOnce(folowerProfile as unknown as ProfileEntity)
-      .mockResolvedValueOnce(foloweeProfile as unknown as ProfileEntity);
+      .mockResolvedValueOnce(followerProfile as unknown as ProfileEntity)
+      .mockResolvedValueOnce(followeeProfile as unknown as ProfileEntity);
 
-    await service.follow(folowerProfile.id, foloweeProfile.id);
+    await service.follow(followerProfile.id, followeeProfile.id);
 
-    expect(profileRepository.update).toHaveBeenCalledWith(folowerProfile.id, {
-      following: [{ id: foloweeProfile.id }],
+    expect(profileRepository.update).toHaveBeenCalledWith(followerProfile.id, {
+      following: [{ id: followeeProfile.id }],
     });
 
-    expect(profileRepository.update).toHaveBeenCalledWith(foloweeProfile.id, {
-      followers: [{ id: folowerProfile.id }],
+    expect(profileRepository.update).toHaveBeenCalledWith(followeeProfile.id, {
+      followers: [{ id: followerProfile.id }],
     });
   });
 
   it('should be able to unfollow a profile', async () => {
-    const folowerProfile = {
-      id: 'some-folower-profile-uuid',
-      following: [{ id: 'some-folowee-profile-uuid' }],
+    const followerProfile = {
+      id: 'some-follower-profile-uuid',
+      following: [{ id: 'some-followee-profile-uuid' }],
       followers: [],
     };
 
-    const foloweeProfile = {
-      id: 'some-folowee-profile-uuid',
+    const followeeProfile = {
+      id: 'some-followee-profile-uuid',
       following: [],
       followers: [
-        { id: 'some-folower-profile-uuid' },
+        { id: 'some-follower-profile-uuid' },
         { id: 'some-other-follower' },
       ],
     };
     profileRepository.findOneOrFail
-      .mockResolvedValueOnce(folowerProfile as unknown as ProfileEntity)
-      .mockResolvedValueOnce(foloweeProfile as unknown as ProfileEntity);
+      .mockResolvedValueOnce(followerProfile as unknown as ProfileEntity)
+      .mockResolvedValueOnce(followeeProfile as unknown as ProfileEntity);
 
-    await service.unfollow(folowerProfile.id, foloweeProfile.id);
+    await service.unfollow(followerProfile.id, followeeProfile.id);
 
-    expect(profileRepository.update).toHaveBeenCalledWith(folowerProfile.id, {
+    expect(profileRepository.update).toHaveBeenCalledWith(followerProfile.id, {
       following: [],
     });
 
-    expect(profileRepository.update).toHaveBeenCalledWith(foloweeProfile.id, {
+    expect(profileRepository.update).toHaveBeenCalledWith(followeeProfile.id, {
       followers: [{ id: 'some-other-follower' }],
     });
   });
