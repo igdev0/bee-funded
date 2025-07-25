@@ -42,6 +42,13 @@ function deleteAllUploads() {
     console.error('Error deleting uploads:', err);
   }
 }
+jest.mock('@nestjs-modules/mailer/dist/adapters/handlebars.adapter', () => {
+  return {
+    HandlebarsAdapter: jest.fn().mockImplementation(() => ({
+      compile: jest.fn(),
+    })),
+  };
+});
 
 describe('ProfileController (e2e)', () => {
   let app: INestApplication<App>;
