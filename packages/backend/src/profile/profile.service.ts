@@ -13,6 +13,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import * as crypto from 'node:crypto';
 import { CacheManagerStore } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class ProfileService {
@@ -22,7 +23,36 @@ export class ProfileService {
     @Inject(CACHE_MANAGER) private readonly cacheService: CacheManagerStore,
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
+    private readonly mailService: MailService,
   ) {}
+
+  /**
+   * Sends a verification email to the user if their email is not already verified.
+   *
+   * Validates the presence and verification status of the email, then generates a
+   * verification code and sends it via the mail service.
+   *
+   * @param profile – A partial ProfileEntity containing at least the email (and optionally display name).
+   *
+   * @throws UnprocessableEntityException if the email is missing or already verified.
+   */
+  async sendVerificationEmail(profile: Partial<ProfileEntity>) {
+    this.logger.log('Sending verification email');
+    if (!profile.email) {
+      throw new UnprocessableEntityException('Email address is required');
+    }
+    if (profile.email_verified) {
+      throw new UnprocessableEntityException(
+        'The email address is already verified',
+      );
+    }
+    const code = await this.generateVerificationCode(profile.email);
+    await this.mailService.sendEmailVerification(profile.email, {
+      expiresIn: '5 Minutes',
+      code,
+      name: profile.display_name ?? profile.email?.split('@')[0],
+    });
+  }
 
   /**
    * It generates a verification code and then caches the value for 5 minutes

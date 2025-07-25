@@ -17,6 +17,7 @@ import * as request from 'supertest';
 import { AuthModule } from '../src/auth/auth.module';
 import { SiweMessage } from 'siwe';
 import * as process from 'node:process';
+import { MailModule } from '../src/mail/mail.module';
 
 const uploadsDir = process.cwd() + '/uploads';
 
@@ -89,6 +90,7 @@ describe('ProfileController (e2e)', () => {
         }),
         AuthModule,
         ProfileModule,
+        MailModule,
       ],
     }).compile();
     app = moduleFixture.createNestApplication();

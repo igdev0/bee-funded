@@ -9,6 +9,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import * as fs from 'node:fs';
 import * as process from 'node:process';
+import { MailModule } from '../mail/mail.module';
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -32,6 +33,7 @@ const storage = multer.diskStorage({
       storage,
     }),
     CacheModule.register(),
+    MailModule,
     TypeOrmModule.forFeature([ProfileEntity]),
   ],
   controllers: [ProfileController],
