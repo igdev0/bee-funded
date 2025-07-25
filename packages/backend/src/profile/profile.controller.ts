@@ -27,6 +27,11 @@ export class ProfileController {
     return this.profileService.getProfile(user.profile.id);
   }
 
+  @Get(':username/taken')
+  usernameTaken(@Param('username') username: string) {
+    return this.profileService.usernameTaken(username);
+  }
+
   @Patch()
   @UseGuards(AuthGuard)
   update(
