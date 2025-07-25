@@ -26,6 +26,20 @@ describe('ProfileService', () => {
     expect(service).toBeDefined();
   });
 
+  it('should look up the database to find if a username is taken', async () => {
+    profileRepository.findOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ username: 'igdev' } as ProfileEntity);
+    let taken = await service.usernameTaken('igdev');
+    expect(profileRepository.findOne).toHaveBeenCalledWith({
+      where: { username: 'igdev' },
+    });
+
+    expect(taken).toBeFalsy();
+    taken = await service.usernameTaken('igdev');
+    expect(taken).toBeTruthy();
+  });
+
   describe('sending verification email', () => {
     it('if the email is not passed as prop, it should throw UnprocessableEntityException', async () => {
       await expect(
