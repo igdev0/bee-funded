@@ -45,8 +45,14 @@ function deleteAllUploads() {
 describe('ProfileController (e2e)', () => {
   let app: INestApplication<App>;
   let httpServer: App;
-  const wallet = ethers.Wallet.createRandom();
-  let accessToken: string;
+
+  const users = Array(2)
+    .fill(0)
+    .map(() => ({
+      wallet: ethers.Wallet.createRandom(),
+      accessToken: undefined,
+      profileId: undefined,
+    }));
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -91,30 +97,37 @@ describe('ProfileController (e2e)', () => {
     httpServer = app.getHttpServer();
 
     // Let's authenticate now
-    const res = await request(httpServer).get('/auth/nonce').expect(200);
-    const message = new SiweMessage({
-      uri: 'http://localhost:3000',
-      domain: 'localhost',
-      chainId: 1337,
-      version: '1',
-      address: wallet.address,
-      statement: 'Sign in with Ethereum to the app.',
-      nonce: res.text,
-    });
-    const signature = await wallet.signMessage(message.prepareMessage());
-    const authRes = await request(httpServer)
-      .post('/auth/signin')
-      .send({ signature, message })
-      .expect(200);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-    accessToken = authRes.body.accessToken;
+    await Promise.all(
+      users.map(async ({ wallet }, index) => {
+        const res = await request(httpServer).get('/auth/nonce').expect(200);
+        const message = new SiweMessage({
+          uri: 'http://localhost:3000',
+          domain: 'localhost',
+          chainId: 1337,
+          version: '1',
+          address: wallet.address,
+          statement: 'Sign in with Ethereum to the app.',
+          nonce: res.text,
+        });
+        const signature = await wallet.signMessage(message.prepareMessage());
+        const authRes = await request(httpServer)
+          .post('/auth/signin')
+          .send({ signature, message })
+          .expect(200);
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+        users[index].accessToken = authRes.body.accessToken;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+        users[index].profileId = authRes.body.user.profile.id;
+      }),
+    );
   });
 
   it('should be able to update bio', async () => {
     const res = await request(httpServer)
       .patch('/profile')
       .send({ bio: 'My personal bio' })
-      .set('authorization', `Bearer ${accessToken}`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
       .expect(200);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -122,21 +135,24 @@ describe('ProfileController (e2e)', () => {
   });
 
   it('should be able to update username', async () => {
-    const res = await request(httpServer)
-      .patch('/profile')
-      .send({ username: 'igdev' })
-      .set('authorization', `Bearer ${accessToken}`)
-      .expect(200);
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(res.body.username).toEqual('igdev');
+    await Promise.all(
+      users.map(async ({ accessToken }, index) => {
+        const res = await request(httpServer)
+          .patch('/profile')
+          .send({ username: `igdev-${index}` })
+          .set('authorization', `Bearer ${accessToken}`)
+          .expect(200);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(res.body.username).toEqual(`igdev-${index}`);
+      }),
+    );
   });
 
   it('should be able to update username', async () => {
     const res = await request(httpServer)
       .patch('/profile')
       .send({ email: 'igdev@gmail.com' })
-      .set('authorization', `Bearer ${accessToken}`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
       .expect(200);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -147,7 +163,7 @@ describe('ProfileController (e2e)', () => {
     const res = await request(httpServer)
       .patch('/profile')
       .send({ display_name: 'Ianos' })
-      .set('authorization', `Bearer ${accessToken}`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
       .expect(200);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -160,7 +176,7 @@ describe('ProfileController (e2e)', () => {
       .send({
         social_links: ['https://www.facebook.com', 'https://www.instagram.com'],
       })
-      .set('authorization', `Bearer ${accessToken}`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
       .expect(200);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -174,7 +190,7 @@ describe('ProfileController (e2e)', () => {
     const res = await request(httpServer)
       .post('/profile/update-avatar')
       .attach('avatar', `${process.cwd()}/assets/default-avatar.png`)
-      .set('authorization', `Bearer ${accessToken}`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
       .expect(201);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -185,10 +201,31 @@ describe('ProfileController (e2e)', () => {
     const res = await request(httpServer)
       .patch('/profile/update-cover')
       .attach('cover', `${process.cwd()}/assets/default-cover.png`)
-      .set('authorization', `Bearer ${accessToken}`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
       .expect(200);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(res.body.cover).toContain('default-cover.png');
+  });
+
+  it('should be able to follow users', async () => {
+    await request(httpServer)
+      .patch(`/profile/${users[1].profileId}/follow`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
+      .expect(200);
+  });
+
+  it('should be able to unfollow users', async () => {
+    await request(httpServer)
+      .patch(`/profile/${users[1].profileId}/unfollow`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
+      .expect(200);
+  });
+
+  it('should not be able to follow yourself', async () => {
+    await request(httpServer)
+      .patch(`/profile/${users[0].profileId}/follow`)
+      .set('authorization', `Bearer ${users[0].accessToken}`)
+      .expect(422);
   });
 
   afterAll(async () => {
