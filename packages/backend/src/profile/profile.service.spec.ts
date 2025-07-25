@@ -21,10 +21,10 @@ describe('ProfileService', () => {
     const profileId = 'some-uuid';
     const update: UpdateProfileDto = {
       bio: 'Some bio',
-      displayName: 'Some displayName',
+      display_name: 'Some displayName',
       username: 'userName',
       email: 'userEmail',
-      socialLinks: ['https://linkedin.com/in/some-uuid'],
+      social_links: ['https://linkedin.com/in/some-uuid'],
     };
     await service.update(profileId, update);
 
