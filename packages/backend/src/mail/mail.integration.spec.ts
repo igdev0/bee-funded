@@ -4,7 +4,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import mailConfig from './mail.config';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import * as process from 'node:process';
 
 describe('MailService', () => {
   let module: TestingModule;
@@ -13,15 +12,13 @@ describe('MailService', () => {
   beforeEach(async () => {
     module = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({
-          envFilePath:
-            process.env.NODE_ENV === 'test' ? '.env.test.local' : '.env',
+        await ConfigModule.forRoot({
+          envFilePath: '.env.test.local',
         }),
         MailerModule.forRootAsync({
           imports: [
-            ConfigModule.forRoot({
-              envFilePath:
-                process.env.NODE_ENV === 'test' ? '.env.test.local' : '.env',
+            await ConfigModule.forRoot({
+              envFilePath: '.env.test.local',
             }),
             ConfigModule.forFeature(mailConfig),
           ],
@@ -73,11 +70,7 @@ describe('MailService', () => {
       code: '0x0d03',
       name: 'Ianos',
     });
-
-    console.log(response);
     expect(response.envelope.to).toEqual(['test@gmail.com']);
     expect(response.envelope.from).toEqual('noreply@dorultanianos.dev');
-
-    module.get(ConfigService).get('APP');
   });
 });
