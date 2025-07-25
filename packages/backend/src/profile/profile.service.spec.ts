@@ -68,4 +68,34 @@ describe('ProfileService', () => {
       followers: [{ id: folowerProfile.id }],
     });
   });
+
+  it('should be able to unfollow a profile', async () => {
+    const folowerProfile = {
+      id: 'some-folower-profile-uuid',
+      following: [{ id: 'some-folowee-profile-uuid' }],
+      followers: [],
+    };
+
+    const foloweeProfile = {
+      id: 'some-folowee-profile-uuid',
+      following: [],
+      followers: [
+        { id: 'some-folower-profile-uuid' },
+        { id: 'some-other-follower' },
+      ],
+    };
+    profileRepository.findOneOrFail
+      .mockResolvedValueOnce(folowerProfile as unknown as ProfileEntity)
+      .mockResolvedValueOnce(foloweeProfile as unknown as ProfileEntity);
+
+    await service.unfollow(folowerProfile.id, foloweeProfile.id);
+
+    expect(profileRepository.update).toHaveBeenCalledWith(folowerProfile.id, {
+      following: [],
+    });
+
+    expect(profileRepository.update).toHaveBeenCalledWith(foloweeProfile.id, {
+      followers: [{ id: 'some-other-follower' }],
+    });
+  });
 });
