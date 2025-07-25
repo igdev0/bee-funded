@@ -5,6 +5,7 @@ import ProfileEntity from './entities/profile.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CacheManagerStore } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('ProfileService', () => {
   let service: ProfileService;
@@ -26,6 +27,35 @@ describe('ProfileService', () => {
     expect(code).toBeDefined();
     expect(code.length).toEqual(5);
     expect(cacheService.set).toHaveBeenCalledWith('test@gmail.com', code, 300);
+  });
+
+  describe('Verifying a email verification code', () => {
+    it('should throw NotFoundException if the cache does not have the code', async () => {
+      await expect(
+        service.verifyVerificationCode('d@gm.com', 'a1cde'),
+      ).rejects.toThrow(
+        new NotFoundException(
+          'The verification code does not exist, or it expired',
+        ),
+      );
+    });
+
+    it('should throw BadRequestException if the codes mismatch', async () => {
+      cacheService.get.mockResolvedValue('a1cde');
+
+      await expect(
+        service.verifyVerificationCode('d@gm.com', 'b1cde'),
+      ).rejects.toThrow(
+        new BadRequestException('Verification code is incorrect'),
+      );
+    });
+
+    it('should return true if the code is valid', async () => {
+      cacheService.get.mockResolvedValue('a1cde');
+      await expect(
+        service.verifyVerificationCode('d@gm.com', 'a1cde'),
+      ).resolves.toBeTruthy();
+    });
   });
 
   it('should update profile database and return the new ProfileEntity', async () => {
