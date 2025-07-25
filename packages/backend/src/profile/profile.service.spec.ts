@@ -3,18 +3,29 @@ import { Mocked, TestBed } from '@suites/unit';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import ProfileEntity from './entities/profile.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CacheManagerStore } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('ProfileService', () => {
   let service: ProfileService;
   let profileRepository: Mocked<Repository<ProfileEntity>>;
+  let cacheService: Mocked<CacheManagerStore>;
   beforeEach(async () => {
     const { unit, unitRef } = await TestBed.solitary(ProfileService).compile();
     service = unit;
     profileRepository = unitRef.get('ProfileEntityRepository');
+    cacheService = unitRef.get(CACHE_MANAGER);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should be able to generate verification code and cache it', async () => {
+    const code = await service.generateVerificationCode('test@gmail.com');
+    expect(code).toBeDefined();
+    expect(code.length).toEqual(5);
+    expect(cacheService.set).toHaveBeenCalledWith('test@gmail.com', code, 300);
   });
 
   it('should update profile database and return the new ProfileEntity', async () => {
