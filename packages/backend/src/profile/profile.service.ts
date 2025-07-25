@@ -14,7 +14,7 @@ import * as crypto from 'node:crypto';
 import { CacheManagerStore } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MailService } from '../mail/mail.service';
-import * as process from 'node:process';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ProfileService {
@@ -25,6 +25,7 @@ export class ProfileService {
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
     private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -48,12 +49,17 @@ export class ProfileService {
       );
     }
     const code = await this.generateVerificationCode(profile.email);
-    await this.mailService.sendEmailVerification(profile.email, {
-      expiresIn: '5 Minutes',
-      code,
-      name: profile.display_name ?? profile.email?.split('@')[0],
-    });
-    return process.env.NODE_ENV === 'test' ? code : true;
+    const isTestMode = this.configService.get<string>('NODE_ENV') === 'test';
+    if (!isTestMode) {
+      await this.mailService.sendEmailVerification(profile.email, {
+        expiresIn: '5 Minutes',
+        code,
+        name: profile.display_name ?? profile.email?.split('@')[0],
+      });
+      return true;
+    } else {
+      return code;
+    }
   }
 
   /**

@@ -40,18 +40,18 @@ export class ProfileController {
   @UseGuards(AuthGuard)
   verifyEmail(
     @GetUser() user: UserEntity,
-    @Param('verificationCode') verificationCode: string,
+    @Body() body: { verificationCode: string },
   ) {
     if (!user.profile.email) {
       throw new UnprocessableEntityException('You must first save your email');
     }
     return this.profileService.verifyEmail(
       user.profile.email,
-      verificationCode,
+      body.verificationCode,
     );
   }
 
-  @Patch('send-email-verification')
+  @Post('send-email-verification')
   @UseGuards(AuthGuard)
   sendVerificationEmail(@GetUser() user: UserEntity) {
     if (!user.profile.email) {

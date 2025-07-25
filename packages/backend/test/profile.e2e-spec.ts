@@ -42,6 +42,7 @@ function deleteAllUploads() {
     console.error('Error deleting uploads:', err);
   }
 }
+
 jest.mock('@nestjs-modules/mailer/dist/adapters/handlebars.adapter', () => {
   return {
     HandlebarsAdapter: jest.fn().mockImplementation(() => ({
@@ -235,6 +236,25 @@ describe('ProfileController (e2e)', () => {
       .patch(`/profile/${users[0].profileId}/follow`)
       .set('authorization', `Bearer ${users[0].accessToken}`)
       .expect(422);
+  });
+
+  describe('sending and verifying email', () => {
+    let verificationCode: string;
+    it('should be able to send email verification code', async () => {
+      const res = await request(httpServer)
+        .post(`/profile/send-email-verification`)
+        .set('authorization', `Bearer ${users[0].accessToken}`)
+        .expect(201);
+      verificationCode = res.text;
+    });
+    //
+    // it('should be able to verify email verification code', async () => {
+    //   await request(httpServer)
+    //     .patch(`/profile/verify-email`)
+    //     .set('authorization', `Bearer ${users[0].accessToken}`)
+    //     .send({ verificationCode: verificationCode })
+    //     .expect(200);
+    // });
   });
 
   afterAll(async () => {
