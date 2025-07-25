@@ -34,34 +34,36 @@ export class ProfileService {
 
   /**
    * It follows a profile
-   * @param folowerId – The profile id of the person who is following someone else.
-   * @param foloweeId – The profile id of the person who is being followed.
+   * @param followerId – The profile id of the person who is following someone else.
+   * @param followeeId – The profile id of the person who is being followed.
    */
-  async follow(folowerId: string, foloweeId: string) {
+  async follow(followerId: string, followeeId: string) {
     const followerProfile = await this.profileRepository.findOneOrFail({
-      where: { id: folowerId },
+      where: { id: followerId },
     });
     const followeeProfile = await this.profileRepository.findOneOrFail({
-      where: { id: foloweeId },
+      where: { id: followeeId },
     });
 
     const currentFollowing = followerProfile.following;
-    const isAlreadyFollowing = currentFollowing.some((p) => p.id === foloweeId);
+    const isAlreadyFollowing = currentFollowing.some(
+      (p) => p.id === followeeId,
+    );
 
     if (!isAlreadyFollowing) {
-      currentFollowing.push({ id: foloweeId } as ProfileEntity);
-      await this.profileRepository.update(folowerId, {
+      currentFollowing.push({ id: followeeId } as ProfileEntity);
+      await this.profileRepository.update(followerId, {
         following: currentFollowing,
       });
     }
 
     // Update "followers" list
     const currentFollowers = followeeProfile.followers;
-    const isAlreadyFollowed = currentFollowers.some((p) => p.id === folowerId);
+    const isAlreadyFollowed = currentFollowers.some((p) => p.id === followerId);
 
     if (!isAlreadyFollowed) {
-      currentFollowers.push({ id: folowerId } as ProfileEntity);
-      await this.profileRepository.update(foloweeId, {
+      currentFollowers.push({ id: followerId } as ProfileEntity);
+      await this.profileRepository.update(followeeId, {
         followers: currentFollowers,
       });
     }
