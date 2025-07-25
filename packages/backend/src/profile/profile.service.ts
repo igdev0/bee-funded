@@ -66,5 +66,6 @@ export class ProfileService {
         followers: currentFollowers,
       });
     }
+    return true;
   }
 }

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   UploadedFile,
@@ -64,10 +65,10 @@ export class ProfileController {
     });
   }
 
-  @Patch('follow')
+  @Patch('follow/:foloweeId')
   @UseGuards(AuthGuard)
-  follow() {
-    return 'follow';
+  follow(@GetUser() user: UserEntity, @Param('foloweeId') foloweeId: string) {
+    return this.profileService.follow(user.profile.id, foloweeId);
   }
 
   @Patch('unfollow')
