@@ -65,9 +65,9 @@ export class ProfileController {
     });
   }
 
-  @Patch('/:foloweeId/follow')
+  @Patch('/:followeeId/follow')
   @UseGuards(AuthGuard)
-  follow(@GetUser() user: UserEntity, @Param('foloweeId') foloweeId: string) {
-    return this.profileService.follow(user.profile.id, foloweeId);
+  follow(@GetUser() user: UserEntity, @Param('followeeId') followeeId: string) {
+    return this.profileService.follow(user.profile.id, followeeId);
   }
 }
