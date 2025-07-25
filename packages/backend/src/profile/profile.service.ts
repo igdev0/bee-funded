@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   Logger,
   UnprocessableEntityException,
@@ -7,15 +8,35 @@ import { Repository } from 'typeorm';
 import ProfileEntity from './entities/profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import * as crypto from 'node:crypto';
+import { CacheManagerStore } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class ProfileService {
   logger = new Logger('ProfileService');
 
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheService: CacheManagerStore,
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
   ) {}
+
+  /**
+   * @param email – Profile email to be verified
+   * @returns Promise<string> – The generated verification code
+   */
+  async generateVerificationCode(email: string): Promise<string> {
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const bytes = crypto.randomBytes(5);
+    const code = Array.from(bytes)
+      .map((byte) => chars[byte % chars.length])
+      .join('');
+
+    await this.cacheService.set(email, code, 5 * 60);
+    return code;
+  }
 
   /**
    * It updates the profile database and returns the ProfileEntity
