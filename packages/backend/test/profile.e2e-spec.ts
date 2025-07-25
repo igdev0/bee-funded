@@ -247,14 +247,14 @@ describe('ProfileController (e2e)', () => {
         .expect(201);
       verificationCode = res.text;
     });
-    //
-    // it('should be able to verify email verification code', async () => {
-    //   await request(httpServer)
-    //     .patch(`/profile/verify-email`)
-    //     .set('authorization', `Bearer ${users[0].accessToken}`)
-    //     .send({ verificationCode: verificationCode })
-    //     .expect(200);
-    // });
+
+    it('should be able to verify email verification code', async () => {
+      await request(httpServer)
+        .patch(`/profile/verify-email`)
+        .set('authorization', `Bearer ${users[0].accessToken}`)
+        .send({ verificationCode: verificationCode })
+        .expect(200);
+    });
   });
 
   afterAll(async () => {
