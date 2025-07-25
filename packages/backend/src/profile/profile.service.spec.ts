@@ -5,7 +5,11 @@ import ProfileEntity from './entities/profile.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CacheManagerStore } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
 describe('ProfileService', () => {
   let service: ProfileService;
@@ -20,6 +24,37 @@ describe('ProfileService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('sending verification email', () => {
+    it('if the email is not passed as prop, it should throw UnprocessableEntityException', async () => {
+      await expect(
+        service.sendVerificationEmail({ email_verified: true }),
+      ).rejects.toThrow(
+        new UnprocessableEntityException('Email address is required'),
+      );
+    });
+
+    it('if the email_verified is true, it should throw UnprocessableEntityException', async () => {
+      await expect(
+        service.sendVerificationEmail({
+          email: 'email@gmail.com',
+          email_verified: true,
+        }),
+      ).rejects.toThrow(
+        new UnprocessableEntityException(
+          'The email address is already verified',
+        ),
+      );
+    });
+    it('should call sendEmailVerification with email and context', async () => {
+      await expect(
+        service.sendVerificationEmail({
+          email: 'email@gmail.com',
+          email_verified: false,
+        }),
+      ).resolves.toBeTruthy();
+    });
   });
 
   it('should be able to generate verification code and cache it', async () => {

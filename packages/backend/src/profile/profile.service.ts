@@ -33,7 +33,7 @@ export class ProfileService {
    * verification code and sends it via the mail service.
    *
    * @param profile – A partial ProfileEntity containing at least the email (and optionally display name).
-   *
+   * @returns boolean - If everything works out.
    * @throws UnprocessableEntityException if the email is missing or already verified.
    */
   async sendVerificationEmail(profile: Partial<ProfileEntity>) {
@@ -52,6 +52,7 @@ export class ProfileService {
       code,
       name: profile.display_name ?? profile.email?.split('@')[0],
     });
+    return true;
   }
 
   /**
