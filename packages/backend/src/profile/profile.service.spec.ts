@@ -65,23 +65,27 @@ describe('ProfileService', () => {
       .mockResolvedValueOnce(followerProfile as unknown as ProfileEntity)
       .mockResolvedValueOnce(followeeProfile as unknown as ProfileEntity);
 
-    await service.follow(followerProfile.id, followeeProfile.id);
+    const updatedProfile = await service.follow(
+      followerProfile.id,
+      followeeProfile.id,
+    );
 
     expect(mockOf).toHaveBeenCalledWith(followerProfile.id);
     expect(mockAdd).toHaveBeenCalledWith(followeeProfile.id);
+    expect(updatedProfile.following).toEqual([{ id: followeeProfile.id }]);
   });
 
   it('should be able to unfollow a profile', async () => {
     const followerProfile = {
       id: 'some-follower-profile-uuid',
-      following: ['some-followee-profile-uuid'],
+      following: [{ id: 'some-followee-profile-uuid' }],
       followers: [],
     };
 
     const followeeProfile = {
       id: 'some-followee-profile-uuid',
       following: [],
-      followers: ['some-follower-profile-uuid'],
+      followers: [{ id: 'some-follower-profile-uuid' }],
     };
     const mockRemove = jest.fn();
     const mockOf = jest.fn().mockReturnValue({ remove: mockRemove });
@@ -95,9 +99,13 @@ describe('ProfileService', () => {
       .mockResolvedValueOnce(followerProfile as unknown as ProfileEntity)
       .mockResolvedValueOnce(followeeProfile as unknown as ProfileEntity);
 
-    await service.unfollow(followerProfile.id, followeeProfile.id);
+    const updatedProfile = await service.unfollow(
+      followerProfile.id,
+      followeeProfile.id,
+    );
 
     expect(mockOf).toHaveBeenCalledWith(followerProfile.id);
     expect(mockRemove).toHaveBeenCalledWith(followeeProfile.id);
+    expect(updatedProfile.following).toEqual([]);
   });
 });
