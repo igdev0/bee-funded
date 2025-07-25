@@ -58,6 +58,15 @@ describe('ProfileService', () => {
     });
   });
 
+  it('should verify email and update the database', async () => {
+    cacheService.get.mockResolvedValue('a1cde');
+    await service.verifyEmail('d@g.com', 'a1cde');
+    expect(profileRepository.update).toHaveBeenCalledWith(
+      { email: 'd@g.com' },
+      { email_verified: true },
+    );
+  });
+
   it('should update profile database and return the new ProfileEntity', async () => {
     const profileId = 'some-uuid';
     const update: UpdateProfileDto = {
