@@ -67,4 +67,33 @@ export class ProfileService {
     }
     return true;
   }
+
+  /**
+   * It unfollows a profile
+   * @param followerId – The profile id of the person who is following someone else.
+   * @param followeeId – The profile id of the person who is being followed.
+   */
+  async unfollow(followerId: string, followeeId: string) {
+    const followerProfile = await this.profileRepository.findOneOrFail({
+      where: { id: followerId },
+    });
+    const followeeProfile = await this.profileRepository.findOneOrFail({
+      where: { id: followeeId },
+    });
+
+    if (followerProfile.following.some((p) => p.id === followeeId)) {
+      await this.profileRepository.update(followerId, {
+        following: followerProfile.following.filter((p) => p.id !== followeeId),
+      });
+    }
+
+    // Update "followers" list
+
+    if (followeeProfile.followers.some((p) => p.id === followerId)) {
+      await this.profileRepository.update(followeeId, {
+        followers: followeeProfile.followers.filter((p) => p.id !== followerId),
+      });
+    }
+    return true;
+  }
 }
