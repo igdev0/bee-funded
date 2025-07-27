@@ -11,10 +11,23 @@ contract BeeFundedCore is IBeeFundedCore {
     event PoolMetadataUpdated(uint indexed poolId, uint indexed newMetadataId);
 
     mapping(uint => Pool) public pools;
-    mapping(uint => mapping(address => uint)) public override poolBalances;
+    /// @dev The balances mapping of a pool -> token -> value
+    mapping(uint => mapping(address => uint)) public override balances;
 
     using Counters for Counters.Counter;
     Counters.Counter private poolID;
+
+    address private donationManagerAddress;
+    constructor(address _donationManagerAddress) {
+        donationManagerAddress = _donationManagerAddress;
+    }
+
+    // This modifier is used to protect the modification of the balances
+    modifier isAllowedContracts {
+        require(msg.sender == donationManagerAddress || msg.sender == address(this));
+        _;
+    }
+
     modifier isPoolOwner(uint _poolId) {
         require(pools[_poolId].owner != address(0), "Pool does not exist");
         require(pools[_poolId].owner == msg.sender, "Not pool owner");
@@ -77,8 +90,7 @@ contract BeeFundedCore is IBeeFundedCore {
     }
 
 
-    function updatePoolBalance(uint poolId, address tokenAddress, uint amount) external override {
-        require(msg.sender == address(this), "Only callable by this contract");
-        poolBalances[poolId][tokenAddress] += amount;
+    function updatePoolBalance(uint poolId, address tokenAddress, uint amount) external isAllowedContracts override {
+        balances[poolId][tokenAddress] += amount;
     }
 }

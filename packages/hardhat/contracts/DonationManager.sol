@@ -67,7 +67,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     ) internal {
         require(amount > 0, "Amount must be > 0");
         require(
-            core.poolBalances(poolId, tokenAddress) + amount <= core.getPool(poolId).maxAmountToken,
+            core.balances(poolId, tokenAddress) + amount <= core.getPool(poolId).maxAmountToken,
             "Exceeds max pool amount"
         );
 
@@ -85,8 +85,8 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     function withdraw(uint poolId, address tokenAddress, uint amount) external nonReentrant {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         require(core.getPool(poolId).owner == msg.sender, "Not pool owner");
-        require(amount <= core.poolBalances(poolId, tokenAddress), "Insufficient balance");
-        uint poolBalance = core.poolBalances(poolId, tokenAddress);
+        require(amount <= core.balances(poolId, tokenAddress), "Insufficient balance");
+        uint poolBalance = core.balances(poolId, tokenAddress);
         core.updatePoolBalance(poolId, tokenAddress, poolBalance - amount);
 
         if (tokenAddress == address(0)) {
