@@ -59,7 +59,7 @@ contract BeeFundedCore is IBeeFundedCore {
     }
 
     /**
-    @dev This function can only be called externally by the owner, its functionality is to provide a easy way to update the metadataId
+    @dev This function can only be called externally by the owner of the pool, its functionality is to provide a easy way to update the metadataId
     @param poolId – The Pool.id incremented above (see poolID).
     @param newMetadataId – The hash of a given id generated outside the contract.
     */
