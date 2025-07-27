@@ -76,24 +76,9 @@ contract BeeFundedCore is IBeeFundedCore {
         return poolID.current();
     }
 
+
     function updatePoolBalance(uint poolId, address tokenAddress, uint amount) external override {
         require(msg.sender == address(this), "Only callable by this contract");
         poolBalances[poolId][tokenAddress] += amount;
-    }
-
-    function addDonation(
-        uint poolId,
-        address donor,
-        address tokenAddress,
-        uint amount,
-        string memory message
-    ) external override {
-        require(msg.sender == address(this), "Only callable by this contract");
-        pools[poolId].donations.push(Donation({
-            donor: donor,
-            token: tokenAddress,
-            amount: amount,
-            message: message
-        }));
     }
 }

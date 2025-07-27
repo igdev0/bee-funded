@@ -13,6 +13,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     event NewDonation(address indexed from, address indexed token, uint amount, string message);
 
     IBeeFundedCore public immutable core;
+    IDonationManager public immutable donationManager;
 
     constructor(IBeeFundedCore _core) {
         core = _core;
@@ -77,7 +78,6 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
             require(token.transferFrom(donor, address(this), amount), "Transfer failed");
         }
 
-        core.addDonation(poolId, donor, tokenAddress, amount, message);
         core.updatePoolBalance(poolId, tokenAddress, amount);
         emit NewDonation(donor, tokenAddress, amount, message);
     }

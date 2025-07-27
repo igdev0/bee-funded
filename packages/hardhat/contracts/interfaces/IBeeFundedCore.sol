@@ -10,7 +10,6 @@ interface IBeeFundedCore {
         uint maxAmountToken;
         uint metadataId;
         uint chainId;
-        Donation[] donations;
     }
 
     struct Donation {
@@ -25,5 +24,4 @@ interface IBeeFundedCore {
     function poolBalances(uint poolId, address tokenAddress) external view returns (uint);
     function currentPoolID() external view returns (uint);
     function updatePoolBalance(uint poolId, address tokenAddress, uint amount) external;
-    function addDonation(uint poolId, address donor, address tokenAddress, uint amount, string memory message) external;
 }
