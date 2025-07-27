@@ -8,7 +8,7 @@ interface IBeeFundedCore {
         uint id;
         address owner;
         uint maxAmountToken;
-        string metadataUrl;
+        uint metadataId;
         uint chainId;
         Donation[] donations;
     }
@@ -21,6 +21,7 @@ interface IBeeFundedCore {
     }
 
     function getPool(uint poolId) external view returns (Pool memory);
+    function getPoolOwner(uint poolId) external view returns (address);
     function poolBalances(uint poolId, address tokenAddress) external view returns (uint);
     function incrementPoolID() external;
     function currentPoolID() external view returns (uint);

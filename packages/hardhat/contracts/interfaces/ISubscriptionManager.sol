@@ -17,6 +17,11 @@ interface ISubscriptionManager {
 
     function getSubscriptions() external view returns (Subscription[] memory);
     function getSubscription(uint index) external view returns (Subscription memory);
+    /**
+    @dev This function can be used to find
+    @param subscriber – The user who subscribed
+    @param creator – The user who created the pool, aka the pool owner.
+    */
     function isSubscribedMap(address subscriber, address creator) external view returns (bool);
     function subscribe(
         address subscriber,

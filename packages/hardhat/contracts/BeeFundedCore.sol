@@ -8,7 +8,7 @@ import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidi
 /// @notice Manages pools, balances, and pool creation
 contract BeeFundedCore is IBeeFundedCore {
     event DonationPoolCreated(uint indexed id, address indexed creator);
-    event PoolMetadataUpdated(uint indexed poolId, string newMetadataUrl);
+    event PoolMetadataUpdated(uint indexed poolId, uint indexed newMetadataId);
 
     mapping(uint => Pool) public pools;
     mapping(uint => mapping(address => uint)) public override poolBalances;
@@ -21,26 +21,48 @@ contract BeeFundedCore is IBeeFundedCore {
         _;
     }
 
+    /**
+    @dev This function should be used to retrieve a whole pool from pools mapping.
+    @param poolId – The Pool.id
+    */
     function getPool(uint poolId) external view returns (Pool memory) {
         return pools[poolId];
     }
 
-    function createPool(uint _maxAmountToken, string calldata metadata) external returns (uint) {
+    /**
+    @dev This function can be used to retrieve the owner for a given pool
+    @param poolId – The Pool.id
+    */
+    function getPoolOwner(uint poolId) external view returns (address) {
+        return pools[poolId].owner;
+    }
+
+    /**
+    @dev This function can be used to create new pools.
+    When creating a new pool, the counter is increased by one after creating the pool, therefore
+    the id is zero-based.
+    @param _maxAmountToken – The token that each of the donations will be compared to, in order to measure how close
+    your pool is to reach the maxAmount or the goal. Choosing a stable coin like USDC will enable the donation pool to
+    have a wider range of tokens that users can use to donate.
+    @param metadataId – This is the keccak256 hash of the ID of the entity that stores metadata
+    such as images, content, tags or other.
+    */
+    function createPool(uint _maxAmountToken, uint metadataId) external returns (uint) {
         uint newPoolId = poolID.current();
         Pool storage newPool = pools[newPoolId];
         newPool.id = newPoolId;
-        newPool.metadataUrl = metadata;
+        newPool.metadataId = metadataId;
         newPool.owner = msg.sender;
         newPool.maxAmountToken = _maxAmountToken;
         newPool.chainId = block.chainid;
-        emit DonationPoolCreated(newPoolId, msg.sender);
         poolID.increment();
+        emit DonationPoolCreated(newPoolId, msg.sender);
         return newPoolId;
     }
 
-    function updatePoolMetadata(uint poolId, string calldata newMetadata) external isPoolOwner(poolId) {
-        pools[poolId].metadataUrl = newMetadata;
-        emit PoolMetadataUpdated(poolId, newMetadata);
+    function updatePoolMetadata(uint poolId, uint newMetadataId) external isPoolOwner(poolId) {
+        pools[poolId].metadataId = newMetadataId;
+        emit PoolMetadataUpdated(poolId, newMetadataId);
     }
 
     function incrementPoolID() external override {
