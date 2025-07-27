@@ -31,7 +31,7 @@ contract BeeFundedCore is IBeeFundedCore {
 
     /**
     @dev This function can be used to retrieve the owner for a given pool
-    @param poolId – The Pool.id
+    @param poolId – The Pool.id incremented above (see poolID)
     */
     function getPoolOwner(uint poolId) external view returns (address) {
         return pools[poolId].owner;
