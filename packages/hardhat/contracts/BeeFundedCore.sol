@@ -7,7 +7,7 @@ import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidi
 /// @title BeeFundedCore - Core state and pool management for BeeFunded
 /// @notice Manages pools, balances, and pool creation
 contract BeeFundedCore is IBeeFundedCore {
-    event DonationPoolCreated(uint indexed id, address indexed creator);
+    event DonationPoolCreated(uint indexed id, address indexed creator, uint indexed metadataId);
     event PoolMetadataUpdated(uint indexed poolId, uint indexed newMetadataId);
 
     mapping(uint => Pool) public pools;
@@ -55,7 +55,7 @@ contract BeeFundedCore is IBeeFundedCore {
         newPool.maxAmountToken = _maxAmountToken;
         newPool.chainId = block.chainid;
         poolID.increment();
-        emit DonationPoolCreated(newPoolId, msg.sender);
+        emit DonationPoolCreated(newPoolId, msg.sender, metadataId);
     }
 
     /**
