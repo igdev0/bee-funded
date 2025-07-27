@@ -69,6 +69,10 @@ contract BeeFundedCore is IBeeFundedCore {
         emit PoolMetadataUpdated(poolId, newMetadataId);
     }
 
+    /**
+    @dev This function simply retrieves the current id of the pools.
+    @return poolID.current() – A uint.
+    */
     function currentPoolID() external view override returns (uint) {
         return poolID.current();
     }
