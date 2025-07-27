@@ -46,7 +46,7 @@ contract BeeFundedCore is IBeeFundedCore {
     have a wider range of tokens that users can use to donate.
     @param metadataId – This is the keccak256 hash of the ID generated outside the contract.
     */
-    function createPool(uint _maxAmountToken, uint metadataId) external returns (uint) {
+    function createPool(uint _maxAmountToken, uint metadataId) external {
         uint newPoolId = poolID.current();
         Pool storage newPool = pools[newPoolId];
         newPool.id = newPoolId;
@@ -56,7 +56,6 @@ contract BeeFundedCore is IBeeFundedCore {
         newPool.chainId = block.chainid;
         poolID.increment();
         emit DonationPoolCreated(newPoolId, msg.sender);
-        return newPoolId;
     }
 
     /**
