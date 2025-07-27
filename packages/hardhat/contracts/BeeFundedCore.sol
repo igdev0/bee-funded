@@ -59,7 +59,12 @@ contract BeeFundedCore is IBeeFundedCore {
         return newPoolId;
     }
 
-    function updatePoolMetadata(uint poolId, uint newMetadataId) external isPoolOwner(poolId) {
+    /**
+    @dev This function can only be called externally, its functionality is to provide a easy way to update the metadataId
+    @param poolId – The Pool.id incremented above (see poolID).
+    @param newMetadataId – The hash of a given id generated outside the contract.
+    */
+    function updatePoolMetadataId(uint poolId, uint newMetadataId) external isPoolOwner(poolId) {
         pools[poolId].metadataId = newMetadataId;
         emit PoolMetadataUpdated(poolId, newMetadataId);
     }
