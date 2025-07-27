@@ -44,8 +44,7 @@ contract BeeFundedCore is IBeeFundedCore {
     @param _maxAmountToken – The token that each of the donations will be compared to, in order to measure how close
     your pool is to reach the maxAmount or the goal. Choosing a stable coin like USDC will enable the donation pool to
     have a wider range of tokens that users can use to donate.
-    @param metadataId – This is the keccak256 hash of the ID of the entity that stores metadata
-    such as images, content, tags or other.
+    @param metadataId – This is the keccak256 hash of the ID generated outside the contract.
     */
     function createPool(uint _maxAmountToken, uint metadataId) external returns (uint) {
         uint newPoolId = poolID.current();
