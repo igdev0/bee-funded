@@ -21,7 +21,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("BeeFunded", {
+  await deploy("BeeFundedCore", {
     from: deployer,
     // Contract constructor arguments
     args: [],
