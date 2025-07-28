@@ -106,7 +106,26 @@ contract SubscriptionManager is ISubscriptionManager {
         isSubscribedMap[subscriber][core.getPool(poolId).owner] = true;
         emit SubscriptionCreated(poolId, subscriber, core.getPool(poolId).owner, amount, interval, duration);
     }
-
+    
+    /**
+     * @dev Cancels all active subscriptions for the caller.
+     * Marks any matching subscriptions as inactive and updates the subscription mapping.
+     *
+     * Requirements:
+     * - Caller must have at least one active subscription.
+     *
+     * Effects:
+     * - Loops through the `subscriptions` array.
+     * - For each active subscription belonging to the caller, sets `active` to false.
+     * - Updates `isSubscribedMap` to allow re-subscribing to the same pool owner.
+     *
+     * Reverts:
+     * - If the caller has no active subscriptions.
+     *
+     * Note:
+     * - This function does not delete subscription records, it only marks them as inactive.
+     * - Multiple active subscriptions (if allowed in the future) will all be canceled.
+     */
     function unsubscribe() external override {
         bool found;
         for (uint i; i < subscriptions.length; i++) {
