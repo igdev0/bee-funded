@@ -43,14 +43,12 @@ contract AutomationUpkeep is IAutomationUpkeep {
         try donationManager.performSubscription(sub.subscriber, sub.poolId, sub.token, sub.amount) {
             if (sub.remainingDuration == 1) {
                 subscriptionManager.updateSubscription(index, false, 0, sub.nextPaymentTime);
-                subscriptionManager.setSubscribedMap(sub.subscriber, core.getPool(sub.poolId).owner, false);
                 emit SubscriptionExpired(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
             } else {
                 subscriptionManager.updateSubscription(index, true, sub.remainingDuration - 1, sub.nextPaymentTime + sub.interval);
             }
         } catch {
             subscriptionManager.updateSubscription(index, false, sub.remainingDuration, sub.nextPaymentTime);
-            subscriptionManager.setSubscribedMap(sub.subscriber, core.getPool(sub.poolId).owner, false);
             emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
         }
     }

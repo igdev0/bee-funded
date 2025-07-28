@@ -18,11 +18,17 @@ interface ISubscriptionManager {
     function getSubscriptions() external view returns (Subscription[] memory);
     function getSubscription(uint index) external view returns (Subscription memory);
     /**
-    @dev This function can be used to find
-    @param subscriber – The user who subscribed
-    @param creator – The user who created the pool, aka the pool owner.
+     * @param subscriber The address of the user initiating the subscription.
+     * @param poolId The ID of the pool to subscribe to.
+     * @param token The address of the ERC20 token to be donated.
+     * @param amount The amount to donate per interval.
+     * @param interval The time (in seconds) between each donation.
+     * @param duration The number of recurring donations to make.
+     * @param deadline The expiry timestamp for the permit signature.
+     * @param v The recovery byte of the permit signature.
+     * @param r Half of the permit signature.
+     * @param s Half of the permit signature.
     */
-    function isSubscribedMap(address subscriber, address creator) external view returns (bool);
     function subscribe(
         address subscriber,
         uint poolId,
@@ -35,12 +41,11 @@ interface ISubscriptionManager {
         bytes32 r,
         bytes32 s
     ) external;
-    function unsubscribe() external;
+    function unsubscribe(uint _subId) external;
     function updateSubscription(
         uint index,
         bool active,
         uint8 remainingDuration,
         uint nextPaymentTime
     ) external;
-    function setSubscribedMap(address subscriber, address creator, bool subscribed) external;
 }

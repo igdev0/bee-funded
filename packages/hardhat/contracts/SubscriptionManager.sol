@@ -4,18 +4,23 @@ pragma solidity >=0.8.30;
 import {IBeeFundedCore} from "./interfaces/IBeeFundedCore.sol";
 import {IDonationManager} from "./interfaces/IDonationManager.sol";
 import {ISubscriptionManager} from "./interfaces/ISubscriptionManager.sol";
+import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
 /// @title SubscriptionManager - Handles subscriptions for BeeFunded
 /// @notice Manages subscription creation, cancellation, and queries
 contract SubscriptionManager is ISubscriptionManager {
-    event SubscriptionCreated(uint indexed poolId, address indexed subscriber, address indexed beneficiary, uint amount, uint interval, uint8 duration);
+    event SubscriptionCreated(uint indexed subscriptionId, uint indexed poolId, address indexed subscriber, address beneficiary, uint amount, uint interval, uint8 duration);
 
-    Subscription[] public subscriptions;
+    using Counters for Counters.Counter;
+    Counters.Counter private subscriptionID;
+
+    mapping(uint => Subscription) public subscriptions;
     IBeeFundedCore public immutable core;
     IDonationManager public immutable donationManager;
 
-    mapping(address => mapping(address => bool)) public override isSubscribedMap;
+    /// poolId -> userAddress -> bool
+    mapping(uint => mapping(address => bool)) public isSubscribedMap;
 
     constructor(IBeeFundedCore _core, IDonationManager _donationManager) {
         core = _core;
@@ -28,7 +33,12 @@ contract SubscriptionManager is ISubscriptionManager {
      * @return An array of `Subscription` structs representing current subscriptions.
      */
     function getSubscriptions() external view returns (Subscription[] memory) {
-        return subscriptions;
+        uint count = subscriptionID.current();
+        Subscription[] memory subs = new Subscription[](count);
+        for (uint i; i <= count; i++) {
+            subs[i] = subscriptions[i];
+        }
+        return subs;
     }
 
     /**
@@ -87,12 +97,12 @@ contract SubscriptionManager is ISubscriptionManager {
         require(interval >= 7 days, "Min interval is 7 days");
         require(amount > 0, "Zero amount");
         require(duration > 0, "Duration must be greater than 0");
-        require(!isSubscribedMap[subscriber][core.getPool(poolId).owner], "Already subscribed");
+        uint id = subscriptionID.current();
+        require(!isSubscribedMap[poolId][subscriber], "Already subscribed");
 
         IERC20Permit(token).permit(subscriber, address(this), amount * duration, deadline, v, r, s);
         donationManager.performSubscription(subscriber, poolId, token, amount);
-
-        subscriptions.push(Subscription({
+        subscriptions[id] = Subscription({
             subscriber: subscriber,
             token: token,
             amount: amount,
@@ -101,10 +111,11 @@ contract SubscriptionManager is ISubscriptionManager {
             remainingDuration: duration - 1,
             poolId: poolId,
             active: true
-        }));
+        });
 
-        isSubscribedMap[subscriber][core.getPool(poolId).owner] = true;
-        emit SubscriptionCreated(poolId, subscriber, core.getPool(poolId).owner, amount, interval, duration);
+        isSubscribedMap[poolId][subscriber] = true;
+        emit SubscriptionCreated(id, poolId, subscriber, subscriber, amount, interval, duration);
+        subscriptionID.increment();
     }
 
     /**
@@ -134,8 +145,6 @@ contract SubscriptionManager is ISubscriptionManager {
      * - The subscriber must have an active subscription to the specified pool.
      *
      * Effects:
-     * - Iterates through the `subscriptions` array.
-     * - If a matching active subscription is found:
      *   - Sets `active` to false.
      *   - Sets `nextPaymentTime` to 0.
      *   - Sets `remainingDuration` to 0.
@@ -143,22 +152,19 @@ contract SubscriptionManager is ISubscriptionManager {
      * Reverts:
      * - If no matching active subscription is found.
      *
-     * @param _poolId The ID of the pool to unsubscribe from.
+     * @param _subId The ID of the subscription to unsubscribe from.
      * @param _subscriber The address of the user being unsubscribed.
      */
-    function _unsubscribe(uint _poolId, address _subscriber) internal {
-        bool found;
-        for (uint i; i < subscriptions.length; i++) {
-            Subscription storage sub = subscriptions[i];
-            if(sub.subscriber == _subscriber && sub.active && sub.poolId == _poolId) {
-                sub.active = false;
-                sub.nextPaymentTime = 0;
-                sub.remainingDuration = 0;
-                found = true;
-            }
+    function _unsubscribe(uint _subId, address _subscriber) internal {
+        Subscription storage sub = subscriptions[_subId];
+        require(sub.active, "You are not subscribed to this pool");
+        if (sub.subscriber == _subscriber) {
+            sub.active = false;
+            sub.nextPaymentTime = 0;
+            sub.remainingDuration = 0;
+            isSubscribedMap[sub.poolId][sub.subscriber] = false;
         }
 
-        require(found, "You are not subscribed to this pool");
     }
 
     /**
@@ -172,25 +178,23 @@ contract SubscriptionManager is ISubscriptionManager {
      * - Updates the `active` status, `remainingDuration`, and `nextPaymentTime` of the subscription
      *   at the specified index in the `subscriptions` array.
      *
-     * @param index The index of the subscription to update in the `subscriptions` array.
-     * @param active Whether the subscription is still active.
-     * @param remainingDuration The number of payments remaining in the subscription.
-     * @param nextPaymentTime The UNIX timestamp for the next scheduled payment.
+     * @param _subId The id of the subscription to update in the `subscriptions` array.
+     * @param _active Whether the subscription is still active.
+     * @param _remainingDuration The number of payments remaining in the subscription.
+     * @param _nextPaymentTime The UNIX timestamp for the next scheduled payment.
      */
     function updateSubscription(
-        uint index,
-        bool active,
-        uint8 remainingDuration,
-        uint nextPaymentTime
+        uint _subId,
+        bool _active,
+        uint8 _remainingDuration,
+        uint _nextPaymentTime
     ) external override {
         require(msg.sender == address(this), "Only callable by this contract");
-        subscriptions[index].active = active;
-        subscriptions[index].remainingDuration = remainingDuration;
-        subscriptions[index].nextPaymentTime = nextPaymentTime;
+        Subscription storage sub = subscriptions[_subId];
+        sub.active = _active;
+        sub.remainingDuration = _remainingDuration;
+        sub.nextPaymentTime = _nextPaymentTime;
+        isSubscribedMap[sub.poolId][sub.subscriber] = _active;
     }
 
-    function setSubscribedMap(address subscriber, address creator, bool subscribed) external override {
-        require(msg.sender == address(this), "Only callable by this contract");
-        isSubscribedMap[subscriber][creator] = subscribed;
-    }
 }
