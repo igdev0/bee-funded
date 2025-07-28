@@ -126,18 +126,45 @@ contract SubscriptionManager is ISubscriptionManager {
      * - This function does not delete subscription records, it only marks them as inactive.
      * - Multiple active subscriptions (if allowed in the future) will all be canceled.
      */
-    function unsubscribe() external override {
+    function unsubscribe(uint poolId) external override {
+        _unsubscribe(poolId, msg.sender);
+    }
+
+    /**
+     * @dev Internally cancels an active subscription for a given subscriber and pool.
+     * Marks the subscription as inactive and resets its schedule metadata.
+     *
+     * Requirements:
+     * - The subscriber must have an active subscription to the specified pool.
+     *
+     * Effects:
+     * - Iterates through the `subscriptions` array.
+     * - If a matching active subscription is found:
+     *   - Sets `active` to false.
+     *   - Sets `nextPaymentTime` to 0.
+     *   - Sets `remainingDuration` to 0.
+     *
+     * Reverts:
+     * - If no matching active subscription is found.
+     *
+     * @param _poolId The ID of the pool to unsubscribe from.
+     * @param _subscriber The address of the user being unsubscribed.
+     */
+    function _unsubscribe(uint _poolId, address _subscriber) internal {
         bool found;
         for (uint i; i < subscriptions.length; i++) {
-            if (subscriptions[i].subscriber == msg.sender && subscriptions[i].active) {
-                subscriptions[i].active = false;
-                isSubscribedMap[msg.sender][core.getPool(subscriptions[i].poolId).owner] = false;
+            Subscription storage sub = subscriptions[i];
+            if(sub.subscriber == _subscriber && sub.active && sub.poolId == _poolId) {
+                sub.active = false;
+                sub.nextPaymentTime = 0;
+                sub.remainingDuration = 0;
                 found = true;
             }
         }
-        require(found, "No active subscriptions found");
+
+        require(found, "You are not subscribed to this pool");
     }
-    
+
     /**
      * @dev Internally updates the state of a subscription at a given index.
      * Used by the contract itself to manage subscription lifecycle (e.g., after a recurring donation).
