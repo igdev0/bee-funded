@@ -50,7 +50,7 @@ contract SubscriptionManager is ISubscriptionManager {
         require(!isSubscribedMap[subscriber][core.getPool(poolId).owner], "Already subscribed");
 
         IERC20Permit(token).permit(subscriber, address(this), amount * duration, deadline, v, r, s);
-        donationManager.donate(poolId, token, amount, "Subscription");
+        donationManager.performSubscription(subscriber, poolId, token, amount);
 
         subscriptions.push(Subscription({
             subscriber: subscriber,

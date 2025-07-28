@@ -40,7 +40,7 @@ contract AutomationUpkeep is IAutomationUpkeep {
         require(sub.active, "Subscription is not active");
         require(block.timestamp >= sub.nextPaymentTime, "Not due yet");
 
-        try donationManager._donateExternal(sub.subscriber, sub.poolId, sub.token, sub.amount, "Recurring donation") {
+        try donationManager.performSubscription(sub.subscriber, sub.poolId, sub.token, sub.amount) {
             if (sub.remainingDuration == 1) {
                 subscriptionManager.updateSubscription(index, false, 0, sub.nextPaymentTime);
                 subscriptionManager.setSubscribedMap(sub.subscriber, core.getPool(sub.poolId).owner, false);

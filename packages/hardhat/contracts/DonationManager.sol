@@ -13,19 +13,22 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     event NewDonation(address indexed from, address indexed token, uint amount, string message);
 
     IBeeFundedCore public immutable core;
-
-    constructor(IBeeFundedCore _core) {
+    address private automationUpKeepAddress;
+    constructor(IBeeFundedCore _core, address _automationUpKeepAddress) {
         core = _core;
+        automationUpKeepAddress = _automationUpKeepAddress;
     }
-
-    function donate(
+    /**
+    @dev The Donate native function should be used to donate native tokens.
+    @param poolId – The id of the pool the funds go to.
+    @param message – The message
+    */
+    function donateNative(
         uint poolId,
-        address tokenAddress,
-        uint amount,
         string calldata message
     ) external payable override {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
-        _donate(msg.sender, poolId, tokenAddress, amount, message);
+        _donate(msg.sender, poolId, address(0), msg.value, message);
     }
 
     function donateWithPermit(
@@ -45,16 +48,21 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         _donate(donor, poolId, tokenAddress, amount, message);
     }
 
-    /// @notice External wrapper for _donate to allow try-catch in performUpkeep
-    function _donateExternal(
+    /**
+    @notice External wrapper for _donate to allow try-catch in performUpkeep.
+    @param donor – The wallet address making performing the transfer.
+    @param poolId – The id of the pool the funds go to.
+    @param tokenAddress – The ERC token address.
+    @param amount – The amount to be transferred.
+    */
+    function performSubscription(
         address donor,
         uint poolId,
         address tokenAddress,
-        uint amount,
-        string memory message
+        uint amount
     ) external {
-        require(msg.sender == address(this), "Only callable by this contract");
-        _donate(donor, poolId, tokenAddress, amount, message);
+        require(msg.sender == automationUpKeepAddress, "Only callable by AutomationUpKeep");
+        _donate(donor, poolId, tokenAddress, amount, "");
     }
 
     function _donate(

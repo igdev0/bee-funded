@@ -4,7 +4,7 @@ pragma solidity >=0.8.30;
 /// @title Interface for DonationManager
 /// @notice Defines donation-related functions
 interface IDonationManager {
-    function donate(uint poolId, address tokenAddress, uint amount, string calldata message) external payable;
+    function donateNative(uint poolId, string calldata message) external payable;
 
     function donateWithPermit(
         address donor,
@@ -18,9 +18,9 @@ interface IDonationManager {
         bytes32 s
     ) external;
 
-    function _donateExternal(
+    function performSubscription(
         address donor,
         uint poolId,
         address tokenAddress,
-        uint amount, string calldata message) external;
+        uint amount) external;
 }
