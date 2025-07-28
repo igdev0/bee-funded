@@ -14,6 +14,7 @@ contract BeeFundedCore is IBeeFundedCore {
     /// @dev The balances mapping of a pool -> token -> value
     mapping(uint => mapping(address => uint)) public override balances;
 
+    /// @dev This is the poolID identifier increased everytime createPool is called.
     using Counters for Counters.Counter;
     Counters.Counter private poolID;
 
@@ -89,7 +90,11 @@ contract BeeFundedCore is IBeeFundedCore {
         return poolID.current();
     }
 
-
+    /**
+    @dev Updating pool balance only allowed by the DonateManager contract or this contract
+    @param poolId – The Pool.id incremented above (see poolID).
+    @param token – The Pool.id incremented above (see poolID).
+    */
     function updatePoolBalance(uint poolId, address tokenAddress, uint amount) external isAllowedContracts override {
         balances[poolId][tokenAddress] += amount;
     }
