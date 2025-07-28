@@ -20,11 +20,22 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         automationUpKeepAddress = _automationUpKeepAddress;
         subscriptionManagerAddress = _subscriptionManagerAddress;
     }
+
     /**
-    @dev The Donate native function should be used to donate native tokens.
-    @param poolId – The id of the pool the funds go to.
-    @param message – The message
-    */
+    * @dev Allows a user to donate native currency (e.g., ETH) to a specific pool.
+     * The donation value must be sent along with the transaction (`msg.value`).
+     *
+     * Requirements:
+     * - The specified pool must exist.
+     * - The transaction must include a non-zero `msg.value`.
+     *
+     * Effects:
+     * - Internally calls `_donate` with the sender's address, native token indicator (address(0)),
+     *   the sent value, and the provided message.
+     *
+     * @param poolId The ID of the pool receiving the donation.
+     * @param message A custom message attached to the donation.
+     */
     function donateNative(
         uint poolId,
         string calldata message
@@ -32,7 +43,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         _donate(msg.sender, poolId, address(0), msg.value, message);
     }
-    
+
     /**
      * @dev Allows a donor to donate ERC20 tokens using EIP-2612 permit for gasless approval.
      * This enables off-chain approval and on-chain transfer in a single transaction.
