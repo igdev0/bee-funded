@@ -78,7 +78,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
             require(token.transferFrom(donor, address(this), amount), "Transfer failed");
         }
 
-        core.updatePoolBalance(poolId, tokenAddress, amount);
+        core.increaseTokenBalance(poolId, tokenAddress, amount);
         emit NewDonation(donor, tokenAddress, amount, message);
     }
 
@@ -87,7 +87,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(core.getPool(poolId).owner == msg.sender, "Not pool owner");
         require(amount <= core.balances(poolId, tokenAddress), "Insufficient balance");
         uint poolBalance = core.balances(poolId, tokenAddress);
-        core.updatePoolBalance(poolId, tokenAddress, poolBalance - amount);
+        core.decreaseTokenBalance(poolId, tokenAddress, amount);
 
         if (tokenAddress == address(0)) {
             (bool success,) = payable(msg.sender).call{value: amount}("");
