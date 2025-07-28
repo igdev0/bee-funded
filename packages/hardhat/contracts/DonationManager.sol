@@ -105,7 +105,29 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         core.increaseTokenBalance(poolId, tokenAddress, amount);
         emit NewDonation(donor, tokenAddress, amount, message);
     }
-
+    
+    /**
+     * @dev Allows the pool owner to withdraw a specified amount of tokens or native currency from the pool.
+     *
+     * Requirements:
+     * - The pool must exist.
+     * - The caller must be the owner of the pool.
+     * - The pool must have sufficient balance of the specified token.
+     *
+     * Effects:
+     * - Decreases the token balance of the pool by the specified amount.
+     * - Transfers the requested amount to the pool owner (msg.sender), either in native currency or ERC20 tokens.
+     *
+     * Reverts:
+     * - If the pool does not exist.
+     * - If the caller is not the pool owner.
+     * - If the withdrawal amount exceeds the pool’s token balance.
+     * - If the transfer fails (for either native or ERC20 token).
+     *
+     * @param poolId The ID of the pool from which to withdraw.
+     * @param tokenAddress The address of the token to withdraw (0x0 for native token).
+     * @param amount The amount of tokens or native currency to withdraw.
+     */
     function withdraw(uint poolId, address tokenAddress, uint amount) external nonReentrant {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         require(core.getPool(poolId).owner == msg.sender, "Not pool owner");
