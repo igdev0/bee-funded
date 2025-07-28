@@ -113,7 +113,7 @@ contract SubscriptionManager is ISubscriptionManager {
             remainingDuration: duration - 1,
             poolId: poolId,
             active: true,
-            expired: false
+            expiredAt: 0
         });
 
         isSubscribedMap[poolId][subscriber] = true;
@@ -183,12 +183,14 @@ contract SubscriptionManager is ISubscriptionManager {
      *
      * @param _subId The id of the subscription to update in the `subscriptions` array.
      * @param _active Whether the subscription is still active.
+     * @param _expired Whether the subscription expired.
      * @param _remainingDuration The number of payments remaining in the subscription.
      * @param _nextPaymentTime The UNIX timestamp for the next scheduled payment.
      */
     function updateSubscription(
         uint _subId,
         bool _active,
+        bool _expired,
         uint8 _remainingDuration,
         uint _nextPaymentTime
     ) external override {
@@ -197,6 +199,9 @@ contract SubscriptionManager is ISubscriptionManager {
         sub.active = _active;
         sub.remainingDuration = _remainingDuration;
         sub.nextPaymentTime = _nextPaymentTime;
+        if(_expired) {
+            sub.expiredAt = block.timestamp;
+        }
         isSubscribedMap[sub.poolId][sub.subscriber] = _active;
     }
 

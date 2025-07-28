@@ -13,7 +13,7 @@ interface ISubscriptionManager {
         uint poolId;
         uint8 remainingDuration;
         bool active;
-        bool expired;
+        uint expiredAt;
     }
 
     function getSubscriptions() external view returns (Subscription[] memory);
@@ -46,6 +46,7 @@ interface ISubscriptionManager {
     function updateSubscription(
         uint index,
         bool active,
+        bool expired,
         uint8 remainingDuration,
         uint nextPaymentTime
     ) external;

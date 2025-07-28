@@ -42,13 +42,14 @@ contract AutomationUpkeep is IAutomationUpkeep {
 
         try donationManager.performSubscription(sub.subscriber, sub.poolId, sub.token, sub.amount) {
             if (sub.remainingDuration == 1) {
-                subscriptionManager.updateSubscription(index, false, 0, sub.nextPaymentTime);
+                subscriptionManager.updateSubscription(index, false, true, 0, 0);
                 emit SubscriptionExpired(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
             } else {
-                subscriptionManager.updateSubscription(index, true, sub.remainingDuration - 1, sub.nextPaymentTime + sub.interval);
+                subscriptionManager.updateSubscription(index, true,  false,sub.remainingDuration - 1, block.timestamp + sub.interval);
             }
         } catch {
-            subscriptionManager.updateSubscription(index, false, sub.remainingDuration, sub.nextPaymentTime);
+            /// @todo: implement payments attempts, so that the payment can be reprocessed the next day, therefore the payment won't be skipped as is happening now.
+            subscriptionManager.updateSubscription(index, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
             emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
         }
     }
