@@ -18,13 +18,15 @@ contract SubscriptionManager is ISubscriptionManager {
     mapping(uint => Subscription) public subscriptions;
     IBeeFundedCore public immutable core;
     IDonationManager public immutable donationManager;
+    address private automationUpKeepAddress;
 
-    /// poolId -> userAddress -> bool
+/// poolId -> userAddress -> bool
     mapping(uint => mapping(address => bool)) public isSubscribedMap;
 
-    constructor(IBeeFundedCore _core, IDonationManager _donationManager) {
+    constructor(IBeeFundedCore _core, IDonationManager _donationManager, address _automationUpKeepAddress) {
         core = _core;
         donationManager = _donationManager;
+        automationUpKeepAddress = _automationUpKeepAddress;
     }
 
     /**
@@ -110,7 +112,8 @@ contract SubscriptionManager is ISubscriptionManager {
             interval: interval,
             remainingDuration: duration - 1,
             poolId: poolId,
-            active: true
+            active: true,
+            expired: false
         });
 
         isSubscribedMap[poolId][subscriber] = true;
@@ -189,7 +192,7 @@ contract SubscriptionManager is ISubscriptionManager {
         uint8 _remainingDuration,
         uint _nextPaymentTime
     ) external override {
-        require(msg.sender == address(this), "Only callable by this contract");
+        require(msg.sender == automationUpKeepAddress, "Only callable by AutomationUpKeep");
         Subscription storage sub = subscriptions[_subId];
         sub.active = _active;
         sub.remainingDuration = _remainingDuration;
