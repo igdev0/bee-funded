@@ -91,12 +91,22 @@ contract BeeFundedCore is IBeeFundedCore {
     }
 
     /**
-    @dev Updating pool balance only allowed by the DonateManager contract or this contract
+    @dev Increasing token balance
     @param poolId – The Pool.id incremented above (see poolID).
     @param token – The Pool.id incremented above (see poolID).
     @param amount – The amount pool balance should be updated to.
     */
-    function updatePoolBalance(uint poolId, address tokenAddress, uint amount) external isAllowedContracts override {
+    function increaseTokenBalance(uint poolId, address tokenAddress, uint amount) external isAllowedContracts override {
         balances[poolId][tokenAddress] += amount;
+    }
+
+    /**
+    @dev Decreasing token balance
+    @param poolId – The Pool.id incremented above (see poolID).
+    @param token – The Pool.id incremented above (see poolID).
+    @param amount – The amount pool balance should be updated to.
+    */
+    function decreaseTokenBalance(uint poolId, address tokenAddress, uint amount) external isAllowedContracts override {
+        balances[poolId][tokenAddress] -= amount;
     }
 }
