@@ -108,23 +108,19 @@ contract SubscriptionManager is ISubscriptionManager {
     }
 
     /**
-     * @dev Cancels all active subscriptions for the caller.
-     * Marks any matching subscriptions as inactive and updates the subscription mapping.
+     * @dev Allows the caller to unsubscribe themselves from a specific pool.
+     * Internally calls `_unsubscribe` to deactivate the subscription.
      *
      * Requirements:
-     * - Caller must have at least one active subscription.
+     * - Caller must have an active subscription to the specified pool.
      *
      * Effects:
-     * - Loops through the `subscriptions` array.
-     * - For each active subscription belonging to the caller, sets `active` to false.
-     * - Updates `isSubscribedMap` to allow re-subscribing to the same pool owner.
+     * - Deactivates the matching subscription and resets its metadata.
      *
      * Reverts:
-     * - If the caller has no active subscriptions.
+     * - If the caller is not actively subscribed to the given pool.
      *
-     * Note:
-     * - This function does not delete subscription records, it only marks them as inactive.
-     * - Multiple active subscriptions (if allowed in the future) will all be canceled.
+     * @param poolId The ID of the pool to unsubscribe from.
      */
     function unsubscribe(uint poolId) external override {
         _unsubscribe(poolId, msg.sender);
