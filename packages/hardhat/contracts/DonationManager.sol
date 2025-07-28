@@ -32,7 +32,29 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         _donate(msg.sender, poolId, address(0), msg.value, message);
     }
-
+    /**
+     * @dev Allows a donor to donate ERC20 tokens using EIP-2612 permit for gasless approval.
+     * This enables off-chain approval and on-chain transfer in a single transaction.
+     *
+     * Requirements:
+     * - `tokenAddress` must not be the native token (use another donation method for native tokens).
+     * - The specified pool must exist.
+     * - The donor must have signed a valid permit allowing this contract to spend `amount` tokens.
+     *
+     * Effects:
+     * - Calls `permit()` on the ERC20 token to approve this contract.
+     * - Internally calls `_donate` to process the donation.
+     *
+     * @param donor The address of the donor authorizing the transfer.
+     * @param poolId The ID of the pool receiving the donation.
+     * @param tokenAddress The address of the ERC20 token being donated.
+     * @param amount The amount of tokens to donate.
+     * @param message A custom message attached to the donation.
+     * @param deadline The timestamp until which the permit is valid.
+     * @param v The recovery byte of the signature.
+     * @param r Half of the permit signature pair.
+     * @param s Half of the permit signature pair.
+     */
     function donateWithPermit(
         address donor,
         uint poolId,
