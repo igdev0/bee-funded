@@ -32,6 +32,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         _donate(msg.sender, poolId, address(0), msg.value, message);
     }
+    
     /**
      * @dev Allows a donor to donate ERC20 tokens using EIP-2612 permit for gasless approval.
      * This enables off-chain approval and on-chain transfer in a single transaction.
