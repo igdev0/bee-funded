@@ -107,6 +107,7 @@ contract BeeFundedCore is IBeeFundedCore {
     @param amount – The amount pool balance should be updated to.
     */
     function decreaseTokenBalance(uint poolId, address tokenAddress, uint amount) external isAllowedContracts override {
+        require(balances[poolId][tokenAddress] >= amount);
         balances[poolId][tokenAddress] -= amount;
     }
 }
