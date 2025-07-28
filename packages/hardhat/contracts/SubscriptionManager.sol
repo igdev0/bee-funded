@@ -22,10 +22,21 @@ contract SubscriptionManager is ISubscriptionManager {
         donationManager = _donationManager;
     }
 
+    /**
+     * @dev Returns the list of all active subscriptions stored in the contract.
+     *
+     * @return An array of `Subscription` structs representing current subscriptions.
+     */
     function getSubscriptions() external view returns (Subscription[] memory) {
         return subscriptions;
     }
 
+    /**
+     * @dev Returns a subscription by index stored in the contract.
+     *
+     * @param index – The index of the subscription in array storage.
+     * @return An array of `Subscription` structs representing current subscriptions.
+     */
     function getSubscription(uint index) external view returns (Subscription memory) {
         return subscriptions[index];
     }
