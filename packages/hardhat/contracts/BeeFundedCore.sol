@@ -18,7 +18,9 @@ contract BeeFundedCore is IBeeFundedCore {
     using Counters for Counters.Counter;
     Counters.Counter private poolID;
 
+    /// @dev the donation manager address
     address private donationManagerAddress;
+
     constructor(address _donationManagerAddress) {
         donationManagerAddress = _donationManagerAddress;
     }
