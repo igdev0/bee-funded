@@ -78,7 +78,6 @@ contract AutomationUpkeep is IAutomationUpkeep {
      *
      * @notice Currently, failed payments are not retried. To avoid skipping a payment entirely,
      * consider adding retry logic (e.g., via queued retry or marking payment as pending).
-     * @notice Currently, the function can be called by anyone, ensure that the function is called only by chainlink contracts
      */
     function performUpkeep(bytes calldata performData) external override onlyChainlink {
         uint index = abi.decode(performData, (uint));
