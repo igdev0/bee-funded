@@ -23,5 +23,6 @@ interface IBeeFundedCore {
     function getPoolOwner(uint poolId) external view returns (address);
     function balances(uint poolId, address tokenAddress) external view returns (uint);
     function currentPoolID() external view returns (uint);
-    function updatePoolBalance(uint poolId, address tokenAddress, uint amount) external;
+    function decreaseTokenBalance(uint poolId, address tokenAddress, uint amount) external;
+    function increaseTokenBalance(uint poolId, address tokenAddress, uint amount) external;
 }
