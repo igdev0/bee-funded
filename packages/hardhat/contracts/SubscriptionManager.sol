@@ -137,7 +137,23 @@ contract SubscriptionManager is ISubscriptionManager {
         }
         require(found, "No active subscriptions found");
     }
-
+    
+    /**
+     * @dev Internally updates the state of a subscription at a given index.
+     * Used by the contract itself to manage subscription lifecycle (e.g., after a recurring donation).
+     *
+     * Requirements:
+     * - Can only be called internally by this contract (i.e., `msg.sender` must be `address(this)`).
+     *
+     * Effects:
+     * - Updates the `active` status, `remainingDuration`, and `nextPaymentTime` of the subscription
+     *   at the specified index in the `subscriptions` array.
+     *
+     * @param index The index of the subscription to update in the `subscriptions` array.
+     * @param active Whether the subscription is still active.
+     * @param remainingDuration The number of payments remaining in the subscription.
+     * @param nextPaymentTime The UNIX timestamp for the next scheduled payment.
+     */
     function updateSubscription(
         uint index,
         bool active,
