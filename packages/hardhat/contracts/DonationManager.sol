@@ -64,7 +64,24 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(msg.sender == automationUpKeepAddress, "Only callable by AutomationUpKeep");
         _donate(donor, poolId, tokenAddress, amount, "");
     }
-
+    /**
+     * @dev Handles the internal logic for donating to a pool.
+     * Performs validation, transfers tokens, and updates balances.
+     *
+     * Requirements:
+     * - `amount` must be greater than 0.
+     * - The new total for the pool/token must not exceed the pool's max allowed amount.
+     * - If donating native tokens (tokenAddress == address(0)), msg.value must match the amount.
+     * - If donating ERC20 tokens, the donor must have approved this contract to transfer the amount.
+     *
+     * Emits a {NewDonation} event after a successful donation.
+     *
+     * @param donor – The address of the user making the donation.
+     * @param poolId – The ID of the pool receiving the donation.
+     * @param tokenAddress – The address of the token being donated (0x0 for native token).
+     * @param amount – The amount of tokens to donate.
+     * @param message – Optional message attached to the donation.
+     */
     function _donate(
         address donor,
         uint poolId,
