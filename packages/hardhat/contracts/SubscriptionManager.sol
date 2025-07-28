@@ -106,7 +106,7 @@ contract SubscriptionManager is ISubscriptionManager {
         isSubscribedMap[subscriber][core.getPool(poolId).owner] = true;
         emit SubscriptionCreated(poolId, subscriber, core.getPool(poolId).owner, amount, interval, duration);
     }
-    
+
     /**
      * @dev Cancels all active subscriptions for the caller.
      * Marks any matching subscriptions as inactive and updates the subscription mapping.
@@ -136,29 +136,6 @@ contract SubscriptionManager is ISubscriptionManager {
             }
         }
         require(found, "No active subscriptions found");
-    }
-
-    function getSubsByPoolIds(uint[] calldata _poolIds) external view override returns (Subscription[] memory) {
-        uint len;
-        for (uint i; i < subscriptions.length; i++) {
-            for (uint j; j < _poolIds.length; j++) {
-                if (subscriptions[i].poolId == _poolIds[j]) {
-                    len++;
-                }
-            }
-        }
-
-        Subscription[] memory _subs = new Subscription[](len);
-        uint index;
-        for (uint i; i < subscriptions.length; i++) {
-            for (uint j; j < _poolIds.length; j++) {
-                if (subscriptions[i].poolId == _poolIds[j]) {
-                    _subs[index] = subscriptions[i];
-                    index++;
-                }
-            }
-        }
-        return _subs;
     }
 
     function updateSubscription(

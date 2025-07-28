@@ -36,7 +36,6 @@ interface ISubscriptionManager {
         bytes32 s
     ) external;
     function unsubscribe() external;
-    function getSubsByPoolIds(uint[] calldata poolIds) external view returns (Subscription[] memory);
     function updateSubscription(
         uint index,
         bool active,
