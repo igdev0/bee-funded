@@ -14,9 +14,11 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
 
     IBeeFundedCore public immutable core;
     address private automationUpKeepAddress;
-    constructor(IBeeFundedCore _core, address _automationUpKeepAddress) {
+    address private subscriptionManagerAddress;
+    constructor(IBeeFundedCore _core, address _automationUpKeepAddress, address _subscriptionManagerAddress) {
         core = _core;
         automationUpKeepAddress = _automationUpKeepAddress;
+        subscriptionManagerAddress = _subscriptionManagerAddress;
     }
     /**
     @dev The Donate native function should be used to donate native tokens.
@@ -49,19 +51,27 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     }
 
     /**
-    @notice External wrapper for _donate to allow try-catch in performUpkeep.
-    @param donor – The wallet address making performing the transfer.
-    @param poolId – The id of the pool the funds go to.
-    @param tokenAddress – The ERC token address.
-    @param amount – The amount to be transferred.
-    */
+     * @dev Executes a scheduled subscription donation on behalf of a donor.
+     * Can only be called by the AutomationUpKeep or SubscriptionManager contract.
+     *
+     * Requirements:
+     * - Caller must be the authorized AutomationUpKeep contract.
+     *
+     * Effects:
+     * - Internally calls the `_donate` function with the provided parameters and an empty message.
+     *
+     * @param donor The address of the user whose subscription is being executed.
+     * @param poolId The ID of the pool receiving the donation.
+     * @param tokenAddress The address of the token to be donated.
+     * @param amount The amount of tokens or native currency to donate.
+     */
     function performSubscription(
         address donor,
         uint poolId,
         address tokenAddress,
         uint amount
     ) external {
-        require(msg.sender == automationUpKeepAddress, "Only callable by AutomationUpKeep");
+        require(msg.sender == automationUpKeepAddress || msg.sender == subscriptionManagerAddress, "Only callable by AutomationUpKeep or SubscriptionManager");
         _donate(donor, poolId, tokenAddress, amount, "");
     }
     /**
@@ -105,7 +115,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         core.increaseTokenBalance(poolId, tokenAddress, amount);
         emit NewDonation(donor, tokenAddress, amount, message);
     }
-    
+
     /**
      * @dev Allows the pool owner to withdraw a specified amount of tokens or native currency from the pool.
      *
