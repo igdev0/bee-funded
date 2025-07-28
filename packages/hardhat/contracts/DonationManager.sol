@@ -13,7 +13,6 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     event NewDonation(address indexed from, address indexed token, uint amount, string message);
 
     IBeeFundedCore public immutable core;
-    IDonationManager public immutable donationManager;
 
     constructor(IBeeFundedCore _core) {
         core = _core;
@@ -86,7 +85,6 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         require(core.getPool(poolId).owner == msg.sender, "Not pool owner");
         require(amount <= core.balances(poolId, tokenAddress), "Insufficient balance");
-        uint poolBalance = core.balances(poolId, tokenAddress);
         core.decreaseTokenBalance(poolId, tokenAddress, amount);
 
         if (tokenAddress == address(0)) {
