@@ -40,7 +40,36 @@ contract SubscriptionManager is ISubscriptionManager {
     function getSubscription(uint index) external view returns (Subscription memory) {
         return subscriptions[index];
     }
-
+    /**
+     * @dev Creates a new recurring subscription to a donation pool using EIP-2612 permit for gasless approval.
+     * The subscriber allows this contract to make periodic donations on their behalf for a specified duration.
+     *
+     * Requirements:
+     * - The specified pool must exist.
+     * - Native token (ETH) subscriptions are not supported — only ERC20 tokens.
+     * - `interval` must be at least 7 days.
+     * - `amount` and `duration` must be greater than 0.
+     * - The subscriber must not already have an active subscription to the same pool owner.
+     * - A valid permit signature must be provided for approval.
+     *
+     * Effects:
+     * - Uses the permit signature to approve this contract for `amount * duration` tokens.
+     * - Immediately performs the first donation.
+     * - Stores the subscription metadata and marks the user as subscribed.
+     *
+     * Emits a {SubscriptionCreated} event.
+     *
+     * @param subscriber The address of the user initiating the subscription.
+     * @param poolId The ID of the pool to subscribe to.
+     * @param token The address of the ERC20 token to be donated.
+     * @param amount The amount to donate per interval.
+     * @param interval The time (in seconds) between each donation.
+     * @param duration The number of recurring donations to make.
+     * @param deadline The expiry timestamp for the permit signature.
+     * @param v The recovery byte of the permit signature.
+     * @param r Half of the permit signature.
+     * @param s Half of the permit signature.
+     */
     function subscribe(
         address subscriber,
         uint poolId,
