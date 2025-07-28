@@ -10,7 +10,8 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 /// @title DonationManager - Handles donations for BeeFunded
 /// @notice Manages donation logic, including token transfers and permit
 contract DonationManager is IDonationManager, ReentrancyGuard {
-    event NewDonation(address indexed from, address indexed token, uint amount, string message);
+    event DonationSuccess(uint indexed poolId, address indexed donor, address indexed token, uint amount, string message);
+    event DonationFailed(uint indexed poolId, address indexed donor, address indexed token, uint amount, string message);
 
     IBeeFundedCore public immutable core;
     address private automationUpKeepAddress;
@@ -42,7 +43,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     ) external payable override {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         _donate(msg.sender, poolId, address(0), msg.value);
-        emit NewDonation(msg.sender, address(0), msg.value, message);
+        emit DonationSuccess(poolId, msg.sender, address(0), msg.value, message);
     }
 
     /**
@@ -83,7 +84,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         IERC20Permit(tokenAddress).permit(donor, address(this), amount, deadline, v, r, s);
         _donate(donor, poolId, tokenAddress, amount);
-        emit NewDonation(donor, tokenAddress, amount, message);
+        emit DonationSuccess(poolId,  donor,tokenAddress, amount, message);
     }
 
     /**
@@ -120,7 +121,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
      * - If donating native tokens (tokenAddress == address(0)), msg.value must match the amount.
      * - If donating ERC20 tokens, the donor must have approved this contract to transfer the amount.
      *
-     * Emits a {NewDonation} event after a successful donation.
+     * Emits a {DonationSuccess} event after a successful donation.
      *
      * @param donor – The address of the user making the donation.
      * @param poolId – The ID of the pool receiving the donation.
