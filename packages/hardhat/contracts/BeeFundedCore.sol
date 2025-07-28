@@ -95,7 +95,7 @@ contract BeeFundedCore is IBeeFundedCore {
     /**
     @dev Increasing token balance
     @param poolId – The Pool.id incremented above (see poolID).
-    @param token – The Pool.id incremented above (see poolID).
+    @param tokenAddress – The Pool.id incremented above (see poolID).
     @param amount – The amount pool balance should be updated to.
     */
     function increaseTokenBalance(uint poolId, address tokenAddress, uint amount) external isAllowedContracts override {
@@ -105,7 +105,7 @@ contract BeeFundedCore is IBeeFundedCore {
     /**
     @dev Decreasing token balance
     @param poolId – The Pool.id incremented above (see poolID).
-    @param token – The Pool.id incremented above (see poolID).
+    @param tokenAddress – The Pool.id incremented above (see poolID).
     @param amount – The amount pool balance should be updated to.
     */
     function decreaseTokenBalance(uint poolId, address tokenAddress, uint amount) external isAllowedContracts override {
