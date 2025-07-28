@@ -41,7 +41,8 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         string calldata message
     ) external payable override {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
-        _donate(msg.sender, poolId, address(0), msg.value, message);
+        _donate(msg.sender, poolId, address(0), msg.value);
+        emit NewDonation(msg.sender, address(0), msg.value, message);
     }
 
     /**
@@ -81,7 +82,8 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(tokenAddress != address(0), "Cannot use permit with native token");
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         IERC20Permit(tokenAddress).permit(donor, address(this), amount, deadline, v, r, s);
-        _donate(donor, poolId, tokenAddress, amount, message);
+        _donate(donor, poolId, tokenAddress, amount);
+        emit NewDonation(donor, tokenAddress, amount, message);
     }
 
     /**
@@ -106,7 +108,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         uint amount
     ) external {
         require(msg.sender == automationUpKeepAddress || msg.sender == subscriptionManagerAddress, "Only callable by AutomationUpKeep or SubscriptionManager");
-        _donate(donor, poolId, tokenAddress, amount, "");
+        _donate(donor, poolId, tokenAddress, amount);
     }
     /**
      * @dev Handles the internal logic for donating to a pool.
@@ -124,14 +126,12 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
      * @param poolId – The ID of the pool receiving the donation.
      * @param tokenAddress – The address of the token being donated (0x0 for native token).
      * @param amount – The amount of tokens to donate.
-     * @param message – Optional message attached to the donation.
      */
     function _donate(
         address donor,
         uint poolId,
         address tokenAddress,
-        uint amount,
-        string memory message
+        uint amount
     ) internal {
         require(amount > 0, "Amount must be > 0");
         require(
@@ -147,7 +147,6 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         }
 
         core.increaseTokenBalance(poolId, tokenAddress, amount);
-        emit NewDonation(donor, tokenAddress, amount, message);
     }
 
     /**

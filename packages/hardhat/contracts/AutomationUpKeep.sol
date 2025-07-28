@@ -9,6 +9,7 @@ import {ISubscriptionManager} from "./interfaces/ISubscriptionManager.sol";
 /// @title AutomationUpkeep - Handles Chainlink Automation for BeeFunded
 /// @notice Manages upkeep for recurring subscription payments
 contract AutomationUpkeep is IAutomationUpkeep {
+    event SubscriptionPaymentSuccess(uint indexed subscriptionId, address indexed subscriber);
     event SubscriptionExpired(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
     event SubscriptionPaymentFailed(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
 
@@ -42,7 +43,7 @@ contract AutomationUpkeep is IAutomationUpkeep {
      * @return upkeepNeeded True if at least one subscription is due for processing.
      * @return performData Encoded subscription index to be used in `performUpkeep`.
      */
-    function checkUpkeep(bytes calldata /* checkData */) external view override onlyChainlink returns (bool upkeepNeeded, bytes memory performData) {
+    function checkUpkeep(bytes calldata checkData /* checkData */) external view override onlyChainlink returns (bool upkeepNeeded, bytes memory performData) {
         ISubscriptionManager.Subscription[] memory subscriptions = subscriptionManager.getSubscriptions();
 
         for (uint i = 0; i < subscriptions.length; i++) {
@@ -80,21 +81,22 @@ contract AutomationUpkeep is IAutomationUpkeep {
      * consider adding retry logic (e.g., via queued retry or marking payment as pending).
      */
     function performUpkeep(bytes calldata performData) external override onlyChainlink {
-        uint index = abi.decode(performData, (uint));
-        ISubscriptionManager.Subscription memory sub = subscriptionManager.getSubscription(index);
+        uint id = abi.decode(performData, (uint));
+        ISubscriptionManager.Subscription memory sub = subscriptionManager.getSubscription(id);
         require(sub.active, "Subscription is not active");
         require(block.timestamp >= sub.nextPaymentTime, "Not due yet");
 
         try donationManager.performSubscription(sub.subscriber, sub.poolId, sub.token, sub.amount) {
             if (sub.remainingDuration == 1) {
-                subscriptionManager.updateSubscription(index, false, true, 0, 0);
+                subscriptionManager.updateSubscription(id, false, true, 0, 0);
                 emit SubscriptionExpired(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
             } else {
-                subscriptionManager.updateSubscription(index, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
+                subscriptionManager.updateSubscription(id, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
             }
+            emit SubscriptionPaymentSuccess(id, sub.subscriber);
         } catch {
             /// @todo: implement payments attempts, so that the payment can be reprocessed the next day, therefore the payment won't be skipped as is happening now.
-            subscriptionManager.updateSubscription(index, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
+            subscriptionManager.updateSubscription(id, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
             emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
         }
     }
