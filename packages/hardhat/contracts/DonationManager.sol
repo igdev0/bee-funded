@@ -12,6 +12,8 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 contract DonationManager is IDonationManager, ReentrancyGuard {
     event DonationSuccess(uint indexed poolId, address indexed donor, address indexed token, uint amount, string message);
     event DonationFailed(uint indexed poolId, address indexed donor, address indexed token, uint amount, string message);
+    event WithdrawSuccess(uint indexed poolId, address indexed donor, address indexed token, uint amount);
+    event WithdrawFailed(uint indexed poolId, address indexed donor, address indexed token, uint amount);
 
     IBeeFundedCore public immutable core;
     address private automationUpKeepAddress;
@@ -84,7 +86,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         IERC20Permit(tokenAddress).permit(donor, address(this), amount, deadline, v, r, s);
         _donate(donor, poolId, tokenAddress, amount);
-        emit DonationSuccess(poolId,  donor,tokenAddress, amount, message);
+        emit DonationSuccess(poolId, donor, tokenAddress, amount, message);
     }
 
     /**
@@ -180,10 +182,21 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
 
         if (tokenAddress == address(0)) {
             (bool success,) = payable(msg.sender).call{value: amount}("");
+            if (success) {
+                emit WithdrawSuccess(poolId, msg.sender, address(0), amount);
+            } else {
+                emit WithdrawFailed(poolId, msg.sender, address(0), amount);
+            }
             require(success, "Transfer failed");
         } else {
             IERC20 token = IERC20(tokenAddress);
-            require(token.transfer(msg.sender, amount), "Transfer failed");
+            bool success = token.transfer(msg.sender, amount);
+            if (success) {
+                emit WithdrawSuccess(poolId, msg.sender, tokenAddress, amount);
+            } else {
+                emit WithdrawFailed(poolId, msg.sender, tokenAddress, amount);
+            }
+            require(success, "Transfer failed");
         }
     }
 }
