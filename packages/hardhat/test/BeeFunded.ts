@@ -67,25 +67,25 @@ describe("BeeFunded", function () {
   let automationUpKeep: AutomationUpkeep;
   let mockToken: MockERC20;
   let mockUSDC: MockUSDC;
-  let owner: any, addr1: any, addr2: any;
+  let deployer: any, addr1: any, addr2: any;
 
   const externalId = "some-random-uuid-generated";
   const hashedExternalId = ethers.keccak256(Buffer.from(externalId));
   before(async () => {
     await deployments.fixture(["BeeFunded"]);
-    const { deployer } = await getNamedAccounts();
+    const { deployer: _deployer } = await getNamedAccounts();
     beeFundedCore = await ethers.getContract("BeeFundedCore", deployer);
     subscriptionManager = await ethers.getContract("SubscriptionManager", deployer);
     donationManager = await ethers.getContract("DonationManager", deployer);
     automationUpKeep = await ethers.getContract("AutomationUpkeep", deployer);
     mockToken = await ethers.getContract("MockERC20", deployer);
     mockUSDC = await ethers.getContract("MockUSDC", deployer);
-    owner = deployer;
+    deployer = _deployer;
     [addr1, addr2] = await getUnnamedAccounts();
   });
 
   it("Owner should be defined", () => {
-    expect(owner).not.equal(undefined);
+    expect(deployer).not.equal(undefined);
   });
 
   it("Contracts should all be set", () => {
@@ -108,6 +108,11 @@ describe("BeeFunded", function () {
     it("should be able to retrieve a pool by its internal id", async () => {
       const pool = await beeFundedCore.getPool(0);
       expect(pool.metadataId).equal(hashedExternalId);
+    });
+
+    it("should be able to retrieve the pool owner by its internal id", async () => {
+      const poolOwner = await beeFundedCore.getPoolOwner(0);
+      expect(poolOwner).equal(deployer);
     });
   });
 });
