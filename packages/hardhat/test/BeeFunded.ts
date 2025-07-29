@@ -137,5 +137,18 @@ describe("BeeFunded", function () {
           .increaseTokenBalance(BigInt(0), await mockUSDC.getAddress(), ethers.parseUnits("10", 6)),
       ).not.revertedWithoutReason();
     });
+
+    it("should be able to decrease token balance", async () => {
+      await network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [await donationManager.getAddress()],
+      });
+
+      await expect(
+        beeFundedCore
+          .connect(await ethers.getSigner(await donationManager.getAddress()))
+          .decreaseTokenBalance(BigInt(0), await mockUSDC.getAddress(), ethers.parseUnits("10", 6)),
+      ).not.revertedWithoutReason();
+    });
   });
 });
