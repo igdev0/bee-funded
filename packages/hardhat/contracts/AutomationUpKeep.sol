@@ -45,13 +45,25 @@ contract AutomationUpkeep is IAutomationUpkeep {
      */
     function checkUpkeep(bytes calldata checkData /* checkData */) external view override onlyChainlink returns (bool upkeepNeeded, bytes memory performData) {
         ISubscriptionManager.Subscription[] memory subscriptions = subscriptionManager.getSubscriptions();
+        uint[] memory dueIndexesTemp = new uint[](subscriptions.length);
+        uint count = 0;
 
         for (uint i = 0; i < subscriptions.length; i++) {
             ISubscriptionManager.Subscription memory sub = subscriptionManager.getSubscription(i);
             if (sub.active && block.timestamp >= sub.nextPaymentTime) {
-                return (true, abi.encode(i));
+                dueIndexesTemp[count] = i;
+                count++;
             }
         }
+
+        if (count > 0) {
+            uint[] memory dueIndexes = new uint[](count);
+            for (uint j = 0; j < count; j++) {
+                dueIndexes[j] = dueIndexesTemp[j];
+            }
+            return (true, abi.encode(dueIndexes));
+        }
+
         return (false, "");
     }
     /**
