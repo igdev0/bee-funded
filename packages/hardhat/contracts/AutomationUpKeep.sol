@@ -75,7 +75,7 @@ contract AutomationUpkeep is IAutomationUpkeep {
      * - The current time must be greater than or equal to `nextPaymentTime`.
      *
      * Logic:
-     * - Decodes the subscription index from `performData` (passed from `checkUpkeep`).
+     * - Decodes the subscription indexes list from `performData` (passed from `checkUpkeep`).
      * - Attempts to perform the subscription payment via `donationManager.performSubscription`.
      * - If `remainingDuration == 1`, the subscription is marked as expired and deactivated.
      * - Otherwise, the subscription is updated with a decremented `remainingDuration`
@@ -83,7 +83,7 @@ contract AutomationUpkeep is IAutomationUpkeep {
      * - If the payment fails (e.g., user has insufficient funds or allowance), the subscription
      *   is still updated to move forward (avoiding permanent stalling), and a failure event is emitted.
      *
-     * @param performData Encoded subscription index, obtained from `checkUpkeep`.
+     * @param performData Encoded subscription indexes, obtained from `checkUpkeep`.
      *
      * Emits:
      * - {SubscriptionExpired} when a subscription completes its final payment.
@@ -93,23 +93,27 @@ contract AutomationUpkeep is IAutomationUpkeep {
      * consider adding retry logic (e.g., via queued retry or marking payment as pending).
      */
     function performUpkeep(bytes calldata performData) external override onlyChainlink {
-        uint id = abi.decode(performData, (uint));
-        ISubscriptionManager.Subscription memory sub = subscriptionManager.getSubscription(id);
-        require(sub.active, "Subscription is not active");
-        require(block.timestamp >= sub.nextPaymentTime, "Not due yet");
+        uint[] memory ids = abi.decode(performData, (uint[]));
 
-        try donationManager.performSubscription(sub.subscriber, sub.poolId, sub.token, sub.amount) {
-            if (sub.remainingDuration == 1) {
-                subscriptionManager.updateSubscription(id, false, true, 0, 0);
-                emit SubscriptionExpired(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
-            } else {
-                subscriptionManager.updateSubscription(id, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
+        for (uint i = 0; i < ids.length; i++) {
+            uint id = ids[i];
+            ISubscriptionManager.Subscription memory sub = subscriptionManager.getSubscription(id);
+            if (!sub.active || block.timestamp < sub.nextPaymentTime) {
+                continue;
             }
-            emit SubscriptionPaymentSuccess(id, sub.subscriber);
-        } catch {
-            /// @todo: implement payments attempts, so that the payment can be reprocessed the next day, therefore the payment won't be skipped as is happening now.
-            subscriptionManager.updateSubscription(id, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
-            emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
+
+            try donationManager.performSubscription(sub.subscriber, sub.poolId, sub.token, sub.amount) {
+                if (sub.remainingDuration == 1) {
+                    subscriptionManager.updateSubscription(id, false, true, 0, 0);
+                    emit SubscriptionExpired(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
+                } else {
+                    subscriptionManager.updateSubscription(id, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
+                }
+                emit SubscriptionPaymentSuccess(id, sub.subscriber);
+            } catch {
+                subscriptionManager.updateSubscription(id, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
+                emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
+            }
         }
     }
 }
