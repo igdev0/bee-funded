@@ -185,7 +185,25 @@ describe("BeeFunded", function () {
         ),
       ).emit(donationManager, "DonationSuccess");
     });
-    it("should be able to perform a subscription", () => {});
+    it("should be able to perform a subscription", async () => {
+      await network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [await subscriptionManager.getAddress()],
+      });
+      await mockUSDC.transfer(await subscriptionManager.getAddress(), ethers.parseUnits("1000", 6));
+
+      // Approve so the performSubscription won't fail.
+      await mockUSDC.approve(await donationManager.getAddress(), BigInt(10));
+      await expect(
+        donationManager.performSubscription(
+          await subscriptionManager.getAddress(),
+          BigInt(0),
+          await mockUSDC.getAddress(),
+          BigInt(10),
+        ),
+      ).not.revertedWithoutReason();
+    });
+
     it("should be able to withdraw tokens", () => {});
   });
 });
