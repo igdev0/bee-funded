@@ -97,7 +97,7 @@ describe("BeeFunded", function () {
     expect(mockUSDC).not.equal(undefined);
   });
 
-  describe("core", () => {
+  describe("BeeFundedCore", () => {
     it("should be able to create a pool", async () => {
       await beeFundedCore.createPool(await mockUSDC.getAddress(), hashedExternalId);
       const pool = await beeFundedCore.getPool(0);
