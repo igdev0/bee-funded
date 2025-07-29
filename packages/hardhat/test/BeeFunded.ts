@@ -259,7 +259,9 @@ describe("BeeFunded", function () {
         ),
       ).emit(subscriptionManager, "SubscriptionCreated");
     });
-    it("should be able to unsubscribe from a pool", () => {});
+    it("should be able to unsubscribe from a pool", async () => {
+      await expect(subscriptionManager.unsubscribe(0)).emit(subscriptionManager, "Unsubscribed");
+    });
     it("should be able to update subscription", () => {});
     it("should be able to list subscriptions", async () => {});
     it("should be able to get a subscription", async () => {});
