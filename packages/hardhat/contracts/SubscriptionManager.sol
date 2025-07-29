@@ -38,7 +38,7 @@ contract SubscriptionManager is ISubscriptionManager {
     function getSubscriptions() external view returns (Subscription[] memory) {
         uint count = subscriptionID.current();
         Subscription[] memory subs = new Subscription[](count);
-        for (uint i; i <= count; i++) {
+        for (uint i; i < count; i++) {
             subs[i] = subscriptions[i];
         }
         return subs;
