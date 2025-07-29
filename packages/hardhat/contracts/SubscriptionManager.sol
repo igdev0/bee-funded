@@ -11,6 +11,7 @@ import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC2
 /// @notice Manages subscription creation, cancellation, and queries
 contract SubscriptionManager is ISubscriptionManager {
     event SubscriptionCreated(uint indexed subscriptionId, uint indexed poolId, address indexed subscriber, address beneficiary, uint amount, uint interval, uint8 duration);
+    event Unsubscribed(uint indexed subscriptionId, uint indexed poolId);
 
     using Counters for Counters.Counter;
     Counters.Counter private subscriptionID;
@@ -134,10 +135,11 @@ contract SubscriptionManager is ISubscriptionManager {
      * Reverts:
      * - If the caller is not actively subscribed to the given pool.
      *
-     * @param poolId The ID of the pool to unsubscribe from.
+     * @param _subId The ID of the subscription to unsubscribe from.
      */
-    function unsubscribe(uint poolId) external override {
-        _unsubscribe(poolId, msg.sender);
+    function unsubscribe(uint _subId) external override {
+        _unsubscribe(_subId, msg.sender);
+        emit Unsubscribed(_subId, subscriptions[_subId].poolId);
     }
 
     /**
