@@ -96,13 +96,13 @@ contract SubscriptionManager is ISubscriptionManager {
     ) external override {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         require(token != address(0), "Native token subscriptions not supported");
-        require(interval >= 7 days, "Min interval is 7 days");
+        require(interval >= 1 days, "Min interval is 1 day");
         require(amount > 0, "Zero amount");
         require(duration > 0, "Duration must be greater than 0");
         uint id = subscriptionID.current();
         require(!isSubscribedMap[poolId][subscriber], "Already subscribed");
 
-        IERC20Permit(token).permit(subscriber, address(this), amount * duration, deadline, v, r, s);
+        IERC20Permit(token).permit(subscriber, address(donationManager), amount * duration, deadline, v, r, s);
         donationManager.performSubscription(subscriber, poolId, token, amount);
         subscriptions[id] = Subscription({
             subscriber: subscriber,
