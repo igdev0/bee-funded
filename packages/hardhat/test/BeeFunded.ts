@@ -1,4 +1,4 @@
-import { deployments, ethers, getNamedAccounts, getUnnamedAccounts } from "hardhat";
+import { deployments, ethers, getNamedAccounts, getUnnamedAccounts, network } from "hardhat";
 import {
   AutomationUpkeep,
   BeeFundedCore,
@@ -120,6 +120,22 @@ describe("BeeFunded", function () {
         beeFundedCore,
         "PoolMetadataUpdated",
       );
+    });
+
+    it("should be able to increase token balance", async () => {
+      const hexAmount = "0x" + ethers.parseUnits("1", 18).toString(16); // "0x0de0b6b3a7640000"
+      await network.provider.send("hardhat_setBalance", [await donationManager.getAddress(), hexAmount]);
+
+      await network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [await donationManager.getAddress()],
+      });
+
+      await expect(
+        beeFundedCore
+          .connect(await ethers.getSigner(await donationManager.getAddress()))
+          .increaseTokenBalance(BigInt(0), await mockUSDC.getAddress(), ethers.parseUnits("10", 6)),
+      ).not.revertedWithoutReason();
     });
   });
 });
