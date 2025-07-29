@@ -151,4 +151,23 @@ describe("BeeFunded", function () {
       ).not.revertedWithoutReason();
     });
   });
+
+  describe("DonationManager", () => {
+    it("should be able to donate with native token", async () => {
+      await network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [await donationManager.getAddress()],
+      });
+      await expect(
+        donationManager
+          .connect(await ethers.getSigner(await donationManager.getAddress()))
+          .donateNative(0, "Thank you!", {
+            value: ethers.parseEther("0.1"),
+          }),
+      ).emit(donationManager, "DonationSuccess");
+    });
+    it("should be able to donate with permit token", () => {});
+    it("should be able to perform a subscription", () => {});
+    it("should be able to withdraw tokens", () => {});
+  });
 });
