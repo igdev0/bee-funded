@@ -82,22 +82,10 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     autoMine: true,
   });
 
-  // Deploy the test permit token
-  const result = await deploy("MockERC20", {
-    from: deployer,
-    args: ["MockToken", "MTK"],
-    log: true,
-    autoMine: true,
-  });
-
   console.log(`BeeFundedCore address: ${beeFundedCoreAddress}} 📑`);
   console.log(`DonationManager address: ${donationManagerAddress}} 📑`);
   console.log(`SubscriptionManager address: ${subscriptionManagerAddress}} 📑`);
   console.log(`AutomationUpKeep address: ${automationUpKeepAddress}} 📑`);
-
-  const contract = new hre.ethers.Contract(result.address, result.abi, await hre.ethers.getSigner(deployer));
-  console.log(`Minting new tokens to ${process.env.MOCKED_TOKEN_MINT_TO}`);
-  await contract.mint(process.env.MOCKED_TOKEN_MINT_TO, BigInt(1000000000000000000000n));
 };
 
 export default deployYourContract;
