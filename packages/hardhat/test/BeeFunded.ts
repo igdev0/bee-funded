@@ -1,6 +1,13 @@
 import { deployments, ethers, getNamedAccounts, getUnnamedAccounts } from "hardhat";
-import { AutomationUpkeep, BeeFundedCore, DonationManager, MockERC20, SubscriptionManager } from "../typechain-types";
-import { expect } from "chai"; // Ensure MockERC20 supports Permit!
+import {
+  AutomationUpkeep,
+  BeeFundedCore,
+  DonationManager,
+  MockERC20,
+  MockUSDC,
+  SubscriptionManager,
+} from "../typechain-types";
+import { expect } from "chai";
 
 // Define constants for clarity
 const ONE_WEEK = 60 * 60 * 24 * 7;
@@ -58,11 +65,13 @@ describe("BeeFunded", function () {
   let subscriptionManager: SubscriptionManager;
   let donationManager: DonationManager;
   let automationUpKeep: AutomationUpkeep;
-  let mockToken: MockERC20; // This MockERC20 MUST implement ERC20Permit
+  let mockToken: MockERC20;
+  let mockUSDC: MockUSDC;
   let owner: any, addr1: any, addr2: any;
+
   const externalId = "some-random-uuid-generated";
+  const hashedExternalId = ethers.keccak256(Buffer.from(externalId));
   before(async () => {
-    // [owner, addr1, addr2] = await ethers.getSigners();
     await deployments.fixture(["BeeFunded"]);
     const { deployer } = await getNamedAccounts();
     beeFundedCore = await ethers.getContract("BeeFundedCore", deployer);
@@ -70,6 +79,7 @@ describe("BeeFunded", function () {
     donationManager = await ethers.getContract("DonationManager", deployer);
     automationUpKeep = await ethers.getContract("AutomationUpkeep", deployer);
     mockToken = await ethers.getContract("MockERC20", deployer);
+    mockUSDC = await ethers.getContract("MockUSDC", deployer);
     owner = deployer;
     [addr1, addr2] = await getUnnamedAccounts();
   });
@@ -84,5 +94,14 @@ describe("BeeFunded", function () {
     expect(donationManager).not.equal(undefined);
     expect(automationUpKeep).not.equal(undefined);
     expect(mockToken).not.equal(undefined);
+    expect(mockUSDC).not.equal(undefined);
+  });
+
+  describe("core", () => {
+    it("should be able to create a pool", async () => {
+      await beeFundedCore.createPool(await mockUSDC.getAddress(), hashedExternalId);
+      const pool = await beeFundedCore.getPool(0);
+      expect(pool.metadataId).to.equal(hashedExternalId);
+    });
   });
 });
