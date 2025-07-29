@@ -8,6 +8,7 @@ import {
   SubscriptionManager,
 } from "../typechain-types";
 import { expect } from "chai";
+import { Signer } from "ethers";
 
 // Define constants for clarity
 const ONE_WEEK = 60 * 60 * 24 * 7;
@@ -15,9 +16,9 @@ const ONE_DAY = 60 * 60 * 24; // For testing rejection
 
 // --- Helper function for generating Permit signature ---
 async function generatePermitSignature(
-  ownerSigner: any, // The ethers.Signer of the token owner
+  ownerSigner: Signer, // The ethers.Signer of the token owner
   spenderAddress: string, // The address of your BeeFunded contract
-  tokenContract: MockERC20, // The MockERC20 contract instance
+  tokenContract: MockERC20 | MockUSDC, // The MockERC20 contract instance
   value: bigint, // The amount to permit (e.g., total subscription value)
   deadline: bigint, // The deadline for the permit signature
 ) {
@@ -54,9 +55,10 @@ async function generatePermitSignature(
   const sig = ethers.Signature.from(signature); // Use ethers.Signature.from for splitting
 
   return {
-    v: sig.v,
+    v: BigInt(sig.v),
     r: sig.r,
     s: sig.s,
+    deadline,
   };
 }
 
@@ -67,7 +69,7 @@ describe("BeeFunded", function () {
   let automationUpKeep: AutomationUpkeep;
   let mockToken: MockERC20;
   let mockUSDC: MockUSDC;
-  let deployer: any, addr1: any, addr2: any;
+  let deployer: string, addr1: any, addr2: any;
 
   const externalId = "some-random-uuid-generated";
   const hashedExternalId = ethers.keccak256(Buffer.from(externalId));
@@ -160,7 +162,29 @@ describe("BeeFunded", function () {
         }),
       ).emit(donationManager, "DonationSuccess");
     });
-    it("should be able to donate with permit token", () => {});
+    it("should be able to donate with permit token", async () => {
+      const value = ethers.parseUnits("100", 6);
+      const { v, r, s, deadline } = await generatePermitSignature(
+        await ethers.getSigner(deployer),
+        await donationManager.getAddress(),
+        mockUSDC,
+        value,
+        BigInt(Date.now() + 1000 * 60 * 60 * 60),
+      );
+      await expect(
+        donationManager.donateWithPermit(
+          deployer,
+          BigInt(0),
+          await mockUSDC.getAddress(),
+          value,
+          "Thank you",
+          deadline,
+          v,
+          r,
+          s,
+        ),
+      ).emit(donationManager, "DonationSuccess");
+    });
     it("should be able to perform a subscription", () => {});
     it("should be able to withdraw tokens", () => {});
   });
