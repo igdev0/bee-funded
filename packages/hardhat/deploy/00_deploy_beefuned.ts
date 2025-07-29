@@ -1,5 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
+import { ethers } from "ethers";
 
 /**
  * Deploys a hardhat named "BeeFunded" using the deployer account and
@@ -20,11 +21,61 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   */
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
-
-  await deploy("BeeFundedCore", {
+  const nonce = await hre.ethers.provider.getTransactionCount(deployer);
+  // 1st Deploy BeeFundedCore contract
+  const { address: beeFundedCoreAddress } = await deploy("BeeFundedCore", {
     from: deployer,
-    // Contract constructor arguments
-    args: [],
+    // Compute the address of the donationManager
+    args: [ethers.getCreateAddress({ from: deployer, nonce: nonce + 1 })],
+    log: true,
+    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+    // automatically mining the hardhat deployment transaction. There is no effect on live networks.
+    autoMine: true,
+  });
+
+  // 2nd Deploy DonationManager contract
+  const { address: donationManagerAddress } = await deploy("DonationManager", {
+    from: deployer,
+    args: [
+      beeFundedCoreAddress, // BeeFundedCore address
+      ethers.getCreateAddress({
+        from: deployer,
+        nonce: nonce + 2,
+      }), // AutomationUpKeeper address
+      ethers.getCreateAddress({ from: deployer, nonce: nonce + 3 }), // SubscriptionManager address
+    ],
+    log: true,
+    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+    // automatically mining the hardhat deployment transaction. There is no effect on live networks.
+    autoMine: true,
+  });
+  const AUTOMATION_UP_KEEP_ADDRESS = "0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad";
+  // 2nd Deploy AutomationUpKeep contract
+  const { address: automationUpKeepAddress } = await deploy("AutomationUpkeep", {
+    from: deployer,
+    args: [
+      ethers.getCreateAddress({
+        from: deployer,
+        nonce: nonce + 3,
+      }), // SubscriptionManager address
+      beeFundedCoreAddress, // BeeFundedCore address
+      donationManagerAddress,
+      AUTOMATION_UP_KEEP_ADDRESS,
+    ],
+    log: true,
+    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+    // automatically mining the hardhat deployment transaction. There is no effect on live networks.
+    autoMine: true,
+  });
+
+  // 3rd SubscriptionManager address
+  const { address: subscriptionManagerAddress } = await deploy("SubscriptionManager", {
+    from: deployer,
+    args: [
+      beeFundedCoreAddress, // BeeFundedCore address
+      donationManagerAddress,
+      automationUpKeepAddress,
+    ],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the hardhat deployment transaction. There is no effect on live networks.
@@ -38,6 +89,11 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     log: true,
     autoMine: true,
   });
+
+  console.log(`BeeFundedCore address: ${beeFundedCoreAddress}} 📑`);
+  console.log(`DonationManager address: ${donationManagerAddress}} 📑`);
+  console.log(`SubscriptionManager address: ${subscriptionManagerAddress}} 📑`);
+  console.log(`AutomationUpKeep address: ${automationUpKeepAddress}} 📑`);
 
   const contract = new hre.ethers.Contract(result.address, result.abi, await hre.ethers.getSigner(deployer));
   console.log(`Minting new tokens to ${process.env.MOCKED_TOKEN_MINT_TO}`);
