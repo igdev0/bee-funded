@@ -114,5 +114,12 @@ describe("BeeFunded", function () {
       const poolOwner = await beeFundedCore.getPoolOwner(0);
       expect(poolOwner).equal(deployer);
     });
+
+    it("should be able to update pool metadata ID ", async () => {
+      await expect(beeFundedCore.updatePoolMetadataId(0, ethers.keccak256(Buffer.from("new-uuid")))).emit(
+        beeFundedCore,
+        "PoolMetadataUpdated",
+      );
+    });
   });
 });
