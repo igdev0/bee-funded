@@ -204,6 +204,32 @@ describe("BeeFunded", function () {
       ).not.revertedWithoutReason();
     });
 
-    it("should be able to withdraw tokens", () => {});
+    describe("withdraw tokens", () => {
+      it("should be able to withdraw native tokens", async () => {
+        await expect(donationManager.withdraw(0, ethers.ZeroAddress, ethers.parseUnits("1", 18))).emit(
+          donationManager,
+          "WithdrawSuccess",
+        );
+      });
+
+      it("should not be able to withdraw native tokens more than you own", async () => {
+        await expect(donationManager.withdraw(0, ethers.ZeroAddress, ethers.parseUnits("1", 18))).revertedWith(
+          "Insufficient balance",
+        );
+      });
+
+      it("should be able to withdraw permit tokens", async () => {
+        await expect(donationManager.withdraw(0, await mockUSDC.getAddress(), ethers.parseUnits("10", 6))).emit(
+          donationManager,
+          "WithdrawSuccess",
+        );
+      });
+
+      it("should not be able to withdraw permit tokens more than you own", async () => {
+        await expect(
+          donationManager.withdraw(0, await mockUSDC.getAddress(), ethers.parseUnits("100000", 6)),
+        ).revertedWith("Insufficient balance");
+      });
+    });
   });
 });
