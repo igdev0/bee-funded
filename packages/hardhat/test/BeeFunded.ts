@@ -74,13 +74,13 @@ describe("BeeFunded", function () {
   before(async () => {
     await deployments.fixture(["BeeFunded"]);
     const { deployer: _deployer } = await getNamedAccounts();
+    deployer = _deployer;
     beeFundedCore = await ethers.getContract("BeeFundedCore", deployer);
     subscriptionManager = await ethers.getContract("SubscriptionManager", deployer);
     donationManager = await ethers.getContract("DonationManager", deployer);
     automationUpKeep = await ethers.getContract("AutomationUpkeep", deployer);
     mockToken = await ethers.getContract("MockERC20", deployer);
     mockUSDC = await ethers.getContract("MockUSDC", deployer);
-    deployer = _deployer;
     [addr1, addr2] = await getUnnamedAccounts();
   });
 
