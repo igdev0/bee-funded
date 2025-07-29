@@ -263,7 +263,13 @@ describe("BeeFunded", function () {
       await expect(subscriptionManager.unsubscribe(0)).emit(subscriptionManager, "Unsubscribed");
     });
     it("should be able to update subscription", () => {});
-    it("should be able to list subscriptions", async () => {});
-    it("should be able to get a subscription", async () => {});
+    it("should be able to list subscriptions", async () => {
+      await expect(subscriptionManager.getSubscriptions()).not.revertedWithoutReason();
+    });
+    it("should be able to get a subscription", async () => {
+      const sub = await subscriptionManager.getSubscription(0);
+      expect(sub.poolId).to.equal(0);
+      expect(sub.active).to.equal(false);
+    });
   });
 });
