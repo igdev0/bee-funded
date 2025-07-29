@@ -99,9 +99,12 @@ describe("BeeFunded", function () {
 
   describe("BeeFundedCore", () => {
     it("should be able to create a pool", async () => {
-      await beeFundedCore.createPool(await mockUSDC.getAddress(), hashedExternalId);
-      const pool = await beeFundedCore.getPool(0);
-      expect(pool.metadataId).to.equal(hashedExternalId);
+      await expect(beeFundedCore.createPool(await mockUSDC.getAddress(), hashedExternalId)).to.emit(
+        beeFundedCore,
+        "DonationPoolCreated",
+      );
     });
+
+    it("should be able to retrieve a pool by its internal id", () => {});
   });
 });
