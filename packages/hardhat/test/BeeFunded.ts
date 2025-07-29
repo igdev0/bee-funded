@@ -262,7 +262,6 @@ describe("BeeFunded", function () {
     it("should be able to unsubscribe from a pool", async () => {
       await expect(subscriptionManager.unsubscribe(0)).emit(subscriptionManager, "Unsubscribed");
     });
-    it("should be able to update subscription", () => {});
     it("should be able to list subscriptions", async () => {
       await expect(subscriptionManager.getSubscriptions()).not.revertedWithoutReason();
     });
@@ -270,6 +269,28 @@ describe("BeeFunded", function () {
       const sub = await subscriptionManager.getSubscription(0);
       expect(sub.poolId).to.equal(0);
       expect(sub.active).to.equal(false);
+    });
+
+    it("should be able to update subscription", async () => {
+      const hexAmount = "0x" + ethers.parseUnits("1", 18).toString(16);
+      await network.provider.send("hardhat_setBalance", [await automationUpKeep.getAddress(), hexAmount]);
+      await network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [await automationUpKeep.getAddress()],
+      });
+      const remainingDuration = BigInt(6);
+      const nextPaymentTime = BigInt(Date.now() + 1000 * 60 * 60 * 24);
+      await expect(
+        subscriptionManager
+          .connect(await ethers.getSigner(await automationUpKeep.getAddress()))
+          .updateSubscription(0, true, false, remainingDuration, nextPaymentTime),
+      ).not.revertedWithoutReason();
+
+      const sub = await subscriptionManager.getSubscription(0);
+
+      expect(sub.active).to.equal(true);
+      expect(sub.remainingDuration).to.equal(remainingDuration);
+      expect(sub.nextPaymentTime).to.equal(nextPaymentTime);
     });
   });
 });
