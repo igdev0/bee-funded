@@ -177,7 +177,7 @@ contract SubscriptionManager is ISubscriptionManager {
      * Used by the contract itself to manage subscription lifecycle (e.g., after a recurring donation).
      *
      * Requirements:
-     * - Can only be called internally by this contract (i.e., `msg.sender` must be `address(this)`).
+     * - Can only be called internally by this contract (i.e., `msg.sender` must be `automationUpKeepAddress`).
      *
      * Effects:
      * - Updates the `active` status, `remainingDuration`, and `nextPaymentTime` of the subscription
