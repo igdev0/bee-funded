@@ -17,7 +17,7 @@ const ONE_DAY = 60 * 60 * 24; // For testing rejection
 // --- Helper function for generating Permit signature ---
 async function generatePermitSignature(
   ownerSigner: Signer, // The ethers.Signer of the token owner
-  spenderAddress: string, // The address of your BeeFunded contract
+  spenderAddress: string, // The address of BeeFunded contract
   tokenContract: MockERC20 | MockUSDC, // The MockERC20 contract instance
   value: bigint, // The amount to permit (e.g., total subscription value)
   deadline: bigint, // The deadline for the permit signature
@@ -231,5 +231,37 @@ describe("BeeFunded", function () {
         ).revertedWith("Insufficient balance");
       });
     });
+  });
+  describe("SubscriptionManager", () => {
+    it("should be able to create subscription", async () => {
+      const duration = BigInt(7);
+      const totalValue = ethers.parseUnits("10", 6) * duration;
+      const { v, r, s, deadline } = await generatePermitSignature(
+        await ethers.getSigner(deployer),
+        await donationManager.getAddress(),
+        mockUSDC,
+        totalValue,
+        BigInt(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      );
+      const amount = totalValue / duration;
+      await expect(
+        subscriptionManager.subscribe(
+          deployer,
+          BigInt(0),
+          await mockUSDC.getAddress(),
+          amount,
+          deadline / duration,
+          duration,
+          deadline,
+          v,
+          r,
+          s,
+        ),
+      ).emit(subscriptionManager, "SubscriptionCreated");
+    });
+    it("should be able to unsubscribe from a pool", () => {});
+    it("should be able to update subscription", () => {});
+    it("should be able to list subscriptions", async () => {});
+    it("should be able to get a subscription", async () => {});
   });
 });
