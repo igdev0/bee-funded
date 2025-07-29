@@ -9,10 +9,9 @@ import {
 } from "../typechain-types";
 import { expect } from "chai";
 import { Signer } from "ethers";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
-// Define constants for clarity
-const ONE_WEEK = 60 * 60 * 24 * 7;
-const ONE_DAY = 60 * 60 * 24; // For testing rejection
+const AUTOMATION_UP_KEEP_ADDRESS = "0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad";
 
 // --- Helper function for generating Permit signature ---
 async function generatePermitSignature(
@@ -279,7 +278,7 @@ describe("BeeFunded", function () {
         params: [await automationUpKeep.getAddress()],
       });
       const remainingDuration = BigInt(6);
-      const nextPaymentTime = BigInt(Date.now() + 1000 * 60 * 60 * 24);
+      const nextPaymentTime = BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24);
       await expect(
         subscriptionManager
           .connect(await ethers.getSigner(await automationUpKeep.getAddress()))
@@ -291,6 +290,23 @@ describe("BeeFunded", function () {
       expect(sub.active).to.equal(true);
       expect(sub.remainingDuration).to.equal(remainingDuration);
       expect(sub.nextPaymentTime).to.equal(nextPaymentTime);
+    });
+  });
+
+  describe("AutomationsUpKeep", () => {
+    it("should return a tuple true and a list of subscriptions if any is due", async () => {
+      await time.increase(Math.floor(Date.now() / 1000) * 60 * 60 * 24);
+      const list = await subscriptionManager.getSubscriptions();
+      expect(list.length).to.equal(1);
+      const hexAmount = "0x" + ethers.parseUnits("1", 18).toString(16);
+      await network.provider.send("hardhat_setBalance", [AUTOMATION_UP_KEEP_ADDRESS, hexAmount]);
+      const sub = await subscriptionManager.getSubscription(0);
+      expect(sub.active).to.equal(true);
+      const [performNeeded, performArrayHash] = await automationUpKeep
+        .connect(await ethers.getSigner(AUTOMATION_UP_KEEP_ADDRESS))
+        .checkUpkeep(Buffer.from(""));
+      expect(performNeeded).to.equal(true);
+      expect(performArrayHash).not.to.equal(undefined);
     });
   });
 });
