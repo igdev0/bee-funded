@@ -105,6 +105,9 @@ describe("BeeFunded", function () {
       );
     });
 
-    it("should be able to retrieve a pool by its internal id", () => {});
+    it("should be able to retrieve a pool by its internal id", async () => {
+      const pool = await beeFundedCore.getPool(0);
+      expect(pool.metadataId).equal(hashedExternalId);
+    });
   });
 });
