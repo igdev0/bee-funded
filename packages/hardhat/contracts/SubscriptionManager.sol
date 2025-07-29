@@ -196,7 +196,7 @@ contract SubscriptionManager is ISubscriptionManager {
         uint8 _remainingDuration,
         uint _nextPaymentTime
     ) external override {
-        require(msg.sender == automationUpKeepAddress, "Only callable by AutomationUpKeep");
+        require(msg.sender == automationUpKeepAddress);
         Subscription storage sub = subscriptions[_subId];
         sub.active = _active;
         sub.remainingDuration = _remainingDuration;
