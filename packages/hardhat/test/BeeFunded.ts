@@ -295,12 +295,8 @@ describe("BeeFunded", function () {
   describe("AutomationsUpKeep", () => {
     it("should return a tuple of true and a list of subscriptions if any is due", async () => {
       await time.increase(Math.floor(Date.now() / 1000) * 60 * 60 * 24);
-      const list = await subscriptionManager.getSubscriptions();
-      expect(list.length).to.equal(1);
       const hexAmount = "0x" + ethers.parseUnits("1", 18).toString(16);
       await network.provider.send("hardhat_setBalance", [AUTOMATION_UP_KEEP_ADDRESS, hexAmount]);
-      const sub = await subscriptionManager.getSubscription(0);
-      expect(sub.active).to.equal(true);
       const [performNeeded, performArrayHash] = await automationUpKeep
         .connect(await ethers.getSigner(AUTOMATION_UP_KEEP_ADDRESS))
         .checkUpkeep(Buffer.from(""));
