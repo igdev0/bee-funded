@@ -294,7 +294,7 @@ describe("BeeFunded", function () {
   });
 
   describe("AutomationsUpKeep", () => {
-    it("should return a tuple true and a list of subscriptions if any is due", async () => {
+    it("should return a tuple of true and a list of subscriptions if any is due", async () => {
       await time.increase(Math.floor(Date.now() / 1000) * 60 * 60 * 24);
       const list = await subscriptionManager.getSubscriptions();
       expect(list.length).to.equal(1);
