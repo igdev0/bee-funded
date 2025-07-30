@@ -68,7 +68,7 @@ describe("BeeFunded", function () {
   let automationUpKeep: AutomationUpkeep;
   let mockToken: MockERC20;
   let mockUSDC: MockUSDC;
-  let deployer: string, addr1: any, addr2: any;
+  let deployer: string;
 
   const externalId = "some-random-uuid-generated";
   const hashedExternalId = ethers.keccak256(Buffer.from(externalId));
@@ -82,7 +82,6 @@ describe("BeeFunded", function () {
     automationUpKeep = await ethers.getContract("AutomationUpkeep", deployer);
     mockToken = await ethers.getContract("MockERC20", deployer);
     mockUSDC = await ethers.getContract("MockUSDC", deployer);
-    [addr1, addr2] = await getUnnamedAccounts();
   });
 
   it("Owner should be defined", () => {
