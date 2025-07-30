@@ -26,7 +26,7 @@ contract AutomationUpkeep is IAutomationUpkeep {
     }
 
     modifier onlyChainlink {
-        require(msg.sender == chainlinkRegistry, "Only Chainlink Automation");
+        require(msg.sender == chainlinkRegistry);
         _;
     }
     /**
