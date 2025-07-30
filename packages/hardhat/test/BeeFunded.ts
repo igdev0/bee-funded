@@ -8,7 +8,7 @@ import {
   SubscriptionManager,
 } from "../typechain-types";
 import { expect } from "chai";
-import { Signer } from "ethers";
+import { AbiCoder, Signer } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 const AUTOMATION_UP_KEEP_ADDRESS = "0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad";
@@ -306,7 +306,23 @@ describe("BeeFunded", function () {
         .connect(await ethers.getSigner(AUTOMATION_UP_KEEP_ADDRESS))
         .checkUpkeep(Buffer.from(""));
       expect(performNeeded).to.equal(true);
-      expect(performArrayHash).not.to.equal(undefined);
+      const abi = AbiCoder.defaultAbiCoder();
+      const encoded = abi.encode(["uint256[]"], [["0"]]);
+      expect(performArrayHash).to.equal(encoded);
+    });
+
+    it("should be able to perform subscription on the ids provided", async () => {
+      await network.provider.request({
+        method: "hardhat_impersonateAccount",
+        params: [AUTOMATION_UP_KEEP_ADDRESS],
+      });
+      await time.increase(Math.floor(Date.now() / 1000) * 60 * 60 * 24);
+      const abi = AbiCoder.defaultAbiCoder();
+      const encoded = abi.encode(["uint256[]"], [["0"]]);
+
+      await expect(
+        automationUpKeep.connect(await ethers.getSigner(AUTOMATION_UP_KEEP_ADDRESS)).performUpkeep(encoded),
+      ).emit(automationUpKeep, "SubscriptionPaymentSuccess");
     });
   });
 });
