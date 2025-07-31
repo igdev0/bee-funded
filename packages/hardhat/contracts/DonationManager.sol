@@ -15,9 +15,27 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     event WithdrawSuccess(uint indexed poolId, address indexed donor, address indexed token, uint amount);
     event WithdrawFailed(uint indexed poolId, address indexed donor, address indexed token, uint amount);
 
+    enum DonationType {
+        OneTimeDonation,
+        Subscription
+    }
+
+    struct Donation {
+        uint poolId;
+        address donor;
+        address token;
+        uint amount;
+        uint timestamp;
+        DonationType kind;
+    }
+
+    // poolId -> Donation
+    mapping(uint => Donation[]) private donations;
+
     IBeeFundedCore public immutable core;
     address private automationUpKeepAddress;
     address private subscriptionManagerAddress;
+
     constructor(IBeeFundedCore _core, address _automationUpKeepAddress, address _subscriptionManagerAddress) {
         core = _core;
         automationUpKeepAddress = _automationUpKeepAddress;
@@ -44,7 +62,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         string calldata message
     ) external payable override {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
-        _donate(msg.sender, poolId, address(0), msg.value);
+        _donate(msg.sender, poolId, address(0), msg.value, DonationType.OneTimeDonation);
         emit DonationSuccess(poolId, msg.sender, address(0), msg.value, message);
     }
 
@@ -85,7 +103,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(tokenAddress != address(0), "Cannot use permit with native token");
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         IERC20Permit(tokenAddress).permit(donor, address(this), amount, deadline, v, r, s);
-        _donate(donor, poolId, tokenAddress, amount);
+        _donate(donor, poolId, tokenAddress, amount, DonationType.OneTimeDonation);
         emit DonationSuccess(poolId, donor, tokenAddress, amount, message);
     }
 
@@ -111,7 +129,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         uint amount
     ) external {
         require(msg.sender == automationUpKeepAddress || msg.sender == subscriptionManagerAddress, "Only callable by AutomationUpKeep or SubscriptionManager");
-        _donate(donor, poolId, tokenAddress, amount);
+        _donate(donor, poolId, tokenAddress, amount, DonationType.Subscription);
     }
     /**
      * @dev Handles the internal logic for donating to a pool.
@@ -134,7 +152,8 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         address donor,
         uint poolId,
         address tokenAddress,
-        uint amount
+        uint amount,
+        DonationType kind
     ) internal {
         require(amount > 0, "Amount must be > 0");
         require(
@@ -148,7 +167,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
             IERC20 token = IERC20(tokenAddress);
             require(token.transferFrom(donor, address(this), amount), "Transfer failed");
         }
-
+        donations[poolId].push(Donation(poolId, donor, tokenAddress, amount, block.timestamp, kind));
         core.increaseTokenBalance(poolId, tokenAddress, amount);
     }
 
