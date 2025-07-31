@@ -30,7 +30,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     }
 
     // poolId => Donation[]
-    mapping(uint => Donation[]) private donations;
+    mapping(uint => Donation[]) private donationsByPool;
 
     IBeeFundedCore public immutable core;
     address private automationUpKeepAddress;
@@ -167,7 +167,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
             IERC20 token = IERC20(tokenAddress);
             require(token.transferFrom(donor, address(this), amount), "Transfer failed");
         }
-        donations[poolId].push(Donation(poolId, donor, tokenAddress, amount, block.timestamp, kind));
+        donationsByPool[poolId].push(Donation(poolId, donor, tokenAddress, amount, block.timestamp, kind));
         core.increaseTokenBalance(poolId, tokenAddress, amount);
     }
 
