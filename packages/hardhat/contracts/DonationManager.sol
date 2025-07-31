@@ -43,6 +43,14 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     }
 
     /**
+    @dev Gets Donations by pool id
+    @param _poolId The ID of the pool
+    */
+    function getDonations(uint _poolId) external view returns(DonationType[] memory) {
+        return donationsByPool[_poolId];
+    }
+
+    /**
     * @dev Allows a user to donate native currency (e.g., ETH) to a specific pool.
      * The donation value must be sent along with the transaction (`msg.value`).
      *
