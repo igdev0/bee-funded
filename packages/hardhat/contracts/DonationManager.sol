@@ -29,7 +29,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         DonationType kind;
     }
 
-    // poolId -> Donation
+    // poolId => Donation[]
     mapping(uint => Donation[]) private donations;
 
     IBeeFundedCore public immutable core;
@@ -133,7 +133,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     }
     /**
      * @dev Handles the internal logic for donating to a pool.
-     * Performs validation, transfers tokens, and updates balances.
+     * Performs validation, transfers tokens, updates {donations} and updates balances.
      *
      * Requirements:
      * - `amount` must be greater than 0.
