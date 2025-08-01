@@ -73,14 +73,14 @@ contract TreasureManager is ITreasureManager {
     */
     function getUnlockedTreasures(uint _poolId) internal returns (Treasure[] memory) {
         uint count;
-        for(uint i; i < treasureId.current(); i++) {
+        for(uint i; i < treasureCountByPoolId[_poolId]; i++) {
             if(block.timestamp > treasuresByPoolId[_poolId][i].lockedUntil) {
              count++;
             }
         }
         Treasure[] treasures = new Treasure[count];
         uint j;
-        for(uint i; i < treasureId.current(); i++) {
+        for(uint i; i < treasureCountByPoolId[_poolId]; i++) {
             if(block.timestamp > treasuresByPoolId[_poolId][i].lockedUntil) {
                 treasures[j] = treasuresByPoolId[_poolId][i];
                 j++;
