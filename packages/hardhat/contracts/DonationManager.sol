@@ -15,20 +15,6 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     event WithdrawSuccess(uint indexed poolId, address indexed donor, address indexed token, uint amount);
     event WithdrawFailed(uint indexed poolId, address indexed donor, address indexed token, uint amount);
 
-    enum DonationType {
-        OneTimeDonation,
-        Subscription
-    }
-
-    struct Donation {
-        uint poolId;
-        address donor;
-        address token;
-        uint amount;
-        uint timestamp;
-        DonationType kind;
-    }
-
     // poolId => Donation[]
     mapping(uint => Donation[]) private donationsByPool;
 

@@ -12,13 +12,6 @@ interface IBeeFundedCore {
         uint chainId;
     }
 
-    struct Donation {
-        address donor;
-        address token;
-        uint amount;
-        string message;
-    }
-
     function getPool(uint poolId) external view returns (Pool memory);
     function getPoolOwner(uint poolId) external view returns (address);
     function balances(uint poolId, address tokenAddress) external view returns (uint);
