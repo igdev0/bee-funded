@@ -52,7 +52,7 @@ contract TreasureManager is ITreasureManager {
     */
     function createTreasure(uint _poolId, Treasure calldata treasure) external payable isPoolOwner(_poolId) {
         uint id = treasureId.current();
-        treasuresByPoolId[_poolId][id](treasure);
+        treasuresByPoolId[_poolId][id] = treasure;
         treasureId.increment();
         treasureCountByPoolId[_poolId] = treasureId.current();
     }

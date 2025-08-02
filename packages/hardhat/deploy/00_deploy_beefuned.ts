@@ -43,6 +43,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
         nonce: nonce + 2,
       }), // AutomationUpKeeper address
       ethers.getCreateAddress({ from: deployer, nonce: nonce + 3 }), // SubscriptionManager address
+      ethers.getCreateAddress({ from: deployer, nonce: nonce + 4 }), // TreasureManager address
     ],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
@@ -82,10 +83,24 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     autoMine: true,
   });
 
+  // 3rd SubscriptionManager address
+  const { address: treasureManagerAddress } = await deploy("TreasureManager", {
+    from: deployer,
+    args: [
+      beeFundedCoreAddress, // BeeFundedCore address
+      donationManagerAddress,
+    ],
+    log: true,
+    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
+    // automatically mining the hardhat deployment transaction. There is no effect on live networks.
+    autoMine: true,
+  });
+
   console.log(`BeeFundedCore address: ${beeFundedCoreAddress}} 📑`);
   console.log(`DonationManager address: ${donationManagerAddress}} 📑`);
   console.log(`SubscriptionManager address: ${subscriptionManagerAddress}} 📑`);
   console.log(`AutomationUpKeep address: ${automationUpKeepAddress}} 📑`);
+  console.log(`AutomationUpKeep address: ${treasureManagerAddress}} 📑`);
 };
 
 export default deployYourContract;
