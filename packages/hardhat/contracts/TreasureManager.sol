@@ -31,7 +31,12 @@ contract TreasureManager is ITreasureManager {
         require(msg.sender == address(donationManager));
         _;
     }
-
+    /**
+     * @notice Generates a pseudo-random number using block properties.
+     * @dev This method is not secure for randomness in production environments
+     *      where manipulation by miners is a concern. Suitable for testing or non-critical logic.
+     * @return A uint representing the pseudo-random number.
+     */
     function getRandomNumber() external view returns (uint) {
         uint random = uint(keccak256(abi.encodePacked(
             block.timestamp,
