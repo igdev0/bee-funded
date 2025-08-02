@@ -324,4 +324,11 @@ describe("BeeFunded", function () {
       ).emit(automationUpKeep, "SubscriptionPaymentSuccess");
     });
   });
+
+  describe("TreasureManager", () => {
+    it("should be able to return a random number", async () => {
+      const number = await treasureManager.getRandomNumber();
+      expect(Number(number)).to.not.equal(Number.NaN);
+    });
+  });
 });
