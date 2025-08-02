@@ -58,24 +58,42 @@ contract TreasureManager is ITreasureManager {
     */
     function createTreasure(uint _poolId, Treasure calldata _treasure) external payable onlyPoolOwner(_poolId) {
         uint id = treasureId.current();
-        // Validate based on kind
-        require(
-            _treasure.kind != TreasureKind.ERC20 || _treasure.amount > 0,
-            "ERC20 treasure must have amount > 0"
-        );
-
-        require(
-            _treasure.kind != TreasureKind.ERC721 && _treasure.kind != TreasureKind.ERC1155 || _treasure.tokenId > 0,
-            "NFTs must have tokenId > 0"
-        );
-
         Treasure memory treasure = _treasure;
         treasure.id = id;
         treasure.owner = msg.sender;
 
         if(treasure.kind == TreasureKind.Native) {
             treasure.amount = msg.value;
+        } else {
+            // Validate based on kind
+            require(treasure.token != address(0), "Token address cannot be zero");
+
+            if (treasure.kind == TreasureKind.ERC20) {
+                require(treasure.amount > 0, "ERC20 tokens must have amount");
+                require(
+                    IERC20(treasure.token).balanceOf(address(this)) >= treasure.amount,
+                    "Insufficient ERC20 balance in contract"
+                );
+            }
+
+            if (treasure.kind == TreasureKind.ERC721) {
+                require(treasure.tokenId > 0, "ERC721 tokens must have tokenId");
+                require(
+                    IERC721(treasure.token).ownerOf(treasure.tokenId) == address(this),
+                    "Contract does not own the ERC721 token"
+                );
+            }
+
+            if (treasure.kind == TreasureKind.ERC1155) {
+                require(treasure.tokenId > 0, "ERC1155 tokens must have tokenId");
+                require(treasure.amount > 0, "ERC1155 tokens must have amount");
+                require(
+                    IERC1155(treasure.token).balanceOf(address(this), treasure.tokenId) >= treasure.amount,
+                    "Insufficient ERC1155 balance in contract"
+                );
+            }
         }
+
 
         treasuresByPoolId[_poolId][id] = treasure;
         treasureId.increment();
