@@ -95,7 +95,13 @@ contract TreasureManager is ITreasureManager {
 
         return treasures;
     }
-
+    /**
+    * @notice Sends a treasure reward to the winner based on its kind.
+     * @dev Supports ERC721, ERC20, ERC1155, and native token transfers.
+     *      Only callable by the DonationManager contract.
+     * @param _winner The address of the winner receiving the treasure.
+     * @param _treasure The Treasure struct containing type and transfer details.
+     */
     function airdropTreasure(address payable _winner, Treasure calldata _treasure) external onlyDonationManager {
         if(_treasure.kind == TreasureKind.ERC721) {
             IERC721(_treasure.token).transferFrom(address(this), _winner, _treasure.tokenId);
