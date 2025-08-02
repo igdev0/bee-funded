@@ -53,7 +53,7 @@ contract TreasureManager is ITreasureManager {
     @notice Adds a new treasure to the specified donation pool.
     @dev Only the owner of the pool can call this function.
     @param _poolId The ID of the donation pool to add the treasure to.
-    @param treasure The Treasure struct containing metadata about the treasure.
+    @param _treasure The Treasure struct containing metadata about the treasure.
     @custom:access Only callable by the pool owner.
     */
     function createTreasure(uint _poolId, Treasure calldata _treasure) external payable onlyPoolOwner(_poolId) {
