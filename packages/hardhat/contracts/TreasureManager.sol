@@ -9,6 +9,7 @@ import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 
 contract TreasureManager is ITreasureManager {
     IDonationManager private immutable donationManager;
@@ -51,6 +52,57 @@ contract TreasureManager is ITreasureManager {
         return random;
     }
 
+    function _createTreasure(uint _poolId, address _token, uint _tokenId, uint _amount, uint _minBlockTime, uint _minDonationTime, uint _unlockOnNth, TreasureKind _kind) internal onlyPoolOwner(_poolId) returns(uint) {
+        require(uint8(_kind) <= uint8(TreasureKind.Native), "Invalid treasure kind");
+
+        if(_token == address(0) && _kind == TreasureKind.Native) {
+            require(_amount > 0, "Native treasure must have amount");
+        }
+
+        if (_kind == TreasureKind.ERC20) {
+            require(_amount > 0, "ERC20 treasure must have amount");
+            require(
+                IERC20(_token).balanceOf(address(this)) >= _amount,
+                "Insufficient ERC20 balance in contract"
+            );
+        }
+
+        if (_kind == TreasureKind.ERC721) {
+            require(_tokenId > 0, "ERC721 treasure must have tokenId");
+            require(
+                IERC721(_token).ownerOf(_tokenId) == address(this),
+                "Contract does not own the ERC721 token"
+            );
+        }
+        if (_kind == TreasureKind.ERC1155) {
+            require(_tokenId > 0, "ERC1155 treasure must have tokenId");
+            require(_amount > 0, "ERC1155 treasure must have amount");
+            require(
+                IERC1155(_token).balanceOf(address(this), _tokenId) >= _amount,
+                "Insufficient ERC1155 balance in contract"
+            );
+        }
+
+        uint id = treasureId.current();
+        Treasure memory treasure = Treasure({
+            id: id,
+            owner: msg.sender,
+            token: _token,
+            tokenId: _tokenId,
+            amount: _amount,
+            transferred: false,
+            minBlockTime: _minBlockTime,
+            minDonationTime: _minDonationTime,
+            unlockOnNth: _unlockOnNth,
+            kind: _kind
+        });
+
+        treasuresByPoolId[_poolId][id] = treasure;
+        treasureId.increment();
+        treasureCountByPoolId[_poolId] = treasureId.current();
+        return id;
+    }
+
     /**
   * @notice Creates and registers a new treasure in a specific donation pool.
      * @dev Supports ERC20, ERC721, ERC1155, and Native (ETH) treasures.
@@ -67,58 +119,12 @@ contract TreasureManager is ITreasureManager {
      * @custom:access Only callable by the owner of the donation pool.
      */
 
+
     function createTreasure(uint _poolId, address _token, uint _tokenId, uint _amount, uint _minBlockTime, uint _minDonationTime, uint _unlockOnNth, TreasureKind _kind) external payable onlyPoolOwner(_poolId) {
-        uint id = treasureId.current();
+        require(_kind != TreasureKind.ERC1155, "Transfer tokens using safeTransfer(), this contract implements IERC1155Receiver");
         uint actualAmount = _kind == TreasureKind.Native ? msg.value : _amount;
-        Treasure memory treasure = Treasure({
-            id: id,
-            owner: msg.sender,
-            token: _token,
-            tokenId: _tokenId,
-            amount: actualAmount,
-            transferred: false,
-            minBlockTime: _minBlockTime,
-            minDonationTime: _minDonationTime,
-            unlockOnNth: _unlockOnNth,
-            kind: _kind
-        });
-        require(uint8(_kind) <= uint8(TreasureKind.Native), "Invalid treasure kind");
-
-        if(treasure.token == address(0) && treasure.kind == TreasureKind.Native) {
-            require(treasure.amount > 0, "Native treasure must have amount");
-        }
-
-        if (treasure.kind == TreasureKind.ERC20) {
-            require(treasure.amount > 0, "ERC20 treasure must have amount");
-            require(
-                IERC20(treasure.token).balanceOf(address(this)) >= treasure.amount,
-                "Insufficient ERC20 balance in contract"
-            );
-        }
-
-        if (treasure.kind == TreasureKind.ERC721) {
-            require(treasure.tokenId > 0, "ERC721 treasure must have tokenId");
-            require(
-                IERC721(treasure.token).ownerOf(treasure.tokenId) == address(this),
-                "Contract does not own the ERC721 token"
-            );
-        }
-
-        if (treasure.kind == TreasureKind.ERC1155) {
-            require(treasure.tokenId > 0, "ERC1155 treasure must have tokenId");
-            require(treasure.amount > 0, "ERC1155 treasure must have amount");
-            require(
-                IERC1155(treasure.token).balanceOf(address(this), treasure.tokenId) >= treasure.amount,
-                "Insufficient ERC1155 balance in contract"
-            );
-        }
-
-
-        treasuresByPoolId[_poolId][id] = treasure;
-        treasureId.increment();
-        treasureCountByPoolId[_poolId] = treasureId.current();
-
-        emit TreasureCreatedSuccess(_poolId, id, msg.sender, treasure.kind);
+        uint id = _createTreasure(_poolId, _token, _tokenId, actualAmount, _minBlockTime, _minDonationTime, _unlockOnNth, _kind);
+        emit TreasureCreatedSuccess(_poolId, id, msg.sender, _kind);
     }
 
     /**
