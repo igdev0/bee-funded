@@ -32,7 +32,7 @@ contract TreasureManager is ITreasureManager {
         _;
     }
 
-    function getRandomNumber() external pure returns (uint) {
+    function getRandomNumber() external view returns (uint) {
         uint random = uint(keccak256(abi.encodePacked(
             block.timestamp,
             block.prevrandao,
