@@ -103,8 +103,8 @@ contract TreasureManager is ITreasureManager {
      * @param _poolId The id of the donation pool;
      * @param _treasureId The id of the treasure found in {Treasure}.id;
      */
-    function airdropTreasure(address payable _winner, uint _poolId, uint treasureId) external onlyDonationManager {
-        Treasure memory treasure = treasuresByPoolId[_poolId][treasureId];
+    function airdropTreasure(address payable _winner, uint _poolId, uint _treasureId) external onlyDonationManager {
+        Treasure memory treasure = treasuresByPoolId[_poolId][_treasureId];
         if(treasure.kind == TreasureKind.ERC721) {
             IERC721(treasure.token).transferFrom(address(this), _winner, treasure.tokenId);
         }
