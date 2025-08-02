@@ -36,7 +36,7 @@ contract TreasureManager is ITreasureManager {
     function getRandomNumber() external pure returns (uint) {
         uint random = uint(keccak256(abi.encodePacked(
             block.timestamp,
-            block.difficulty,
+            block.prevrandao,
             msg.sender,
             blockhash(block.number - 1)
         )));
