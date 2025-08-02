@@ -11,7 +11,6 @@ contract TreasureManager is ITreasureManager {
     IDonationManager private immutable donationManager;
     IBeeFundedCore private immutable beeFundedCore;
 
-
     using Counters for Counters.Counter;
     Counters.Counter private treasureId;
 

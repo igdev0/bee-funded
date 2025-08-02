@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.30;
 
+import {IDonationManager} from "./IDonationManager.sol";
 
 interface ITreasureManager {
     event TreasureCreated(uint id, uint _poolId);
@@ -24,5 +25,6 @@ interface ITreasureManager {
         TreasureKind kind;
     }
 
-    function getTreasures(uint _poolId) external {}
+
+    function getUnlockedTreasures(uint _poolId, uint _donationNth) external view returns (Treasure[] memory);
 }
