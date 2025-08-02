@@ -60,10 +60,7 @@ contract TreasureManager is ITreasureManager {
         treasureId.increment();
         treasureCountByPoolId[_poolId] = treasureId.current();
     }
-
-    function getTreasureCount(uint _poolId) external returns (uint) {
-        return treasureCountByPoolId[_poolId];
-    }
+    
     /**
     @dev It retrieves the unlocked treasures based on the poolId and _donationNth provided
     @param _poolId – The poolId of the treasures
