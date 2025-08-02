@@ -8,8 +8,7 @@ import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/
 contract MockERC721 is ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter;
 
-    constructor() ERC721("MockPromiseNFT", "MPN") Ownable(msg.sender) {
-    }
+    constructor() ERC721("MockPromiseNFT", "MPN") Ownable(msg.sender) {}
 
     function mint(address to, string calldata uri) external onlyOwner returns (uint256) {
         uint256 newTokenId = ++_tokenIdCounter;
