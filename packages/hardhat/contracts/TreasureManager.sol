@@ -29,7 +29,7 @@ contract TreasureManager is ITreasureManager {
     }
 
     modifier isDonationManager {
-        require(msg.sender, address(donationManager));
+        require(msg.sender == address(donationManager));
         _;
     }
 
