@@ -35,7 +35,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     @dev Gets Donations by pool id
     @param _poolId The ID of the pool
     */
-    function getDonations(uint _poolId) external view returns(DonationType[] memory) {
+    function getDonations(uint _poolId) external view returns(Donation[] memory) {
         return donationsByPool[_poolId];
     }
 
