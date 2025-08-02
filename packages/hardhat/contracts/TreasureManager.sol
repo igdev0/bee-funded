@@ -22,12 +22,12 @@ contract TreasureManager is ITreasureManager {
         beeFundedCore = _beeFundedCore;
     }
 
-    modifier isPoolOwner(uint _poolId) {
+    modifier onlyPoolOwner(uint _poolId) {
         require(beeFundedCore.getPool(_poolId).owner == msg.sender);
         _;
     }
 
-    modifier isDonationManager {
+    modifier onlyDonationManager {
         require(msg.sender == address(donationManager));
         _;
     }
@@ -54,19 +54,19 @@ contract TreasureManager is ITreasureManager {
     @param treasure The Treasure struct containing metadata about the treasure.
     @custom:access Only callable by the pool owner.
     */
-    function createTreasure(uint _poolId, Treasure calldata treasure) external payable isPoolOwner(_poolId) {
+    function createTreasure(uint _poolId, Treasure calldata treasure) external payable onlyPoolOwner(_poolId) {
         uint id = treasureId.current();
         treasuresByPoolId[_poolId][id] = treasure;
         treasureId.increment();
         treasureCountByPoolId[_poolId] = treasureId.current();
     }
-    
+
     /**
     @dev It retrieves the unlocked treasures based on the poolId and _donationNth provided
     @param _poolId – The poolId of the treasures
     @return Treasure[] – The filtered treasure
     */
-    function getUnlockedTreasures(uint _poolId, uint _donationNth) external view isDonationManager returns (Treasure[] memory) {
+    function getUnlockedTreasures(uint _poolId, uint _donationNth) external view onlyDonationManager returns (Treasure[] memory) {
         uint count;
         for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
             Treasure memory treasure = treasuresByPoolId[_poolId][i];
