@@ -52,12 +52,20 @@ contract TreasureManager is ITreasureManager {
     }
 
     /**
-    @notice Adds a new treasure to the specified donation pool.
-    @dev Only the owner of the pool can call this function.
-    @param _poolId The ID of the donation pool to add the treasure to.
-    @param _treasure The Treasure struct containing metadata about the treasure.
-    @custom:access Only callable by the pool owner.
-    */
+  * @notice Creates and registers a new treasure in a specific donation pool.
+     * @dev Supports ERC20, ERC721, ERC1155, and Native (ETH) treasures.
+     *      Performs validation based on the treasure kind, and stores the treasure in the pool.
+     *      For Native treasures, `msg.value` is used as the amount.
+     * @param _poolId The ID of the donation pool to associate with the treasure.
+     * @param _token The token address (ERC20, ERC721, or ERC1155). Should be address(0) for Native.
+     * @param _tokenId The token ID (used for ERC721 and ERC1155). Should be 0 for ERC20 and Native.
+     * @param _amount The amount of the token. Must be >0 for ERC20 and ERC1155. Ignored for ERC721.
+     * @param _minBlockTime The minimum block timestamp required to unlock the treasure.
+     * @param _minDonationTime The minimum donation duration required before treasure can be unlocked.
+     * @param _unlockOnNth The Nth donation condition that must be met to unlock the treasure.
+     * @param _kind The type of the treasure: ERC20, ERC721, ERC1155, or Native.
+     * @custom:access Only callable by the owner of the donation pool.
+     */
 
     function createTreasure(uint _poolId, address _token, uint _tokenId, uint _amount, uint _minBlockTime, uint _minDonationTime, uint _unlockOnNth, TreasureKind _kind) external payable onlyPoolOwner(_poolId) {
         uint id = treasureId.current();
