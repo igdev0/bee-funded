@@ -3,6 +3,7 @@ import {
   AutomationUpkeep,
   BeeFundedCore,
   DonationManager,
+  MockERC1155,
   MockERC20,
   MockUSDC,
   SubscriptionManager,
@@ -11,6 +12,7 @@ import {
 import { expect } from "chai";
 import { AbiCoder, Signer } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
+import { MockERC721 } from "../typechain-types/contracts/mocks/MockERC721.sol";
 
 const AUTOMATION_UP_KEEP_ADDRESS = "0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad";
 
@@ -70,6 +72,8 @@ describe("BeeFunded", function () {
   let treasureManager: TreasureManager;
   let mockToken: MockERC20;
   let mockUSDC: MockUSDC;
+  let mockedERC721: MockERC721;
+  let mockedERC1155: MockERC1155;
   let deployer: string;
 
   const externalId = "some-random-uuid-generated";
@@ -85,6 +89,8 @@ describe("BeeFunded", function () {
     treasureManager = await ethers.getContract("TreasureManager", deployer);
     mockToken = await ethers.getContract("MockERC20", deployer);
     mockUSDC = await ethers.getContract("MockUSDC", deployer);
+    mockedERC721 = await ethers.getContract("MockERC721", deployer);
+    mockedERC1155 = await ethers.getContract("MockERC1155", deployer);
   });
 
   it("Owner should be defined", () => {
@@ -347,6 +353,7 @@ describe("BeeFunded", function () {
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
       });
+
       it("should be able to create a treasure containing Native tokens", async () => {
         await expect(
           treasureManager.createTreasure(
@@ -361,6 +368,22 @@ describe("BeeFunded", function () {
             {
               value: ethers.parseUnits("1", 18),
             },
+          ),
+        ).emit(treasureManager, "TreasureCreatedSuccess");
+      });
+
+      it("should be able to create a treasure containing ERC721 tokens", async () => {
+        await mockedERC721.transferFrom(deployer, await treasureManager.getAddress(), BigInt(1));
+        await expect(
+          treasureManager.createTreasure(
+            BigInt(0),
+            await mockedERC721.getAddress(),
+            BigInt(1),
+            0,
+            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
+            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
+            BigInt(1), // unlock on every donation
+            BigInt(0),
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
       });
