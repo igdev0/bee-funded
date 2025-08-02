@@ -5,10 +5,10 @@ import {IBeeFundedCore} from "./interfaces/IBeeFundedCore.sol";
 import {IDonationManager} from "./interfaces/IDonationManager.sol";
 import {ITreasureManager} from "./interfaces/ITreasureManager.sol";
 import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
-import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract TreasureManager is ITreasureManager {
     IDonationManager private immutable donationManager;
@@ -58,42 +58,51 @@ contract TreasureManager is ITreasureManager {
     @param _treasure The Treasure struct containing metadata about the treasure.
     @custom:access Only callable by the pool owner.
     */
-    function createTreasure(uint _poolId, Treasure calldata _treasure) external payable onlyPoolOwner(_poolId) {
+
+    function createTreasure(uint _poolId, address _token, uint _tokenId, uint _amount, uint _minBlockTime, uint _minDonationTime, uint _unlockOnNth, TreasureKind _kind) external payable onlyPoolOwner(_poolId) {
         uint id = treasureId.current();
-        Treasure memory treasure = _treasure;
-        treasure.id = id;
-        treasure.owner = msg.sender;
+        uint actualAmount = _kind == TreasureKind.Native ? msg.value : _amount;
+        Treasure memory treasure = Treasure({
+            id: id,
+            owner: msg.sender,
+            token: _token,
+            tokenId: _tokenId,
+            amount: actualAmount,
+            transferred: false,
+            minBlockTime: _minBlockTime,
+            minDonationTime: _minDonationTime,
+            unlockOnNth: _unlockOnNth,
+            kind: _kind
+        });
+        require(uint8(_kind) <= uint8(TreasureKind.Native), "Invalid treasure kind");
 
-        if(treasure.kind == TreasureKind.Native) {
-            treasure.amount = msg.value;
-        } else {
-            // Validate based on kind
-            require(treasure.token != address(0), "Token address cannot be zero");
+        if(treasure.token == address(0) && treasure.kind == TreasureKind.Native) {
+            require(treasure.amount > 0, "Native treasure must have amount");
+        }
 
-            if (treasure.kind == TreasureKind.ERC20) {
-                require(treasure.amount > 0, "ERC20 tokens must have amount");
-                require(
-                    IERC20(treasure.token).balanceOf(address(this)) >= treasure.amount,
-                    "Insufficient ERC20 balance in contract"
-                );
-            }
+        if (treasure.kind == TreasureKind.ERC20) {
+            require(treasure.amount > 0, "ERC20 treasure must have amount");
+            require(
+                IERC20(treasure.token).balanceOf(address(this)) >= treasure.amount,
+                "Insufficient ERC20 balance in contract"
+            );
+        }
 
-            if (treasure.kind == TreasureKind.ERC721) {
-                require(treasure.tokenId > 0, "ERC721 tokens must have tokenId");
-                require(
-                    IERC721(treasure.token).ownerOf(treasure.tokenId) == address(this),
-                    "Contract does not own the ERC721 token"
-                );
-            }
+        if (treasure.kind == TreasureKind.ERC721) {
+            require(treasure.tokenId > 0, "ERC721 treasure must have tokenId");
+            require(
+                IERC721(treasure.token).ownerOf(treasure.tokenId) == address(this),
+                "Contract does not own the ERC721 token"
+            );
+        }
 
-            if (treasure.kind == TreasureKind.ERC1155) {
-                require(treasure.tokenId > 0, "ERC1155 tokens must have tokenId");
-                require(treasure.amount > 0, "ERC1155 tokens must have amount");
-                require(
-                    IERC1155(treasure.token).balanceOf(address(this), treasure.tokenId) >= treasure.amount,
-                    "Insufficient ERC1155 balance in contract"
-                );
-            }
+        if (treasure.kind == TreasureKind.ERC1155) {
+            require(treasure.tokenId > 0, "ERC1155 treasure must have tokenId");
+            require(treasure.amount > 0, "ERC1155 treasure must have amount");
+            require(
+                IERC1155(treasure.token).balanceOf(address(this), treasure.tokenId) >= treasure.amount,
+                "Insufficient ERC1155 balance in contract"
+            );
         }
 
 
@@ -114,7 +123,7 @@ contract TreasureManager is ITreasureManager {
         for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
             Treasure memory treasure = treasuresByPoolId[_poolId][i];
             if (block.timestamp > treasure.minBlockTime) {
-                if(treasure.unlockOnNth > 0 && treasure.unlockOnNth % _donationNth != 0) {
+                if (treasure.unlockOnNth > 0 && treasure.unlockOnNth % _donationNth != 0) {
                     continue;
                 }
                 count++;
@@ -125,7 +134,7 @@ contract TreasureManager is ITreasureManager {
         for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
             Treasure memory treasure = treasuresByPoolId[_poolId][i];
             if (block.timestamp > treasure.minBlockTime) {
-                if(treasure.unlockOnNth > 0 && treasure.unlockOnNth % _donationNth != 0) {
+                if (treasure.unlockOnNth > 0 && treasure.unlockOnNth % _donationNth != 0) {
                     continue;
                 }
                 treasures[j] = treasure;
@@ -135,6 +144,7 @@ contract TreasureManager is ITreasureManager {
 
         return treasures;
     }
+
     function _safeERC20Transfer(address token, address to, uint amount) external {
         require(msg.sender == address(this));
         IERC20(token).safeTransfer(to, amount);
@@ -161,7 +171,7 @@ contract TreasureManager is ITreasureManager {
                 success = true;
             } catch {}
         } else if (treasure.kind == TreasureKind.ERC20) {
-            try this._safeERC20Transfer( treasure.token, _winner, treasure.amount) {
+            try this._safeERC20Transfer(treasure.token, _winner, treasure.amount) {
                 success = true;
             } catch {}
         } else if (treasure.kind == TreasureKind.ERC1155) {
