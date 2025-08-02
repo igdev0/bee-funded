@@ -27,6 +27,7 @@ interface ITreasureManager {
         TreasureKind kind;
     }
 
+    function getRandomNumber() external view returns (uint);
 
     function getUnlockedTreasures(uint _poolId, uint _donationNth) external view returns (Treasure[] memory);
 
