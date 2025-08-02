@@ -76,7 +76,7 @@ contract TreasureManager is ITreasureManager {
                 count++;
             }
         }
-        Treasure[] treasures = new Treasure[count];
+        Treasure[] memory treasures = new Treasure[](count);
         uint j;
         for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
             Treasure memory treasure = treasuresByPoolId[_poolId][i];
