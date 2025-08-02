@@ -166,6 +166,33 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         }
         donationsByPool[poolId].push(Donation(poolId, donor, tokenAddress, amount, block.timestamp, kind));
         core.increaseTokenBalance(poolId, tokenAddress, amount);
+        ITreasureManager.Treasure[] memory treasures = treasureManager.getUnlockedTreasures(poolId, donationsByPool[poolId].length);
+
+        if(treasures.length > 0) {
+            for(uint i; i < treasures.length; i++) {
+                Donation[] memory donations = donationsByPool[poolId];
+                uint eligibleCount;
+                for(uint d; d < donations.length; d++) {
+                    if(donations[d].timestamp > treasures[i].minDonationTime) {
+                        eligibleCount ++;
+                    }
+                }
+
+                Donation[] memory eligibleDonations = new Donation[](eligibleCount);
+                uint eligibleIndex;
+                for(uint d; d < donations.length; d++) {
+                    if(donations[d].timestamp > treasures[i].minDonationTime) {
+                        eligibleCount ++;
+                        eligibleDonations[eligibleIndex] = donations[d];
+                        eligibleIndex++;
+                    }
+                }
+
+                uint randomIndex = treasureManager.getRandomNumber() % eligibleCount;
+
+                treasureManager.airdropTreasure(payable(eligibleDonations[randomIndex].donor), treasures[i]);
+            }
+        }
     }
 
     /**

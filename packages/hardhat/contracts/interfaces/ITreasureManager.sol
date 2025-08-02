@@ -22,6 +22,7 @@ interface ITreasureManager {
         uint amount;
         bool transferred;
         uint minBlockTime;
+        uint minDonationTime;
         uint unlockOnNth;
         uint minAmount;
         TreasureKind kind;
