@@ -337,13 +337,30 @@ describe("BeeFunded", function () {
         await expect(
           treasureManager.createTreasure(
             BigInt(0),
-            mockUSDC,
+            await mockUSDC.getAddress(),
             BigInt(0),
             ethers.parseUnits("10", 6),
             BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
             BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
             BigInt(1),
             BigInt(2),
+          ),
+        ).emit(treasureManager, "TreasureCreatedSuccess");
+      });
+      it("should be able to create a treasure containing Native tokens", async () => {
+        await expect(
+          treasureManager.createTreasure(
+            BigInt(0),
+            ethers.ZeroAddress,
+            BigInt(0),
+            0,
+            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
+            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
+            BigInt(1),
+            BigInt(3),
+            {
+              value: ethers.parseUnits("1", 18),
+            },
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
       });
