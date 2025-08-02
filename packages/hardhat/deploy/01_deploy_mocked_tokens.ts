@@ -48,6 +48,15 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   });
 
   console.log(`Token MockUSDC (USDC) deployed to: ` + mockedUSDCResult.address);
+
+  const mockedERC721Result = await deploy("MockERC721", {
+    from: deployer,
+    args: [],
+    log: true,
+    autoMine: true,
+  });
+
+  console.log(`Mocked ERC721 deployed to: ${mockedERC721Result.address}`);
 };
 
 export default deployYourContract;
