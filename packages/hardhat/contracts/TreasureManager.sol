@@ -1,43 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.30;
 
-import "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 import {IBeeFundedCore} from "./interfaces/IBeeFundedCore.sol";
 import {IDonationManager} from "./interfaces/IDonationManager.sol";
 import {ITreasureManager} from "./interfaces/ITreasureManager.sol";
+import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 
 
 contract TreasureManager is ITreasureManager {
     IDonationManager private immutable donationManager;
     IBeeFundedCore private immutable beeFundedCore;
 
-    error CreateTreasureFail();
-
-    enum TreasureKind {
-        ERC721,
-        ERC1155,
-        ERC20,
-        Native
-    }
-
-    struct Treasure {
-        address owner;
-        address token;
-        uint amount;
-        uint minDonationTime;
-        uint lockedUntil;
-        bool transferred;
-        TreasureKind kind;
-    }
 
     using Counters for Counters.Counter;
     Counters.Counter private treasureId;
 
     mapping(uint => mapping(uint => Treasure)) private treasuresByPoolId;
     mapping(uint => uint) private treasureCountByPoolId;
-
-    // treasureIdx => donationId => bool
-    mapping(uint => mapping(uint => bool)) private donationsEligible;
 
     constructor(IDonationManager _donationManager, IBeeFundedCore _beeFundedCore) {
         donationManager = _donationManager;
@@ -47,6 +26,16 @@ contract TreasureManager is ITreasureManager {
     modifier isPoolOwner(uint _poolId) {
         require(beeFundedCore.getPool(_poolId).owner == msg.sender);
         _;
+    }
+
+    function getRandomNumber() internal pure returns (uint) {
+        uint random = uint(keccak256(abi.encodePacked(
+            block.timestamp,
+            block.difficulty,
+            msg.sender,
+            blockhash(block.number - 1)
+        )));
+        return random;
     }
 
     /**
@@ -63,43 +52,39 @@ contract TreasureManager is ITreasureManager {
         treasureCountByPoolId[_poolId] = treasureId.current();
     }
 
-    function getTreasureCount(uint _poolId) external returns(uint) {
+    function getTreasureCount(uint _poolId) external returns (uint) {
         return treasureCountByPoolId[_poolId];
     }
     /**
-    @dev It retrieves the unlocked treasures found in the treasures mapping
+    @dev It retrieves the unlocked treasures based on the poolId and _donationNth provided
     @param _poolId – The poolId of the treasures
     @return Treasure[] – The filtered treasure
     */
-    function getUnlockedTreasures(uint _poolId) internal returns (Treasure[] memory) {
+    function getUnlockedTreasures(uint _poolId, uint _donationNth) internal returns (Treasure[] memory) {
         uint count;
-        for(uint i; i < treasureCountByPoolId[_poolId]; i++) {
-            if(block.timestamp > treasuresByPoolId[_poolId][i].lockedUntil) {
-             count++;
+        for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
+            Treasure memory treasure = treasuresByPoolId[_poolId][i];
+            if (block.timestamp > treasure.minBlockTime) {
+                if(treasure.unlockOnNth > 0 && treasure.unlockOnNth % _donationNth != 0) {
+                    continue;
+                }
+                count++;
             }
         }
         Treasure[] treasures = new Treasure[count];
         uint j;
-        for(uint i; i < treasureCountByPoolId[_poolId]; i++) {
-            if(block.timestamp > treasuresByPoolId[_poolId][i].lockedUntil) {
-                treasures[j] = treasuresByPoolId[_poolId][i];
+        for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
+            Treasure memory treasure = treasuresByPoolId[_poolId][i];
+            if (block.timestamp > treasure.minBlockTime) {
+                if(treasure.unlockOnNth > 0 && treasure.unlockOnNth % _donationNth != 0) {
+                    continue;
+                }
+                treasures[j] = treasure;
                 j++;
             }
         }
 
         return treasures;
-    }
-
-
-    function updateDonationEligibility(uint _treasureIdx, uint _donationId, bool _eligible) external {
-        require(msg.sender, address(donationManager));
-        donationsEligible[_treasureIdx][_donationId] = _eligible;
-    }
-
-    function shouldAirdrop() external view returns(bool, string memory){
-        uint currentPoolId = beeFundedCore.currentPoolID();
-
-        return (false, "");
     }
 
 }
