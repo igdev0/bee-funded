@@ -1,5 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
+import { Contract } from "ethers";
 
 /**
  * Deploys a hardhat named "BeeFunded" using the deployer account and
@@ -56,6 +57,13 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     autoMine: true,
   });
 
+  const erc721Contract = new hre.ethers.Contract(
+    mockedERC721Result.address,
+    mockedERC721Result.abi,
+    await hre.ethers.getSigner(deployer),
+  );
+
+  await erc721Contract.mint(deployer, "https://somewhere.io/path_to_json.json");
   console.log(`MockedERC721 deployed to: ${mockedERC721Result.address}`);
 
   const mockedERC1155Result = await deploy("MockERC1155", {
