@@ -4,7 +4,7 @@ pragma solidity >=0.8.30;
 import {IDonationManager} from "./IDonationManager.sol";
 
 interface ITreasureManager {
-    event TreasureCreated(uint indexed poolId, uint indexed treasureId, address owner, TreasureKind kind);
+    event TreasureCreatedSuccess(uint indexed poolId, uint indexed treasureId, address owner, TreasureKind kind);
     event TreasureAirdropFailed(uint indexed poolId, uint indexed treasureId, address owner);
     event TreasureAirdropSuccess(uint indexed poolId, uint indexed treasureId, address winner, TreasureKind kind);
 

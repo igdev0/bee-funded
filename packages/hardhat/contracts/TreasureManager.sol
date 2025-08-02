@@ -118,7 +118,7 @@ contract TreasureManager is ITreasureManager {
         treasureId.increment();
         treasureCountByPoolId[_poolId] = treasureId.current();
 
-        emit TreasureCreated(_poolId, id, msg.sender, treasure.kind);
+        emit TreasureCreatedSuccess(_poolId, id, msg.sender, treasure.kind);
     }
 
     /**
