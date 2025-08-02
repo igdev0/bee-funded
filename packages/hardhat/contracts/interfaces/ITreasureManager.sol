@@ -4,9 +4,7 @@ pragma solidity >=0.8.30;
 import {IDonationManager} from "./IDonationManager.sol";
 
 interface ITreasureManager {
-    event TreasureCreated(uint id, uint _poolId);
-    error CreateTreasureFail();
-
+    event TreasureCreated(uint indexed poolId, uint indexed treasureId, address owner, TreasureKind kind);
     enum TreasureKind {
         ERC721,
         ERC1155,

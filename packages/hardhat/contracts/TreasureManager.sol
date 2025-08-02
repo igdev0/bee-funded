@@ -56,12 +56,32 @@ contract TreasureManager is ITreasureManager {
     @param treasure The Treasure struct containing metadata about the treasure.
     @custom:access Only callable by the pool owner.
     */
-    function createTreasure(uint _poolId, Treasure calldata treasure) external payable onlyPoolOwner(_poolId) {
+    function createTreasure(uint _poolId, Treasure calldata _treasure) external payable onlyPoolOwner(_poolId) {
         uint id = treasureId.current();
+        // Validate based on kind
+        require(
+            _treasure.kind != TreasureKind.ERC20 || _treasure.amount > 0,
+            "ERC20 treasure must have amount > 0"
+        );
+
+        require(
+            _treasure.kind != TreasureKind.ERC721 && _treasure.kind != TreasureKind.ERC1155 || _treasure.tokenId > 0,
+            "NFTs must have tokenId > 0"
+        );
+
+        Treasure memory treasure = _treasure;
+        treasure.id = id;
+        treasure.owner = msg.sender;
+
+        if(treasure.kind == TreasureKind.Native) {
+            treasure.amount = msg.value;
+        }
+
         treasuresByPoolId[_poolId][id] = treasure;
-        treasuresByPoolId[_poolId][id].id = id; // we need this so we can easy index when filtered.
         treasureId.increment();
         treasureCountByPoolId[_poolId] = treasureId.current();
+
+        emit TreasureCreated(_poolId, id, msg.sender, treasure.kind);
     }
 
     /**
