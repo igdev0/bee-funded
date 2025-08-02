@@ -5,6 +5,9 @@ import {IDonationManager} from "./IDonationManager.sol";
 
 interface ITreasureManager {
     event TreasureCreated(uint indexed poolId, uint indexed treasureId, address owner, TreasureKind kind);
+    event TreasureAirdropFailed(uint indexed poolId, uint indexed treasureId, address owner);
+    event TreasureAirdropSuccess(uint indexed poolId, uint indexed treasureId, address winner, TreasureKind kind);
+
     enum TreasureKind {
         ERC721,
         ERC1155,

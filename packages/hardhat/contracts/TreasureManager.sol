@@ -8,11 +8,13 @@ import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidi
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract TreasureManager is ITreasureManager {
     IDonationManager private immutable donationManager;
     IBeeFundedCore private immutable beeFundedCore;
 
+    using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
     Counters.Counter private treasureId;
 
@@ -133,6 +135,10 @@ contract TreasureManager is ITreasureManager {
 
         return treasures;
     }
+    function _safeERC20Transfer(address token, address to, uint amount) external {
+        require(msg.sender == address(this));
+        IERC20(token).safeTransfer(to, amount);
+    }
     /**
     * @notice Sends a treasure reward to the winner based on its kind.
      * @dev Supports ERC721, ERC20, ERC1155, and native token transfers.
@@ -142,20 +148,36 @@ contract TreasureManager is ITreasureManager {
      * @param _treasureId The id of the treasure found in {Treasure}.id;
      */
     function airdropTreasure(address payable _winner, uint _poolId, uint _treasureId) external onlyDonationManager {
-        Treasure memory treasure = treasuresByPoolId[_poolId][_treasureId];
-        if(treasure.kind == TreasureKind.ERC721) {
-            IERC721(treasure.token).transferFrom(address(this), _winner, treasure.tokenId);
-        }
-        if(treasure.kind == TreasureKind.ERC20) {
-            IERC20(treasure.token).transferFrom(address(this), _winner, treasure.amount);
+        Treasure storage treasure = treasuresByPoolId[_poolId][_treasureId];
+
+        if (treasure.transferred) {
+            revert("Treasure already airdropped");
         }
 
-        if(treasure.kind == TreasureKind.ERC1155) {
-            IERC1155(treasure.token).safeTransferFrom(address(this), _winner, treasure.tokenId, treasure.amount, "");
-        }
+        bool success;
 
-        if(treasure.kind == TreasureKind.Native) {
+        if (treasure.kind == TreasureKind.ERC721) {
+            try IERC721(treasure.token).safeTransferFrom(address(this), _winner, treasure.tokenId) {
+                success = true;
+            } catch {}
+        } else if (treasure.kind == TreasureKind.ERC20) {
+            try this._safeERC20Transfer( treasure.token, _winner, treasure.amount) {
+                success = true;
+            } catch {}
+        } else if (treasure.kind == TreasureKind.ERC1155) {
+            try IERC1155(treasure.token).safeTransferFrom(address(this), _winner, treasure.tokenId, treasure.amount, "") {
+                success = true;
+            } catch {}
+        } else if (treasure.kind == TreasureKind.Native) {
             _winner.transfer(treasure.amount);
+            success = true;
+        }
+
+        if (success) {
+            treasure.transferred = true;
+            emit TreasureAirdropSuccess(_poolId, _treasureId, _winner, treasure.kind);
+        } else {
+            emit TreasureAirdropFailed(_poolId, _treasureId, treasure.owner);
         }
     }
 
