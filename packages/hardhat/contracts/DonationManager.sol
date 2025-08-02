@@ -6,6 +6,7 @@ import {IDonationManager} from "./interfaces/IDonationManager.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ITreasureManager} from "./interfaces/ITreasureManager.sol";
 
 /// @title DonationManager - Handles donations for BeeFunded
 /// @notice Manages donation logic, including token transfers and permit
@@ -19,13 +20,15 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     mapping(uint => Donation[]) private donationsByPool;
 
     IBeeFundedCore public immutable core;
+    ITreasureManager private treasureManager;
     address private automationUpKeepAddress;
     address private subscriptionManagerAddress;
 
-    constructor(IBeeFundedCore _core, address _automationUpKeepAddress, address _subscriptionManagerAddress) {
+    constructor(IBeeFundedCore _core, address _automationUpKeepAddress, address _subscriptionManagerAddress, ITreasureManager _treasureManager) {
         core = _core;
         automationUpKeepAddress = _automationUpKeepAddress;
         subscriptionManagerAddress = _subscriptionManagerAddress;
+        treasureManager = _treasureManager;
     }
 
     /**

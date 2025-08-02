@@ -18,7 +18,7 @@ contract TreasureManager is ITreasureManager {
     mapping(uint => mapping(uint => Treasure)) private treasuresByPoolId;
     mapping(uint => uint) private treasureCountByPoolId;
 
-    constructor(IDonationManager _donationManager, IBeeFundedCore _beeFundedCore) {
+    constructor(IBeeFundedCore _beeFundedCore, IDonationManager _donationManager) {
         donationManager = _donationManager;
         beeFundedCore = _beeFundedCore;
     }
@@ -28,7 +28,12 @@ contract TreasureManager is ITreasureManager {
         _;
     }
 
-    function getRandomNumber() internal pure returns (uint) {
+    modifier isDonationManager {
+        require(msg.sender, address(donationManager));
+        _;
+    }
+
+    function getRandomNumber() external pure returns (uint) {
         uint random = uint(keccak256(abi.encodePacked(
             block.timestamp,
             block.difficulty,
@@ -60,7 +65,7 @@ contract TreasureManager is ITreasureManager {
     @param _poolId – The poolId of the treasures
     @return Treasure[] – The filtered treasure
     */
-    function getUnlockedTreasures(uint _poolId, uint _donationNth) internal returns (Treasure[] memory) {
+    function getUnlockedTreasures(uint _poolId, uint _donationNth) external view isDonationManager returns (Treasure[] memory) {
         uint count;
         for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
             Treasure memory treasure = treasuresByPoolId[_poolId][i];
