@@ -190,7 +190,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
 
                 uint randomIndex = treasureManager.getRandomNumber() % eligibleCount;
 
-                treasureManager.airdropTreasure(payable(eligibleDonations[randomIndex].donor), treasures[i]);
+                treasureManager.airdropTreasure(payable(eligibleDonations[randomIndex].donor), poolId, treasures[i].id);
             }
         }
     }

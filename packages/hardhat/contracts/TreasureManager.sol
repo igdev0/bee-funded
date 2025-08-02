@@ -100,22 +100,24 @@ contract TreasureManager is ITreasureManager {
      * @dev Supports ERC721, ERC20, ERC1155, and native token transfers.
      *      Only callable by the DonationManager contract.
      * @param _winner The address of the winner receiving the treasure.
-     * @param _treasure The Treasure struct containing type and transfer details.
+     * @param _poolId The id of the donation pool;
+     * @param _treasureId The id of the treasure found in {Treasure}.id;
      */
-    function airdropTreasure(address payable _winner, Treasure calldata _treasure) external onlyDonationManager {
-        if(_treasure.kind == TreasureKind.ERC721) {
-            IERC721(_treasure.token).transferFrom(address(this), _winner, _treasure.tokenId);
+    function airdropTreasure(address payable _winner, uint _poolId, uint treasureId) external onlyDonationManager {
+        Treasure memory treasure = treasuresByPoolId[_poolId][treasureId];
+        if(treasure.kind == TreasureKind.ERC721) {
+            IERC721(treasure.token).transferFrom(address(this), _winner, treasure.tokenId);
         }
-        if(_treasure.kind == TreasureKind.ERC20) {
-            IERC20(_treasure.token).transferFrom(address(this), _winner, _treasure.amount);
-        }
-
-        if(_treasure.kind == TreasureKind.ERC1155) {
-            IERC1155(_treasure.token).safeTransferFrom(address(this), _winner, _treasure.tokenId, _treasure.amount, "");
+        if(treasure.kind == TreasureKind.ERC20) {
+            IERC20(treasure.token).transferFrom(address(this), _winner, treasure.amount);
         }
 
-        if(_treasure.kind == TreasureKind.Native) {
-            _winner.transfer(_treasure.amount);
+        if(treasure.kind == TreasureKind.ERC1155) {
+            IERC1155(treasure.token).safeTransferFrom(address(this), _winner, treasure.tokenId, treasure.amount, "");
+        }
+
+        if(treasure.kind == TreasureKind.Native) {
+            _winner.transfer(treasure.amount);
         }
     }
 
