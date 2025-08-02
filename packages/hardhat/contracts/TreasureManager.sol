@@ -5,7 +5,9 @@ import {IBeeFundedCore} from "./interfaces/IBeeFundedCore.sol";
 import {IDonationManager} from "./interfaces/IDonationManager.sol";
 import {ITreasureManager} from "./interfaces/ITreasureManager.sol";
 import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
-
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 contract TreasureManager is ITreasureManager {
     IDonationManager private immutable donationManager;
@@ -57,6 +59,7 @@ contract TreasureManager is ITreasureManager {
     function createTreasure(uint _poolId, Treasure calldata treasure) external payable onlyPoolOwner(_poolId) {
         uint id = treasureId.current();
         treasuresByPoolId[_poolId][id] = treasure;
+        treasuresByPoolId[_poolId][id].id = id; // we need this so we can easy index when filtered.
         treasureId.increment();
         treasureCountByPoolId[_poolId] = treasureId.current();
     }
@@ -92,5 +95,24 @@ contract TreasureManager is ITreasureManager {
 
         return treasures;
     }
+
+    function airdropTreasure(address payable _winner, Treasure calldata _treasure) external onlyDonationManager {
+        if(_treasure.kind == TreasureKind.ERC721) {
+            IERC721(_treasure.token).transferFrom(address(this), _winner, _treasure.tokenId);
+        }
+        if(_treasure.kind == TreasureKind.ERC20) {
+            IERC20(_treasure.token).transferFrom(address(this), _winner, _treasure.amount);
+        }
+
+        if(_treasure.kind == TreasureKind.ERC1155) {
+            IERC1155(_treasure.token).safeTransferFrom(address(this), _winner, _treasure.tokenId, _treasure.amount, "");
+        }
+
+        if(_treasure.kind == TreasureKind.Native) {
+            _winner.transfer(_treasure.amount);
+        }
+    }
+
+    receive() external payable {}
 
 }

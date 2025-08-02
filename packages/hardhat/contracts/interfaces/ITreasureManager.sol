@@ -15,8 +15,10 @@ interface ITreasureManager {
     }
 
     struct Treasure {
+        uint id;
         address owner;
         address token;
+        uint tokenId;
         uint amount;
         bool transferred;
         uint minBlockTime;
@@ -27,4 +29,6 @@ interface ITreasureManager {
 
 
     function getUnlockedTreasures(uint _poolId, uint _donationNth) external view returns (Treasure[] memory);
+
+    function airdropTreasure(address payable _winner, Treasure calldata _treasure) external;
 }
