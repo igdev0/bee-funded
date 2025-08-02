@@ -1,4 +1,4 @@
-import { deployments, ethers, getNamedAccounts, getUnnamedAccounts, network } from "hardhat";
+import { deployments, ethers, getNamedAccounts, network } from "hardhat";
 import {
   AutomationUpkeep,
   BeeFundedCore,
@@ -6,6 +6,7 @@ import {
   MockERC20,
   MockUSDC,
   SubscriptionManager,
+  TreasureManager,
 } from "../typechain-types";
 import { expect } from "chai";
 import { AbiCoder, Signer } from "ethers";
@@ -66,6 +67,7 @@ describe("BeeFunded", function () {
   let subscriptionManager: SubscriptionManager;
   let donationManager: DonationManager;
   let automationUpKeep: AutomationUpkeep;
+  let treasureManager: TreasureManager;
   let mockToken: MockERC20;
   let mockUSDC: MockUSDC;
   let deployer: string;
@@ -80,6 +82,7 @@ describe("BeeFunded", function () {
     subscriptionManager = await ethers.getContract("SubscriptionManager", deployer);
     donationManager = await ethers.getContract("DonationManager", deployer);
     automationUpKeep = await ethers.getContract("AutomationUpkeep", deployer);
+    treasureManager = await ethers.getContract("TreasureManager", deployer);
     mockToken = await ethers.getContract("MockERC20", deployer);
     mockUSDC = await ethers.getContract("MockUSDC", deployer);
   });
@@ -93,6 +96,7 @@ describe("BeeFunded", function () {
     expect(subscriptionManager).not.equal(undefined);
     expect(donationManager).not.equal(undefined);
     expect(automationUpKeep).not.equal(undefined);
+    expect(treasureManager).not.equal(undefined);
     expect(mockToken).not.equal(undefined);
     expect(mockUSDC).not.equal(undefined);
   });
