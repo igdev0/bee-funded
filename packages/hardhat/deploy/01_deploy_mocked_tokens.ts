@@ -56,7 +56,16 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     autoMine: true,
   });
 
-  console.log(`Mocked ERC721 deployed to: ${mockedERC721Result.address}`);
+  console.log(`MockedERC721 deployed to: ${mockedERC721Result.address}`);
+
+  const mockedERC1155Result = await deploy("MockERC1155", {
+    from: deployer,
+    args: [],
+    log: true,
+    autoMine: true,
+  });
+
+  console.log(`MockedERC1155 deployed to: ${mockedERC1155Result.address}`);
 };
 
 export default deployYourContract;
