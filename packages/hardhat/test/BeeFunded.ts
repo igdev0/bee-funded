@@ -330,5 +330,23 @@ describe("BeeFunded", function () {
       const number = await treasureManager.getRandomNumber();
       expect(Number(number)).to.not.equal(Number.NaN);
     });
+
+    describe("Treasure creation", () => {
+      it("should be able to create a treasure containing ERC20 tokens", async () => {
+        await mockUSDC.transfer(await treasureManager.getAddress(), ethers.parseUnits("100", 6));
+        await expect(
+          treasureManager.createTreasure(
+            BigInt(0),
+            mockUSDC,
+            BigInt(0),
+            ethers.parseUnits("10", 6),
+            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
+            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
+            BigInt(1),
+            BigInt(2),
+          ),
+        ).emit(treasureManager, "TreasureCreatedSuccess");
+      });
+    });
   });
 });
