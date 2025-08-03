@@ -461,5 +461,19 @@ describe("BeeFunded", function () {
         expect(await mockedERC721.ownerOf(1)).to.equal(await userWallet.getAddress());
       });
     });
+
+    describe("Retrieving unlocked treasures", () => {
+      it("donation manager should be able to retrieve unlocked treasures", async () => {
+        await network.provider.request({
+          method: "hardhat_impersonateAccount",
+          params: [await donationManager.getAddress()],
+        });
+        const unlocked = await treasureManager
+          .connect(await ethers.getSigner(await donationManager.getAddress()))
+          .getUnlockedTreasures(0, 1);
+
+        expect(unlocked.length).to.equal(1);
+      });
+    });
   });
 });
