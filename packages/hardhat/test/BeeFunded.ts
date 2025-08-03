@@ -349,7 +349,7 @@ describe("BeeFunded", function () {
             BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
             BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
             BigInt(1),
-            BigInt(2),
+            BigInt(3),
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
       });
@@ -364,7 +364,7 @@ describe("BeeFunded", function () {
             BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
             BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
             BigInt(1),
-            BigInt(3),
+            BigInt(0),
             {
               value: ethers.parseUnits("1", 18),
             },
@@ -383,30 +383,29 @@ describe("BeeFunded", function () {
             BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
             BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
             BigInt(1), // unlock on every donation
-            BigInt(0),
+            BigInt(1),
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
       });
 
       it("should be able to create a treasure containing ERC1155 tokens", async () => {
-        await mockedERC1155.safeTransferFrom(
-          deployer,
-          await treasureManager.getAddress(),
-          BigInt(1),
-          BigInt(1),
-          Buffer.from(""),
-        );
+        const abiCoder = new AbiCoder();
 
         await expect(
-          treasureManager.createTreasure(
-            BigInt(0),
-            await mockedERC1155.getAddress(),
+          mockedERC1155.safeTransferFrom(
+            deployer,
+            await treasureManager.getAddress(),
             BigInt(1),
-            0,
-            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
-            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
-            BigInt(1), // unlock on every donation
             BigInt(1),
+            abiCoder.encode(
+              ["uint256", "uint256", "uint256", "uint256"],
+              [
+                0,
+                BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
+                BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
+                1,
+              ],
+            ),
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
       });
