@@ -168,29 +168,37 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         core.increaseTokenBalance(poolId, tokenAddress, amount);
         ITreasureManager.Treasure[] memory treasures = treasureManager.getUnlockedTreasures(poolId, donationsByPool[poolId].length);
 
-        if(treasures.length > 0) {
-            for(uint i; i < treasures.length; i++) {
+        if (treasures.length > 0) {
+            for (uint i; i < treasures.length; i++) {
                 Donation[] memory donations = donationsByPool[poolId];
+
+                // Allocate a temporary array with the same size as all donations
+                Donation[] memory tempEligible = new Donation[](donations.length);
                 uint eligibleCount;
-                for(uint d; d < donations.length; d++) {
-                    if(donations[d].timestamp > treasures[i].minDonationTime) {
-                        eligibleCount ++;
+
+                for (uint d; d < donations.length; d++) {
+                    if (donations[d].timestamp > treasures[i].minDonationTime) {
+                        tempEligible[eligibleCount] = donations[d];
+                        eligibleCount++;
                     }
                 }
 
+                if (eligibleCount == 0) {
+                    continue; // No eligible donors for this treasure
+                }
+
+                // Create a trimmed array to the exact size
                 Donation[] memory eligibleDonations = new Donation[](eligibleCount);
-                uint eligibleIndex;
-                for(uint d; d < donations.length; d++) {
-                    if(donations[d].timestamp > treasures[i].minDonationTime) {
-                        eligibleCount ++;
-                        eligibleDonations[eligibleIndex] = donations[d];
-                        eligibleIndex++;
-                    }
+                for (uint j = 0; j < eligibleCount; j++) {
+                    eligibleDonations[j] = tempEligible[j];
                 }
 
                 uint randomIndex = treasureManager.getRandomNumber() % eligibleCount;
-
-                treasureManager.airdropTreasure(payable(eligibleDonations[randomIndex].donor), poolId, treasures[i].id);
+                treasureManager.airdropTreasure(
+                    payable(eligibleDonations[randomIndex].donor),
+                    poolId,
+                    treasures[i].id
+                );
             }
         }
     }
