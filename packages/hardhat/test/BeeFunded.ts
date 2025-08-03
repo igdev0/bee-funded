@@ -407,59 +407,58 @@ describe("BeeFunded", function () {
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
       });
-
-      describe("Airdrop treasures", () => {
-        it("should be able to airdrop ERC20 tokens", async () => {
-          await network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [await donationManager.getAddress()],
-          });
-          await expect(
-            treasureManager
-              .connect(await ethers.getSigner(await donationManager.getAddress()))
-              .airdropTreasure(deployer, 0, 0),
-          ).emit(treasureManager, "TreasureAirdropSuccess");
+    });
+    describe("Airdrop treasures", () => {
+      it("should be able to airdrop ERC20 tokens", async () => {
+        await network.provider.request({
+          method: "hardhat_impersonateAccount",
+          params: [await donationManager.getAddress()],
         });
-        it("should not be able to airdrop treasure that's been transferred already", async () => {
-          await network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [await donationManager.getAddress()],
-          });
-          await expect(
-            treasureManager
-              .connect(await ethers.getSigner(await donationManager.getAddress()))
-              .airdropTreasure(deployer, 0, 0),
-          ).to.revertedWith("Treasure already airdropped");
+        await expect(
+          treasureManager
+            .connect(await ethers.getSigner(await donationManager.getAddress()))
+            .airdropTreasure(deployer, 0, 0),
+        ).emit(treasureManager, "TreasureAirdropSuccess");
+      });
+      it("should not be able to airdrop treasure that's been transferred already", async () => {
+        await network.provider.request({
+          method: "hardhat_impersonateAccount",
+          params: [await donationManager.getAddress()],
         });
+        await expect(
+          treasureManager
+            .connect(await ethers.getSigner(await donationManager.getAddress()))
+            .airdropTreasure(deployer, 0, 0),
+        ).to.revertedWith("Treasure already airdropped");
+      });
 
-        it("should be able to airdrop Native tokens", async () => {
-          await network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [await donationManager.getAddress()],
-          });
-          expect(await ethers.provider.getBalance(userWallet.getAddress())).to.equal(0);
-          await expect(
-            treasureManager
-              .connect(await ethers.getSigner(await donationManager.getAddress()))
-              .airdropTreasure(userWallet.getAddress(), 0, 1),
-          ).emit(treasureManager, "TreasureAirdropSuccess");
-
-          expect(await ethers.provider.getBalance(userWallet.getAddress())).to.equal(ethers.parseUnits("1", 18));
+      it("should be able to airdrop Native tokens", async () => {
+        await network.provider.request({
+          method: "hardhat_impersonateAccount",
+          params: [await donationManager.getAddress()],
         });
+        expect(await ethers.provider.getBalance(userWallet.getAddress())).to.equal(0);
+        await expect(
+          treasureManager
+            .connect(await ethers.getSigner(await donationManager.getAddress()))
+            .airdropTreasure(userWallet.getAddress(), 0, 1),
+        ).emit(treasureManager, "TreasureAirdropSuccess");
 
-        it("should be able to airdrop ERC721 treasure", async () => {
-          await network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [await donationManager.getAddress()],
-          });
-          await expect(
-            treasureManager
-              .connect(await ethers.getSigner(await donationManager.getAddress()))
-              .airdropTreasure(await userWallet.getAddress(), 0, 2),
-          ).emit(treasureManager, "TreasureAirdropSuccess");
+        expect(await ethers.provider.getBalance(userWallet.getAddress())).to.equal(ethers.parseUnits("1", 18));
+      });
 
-          expect(await mockedERC721.ownerOf(1)).to.equal(await userWallet.getAddress());
+      it("should be able to airdrop ERC721 treasure", async () => {
+        await network.provider.request({
+          method: "hardhat_impersonateAccount",
+          params: [await donationManager.getAddress()],
         });
+        await expect(
+          treasureManager
+            .connect(await ethers.getSigner(await donationManager.getAddress()))
+            .airdropTreasure(await userWallet.getAddress(), 0, 2),
+        ).emit(treasureManager, "TreasureAirdropSuccess");
+
+        expect(await mockedERC721.ownerOf(1)).to.equal(await userWallet.getAddress());
       });
     });
   });
