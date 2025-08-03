@@ -10,7 +10,7 @@ import {
   TreasureManager,
 } from "../typechain-types";
 import { expect } from "chai";
-import { AbiCoder, HDNodeWallet, Signer } from "ethers";
+import { AbiCoder, HDNodeWallet, parseUnits, Signer } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { MockERC721 } from "../typechain-types/contracts/mocks/MockERC721.sol";
 
@@ -111,7 +111,7 @@ describe("BeeFunded", function () {
 
   describe("BeeFundedCore", () => {
     it("should be able to create a pool", async () => {
-      await expect(beeFundedCore.createPool(await mockUSDC.getAddress(), hashedExternalId)).to.emit(
+      await expect(beeFundedCore.createPool(await mockUSDC.getAddress(), parseUnits("0", 6), hashedExternalId)).to.emit(
         beeFundedCore,
         "DonationPoolCreated",
       );

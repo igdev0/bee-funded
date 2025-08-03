@@ -153,10 +153,6 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         DonationType kind
     ) internal {
         require(amount > 0, "Amount must be > 0");
-        require(
-            core.balances(poolId, tokenAddress) + amount <= core.getPool(poolId).maxAmountToken,
-            "Exceeds max pool amount"
-        );
 
         if (tokenAddress == address(0)) {
             require(msg.value == amount, "Invalid native token amount");

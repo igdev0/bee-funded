@@ -7,7 +7,8 @@ interface IBeeFundedCore {
     struct Pool {
         uint id;
         address owner;
-        uint maxAmountToken;
+        address valuationToken;
+        uint cap;
         uint metadataId;
         uint chainId;
     }

@@ -57,21 +57,23 @@ contract BeeFundedCore is IBeeFundedCore {
     @dev This function can be used to create new pools.
     When creating a new pool, the counter is increased by one after creating the pool, therefore
     the id is zero-based.
-    @param _maxAmountToken – The token that each of the donations will be compared to, in order to measure how close
+    @param _valuationToken – The token that each of the donations will be compared to, in order to measure how close
     your pool is to reach the maxAmount or the goal. Choosing a stable coin like USDC will enable the donation pool to
     have a wider range of tokens that users can use to donate.
-    @param metadataId – This is the keccak256 hash of the ID generated outside the contract.
+    @param _cap – The maximum amount of _valuationToken it should be evaluated everytime user donates
+    @param _metadataId – This is the keccak256 hash of the ID generated outside the contract.
     */
-    function createPool(uint _maxAmountToken, uint metadataId) external {
+    function createPool(address _valuationToken, uint _cap, uint _metadataId) external {
         uint newPoolId = poolID.current();
         Pool storage newPool = pools[newPoolId];
         newPool.id = newPoolId;
-        newPool.metadataId = metadataId;
+        newPool.metadataId = _metadataId;
         newPool.owner = msg.sender;
-        newPool.maxAmountToken = _maxAmountToken;
+        newPool.valuationToken = _valuationToken;
+        newPool.cap = _cap;
         newPool.chainId = block.chainid;
         poolID.increment();
-        emit DonationPoolCreated(newPoolId, msg.sender, metadataId);
+        emit DonationPoolCreated(newPoolId, msg.sender, _metadataId);
     }
 
     /**
