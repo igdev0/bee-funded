@@ -6,10 +6,10 @@ import {IDonationManager} from "./interfaces/IDonationManager.sol";
 import {ITreasureManager} from "./interfaces/ITreasureManager.sol";
 import {Counters} from "@chainlink/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/utils/Counters.sol";
 import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import {ERC1155Holder} from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import {ERC1155Holder} from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 
 contract TreasureManager is ERC1155Holder, ITreasureManager {
@@ -18,10 +18,10 @@ contract TreasureManager is ERC1155Holder, ITreasureManager {
 
     using SafeERC20 for IERC20;
     using Counters for Counters.Counter;
-    Counters.Counter private treasureId;
 
     mapping(uint => mapping(uint => Treasure)) private treasuresByPoolId;
-    mapping(uint => uint) private treasureCountByPoolId;
+
+    mapping(uint => Counters.Counter) private treasureIdByPoolId;
 
     constructor(IBeeFundedCore _beeFundedCore, IDonationManager _donationManager) {
         donationManager = _donationManager;
@@ -84,7 +84,7 @@ contract TreasureManager is ERC1155Holder, ITreasureManager {
             );
         }
 
-        uint id = treasureId.current();
+        uint id = treasureIdByPoolId[_treasure.poolId].current();
         treasuresByPoolId[_treasure.poolId][id] = Treasure({
             id: id,
             owner: _treasure.owner,
@@ -98,8 +98,7 @@ contract TreasureManager is ERC1155Holder, ITreasureManager {
             kind: _treasure.kind
         });
 
-        treasureId.increment();
-        treasureCountByPoolId[_treasure.poolId] = treasureId.current();
+        treasureIdByPoolId[_treasure.poolId].increment();
         return id;
     }
 
@@ -127,6 +126,22 @@ contract TreasureManager is ERC1155Holder, ITreasureManager {
         emit TreasureCreatedSuccess(_poolId, id, msg.sender, _kind);
     }
 
+    function getAllTreasures(uint _poolId) external view returns (Treasure[] memory) {
+
+        Treasure[] memory treasures = new Treasure[](treasureIdByPoolId[_poolId].current());
+        for (uint i; i < treasureIdByPoolId[_poolId].current(); i++) {
+            Treasure memory treasure = treasuresByPoolId[_poolId][i];
+            treasures[i] = treasure;
+        }
+
+        return treasures;
+    }
+
+    function getTreasureCount(uint _poolId) external view returns (uint) {
+        return treasureIdByPoolId[_poolId].current();
+    }
+
+
     /**
     @dev It retrieves the unlocked treasures based on the poolId and _donationNth provided
     @param _poolId – The poolId of the treasures
@@ -134,25 +149,23 @@ contract TreasureManager is ERC1155Holder, ITreasureManager {
     */
     function getUnlockedTreasures(uint _poolId, uint _donationNth) external view onlyDonationManager returns (Treasure[] memory) {
         uint count;
-        for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
+        for (uint i; i < treasureIdByPoolId[_poolId].current(); i++) {
             Treasure memory treasure = treasuresByPoolId[_poolId][i];
-            if (block.timestamp > treasure.minBlockTime) {
-                if (treasure.unlockOnNth > 0 && treasure.unlockOnNth % _donationNth != 0) {
-                    continue;
+            if (block.timestamp > treasure.minBlockTime && !treasure.transferred) {
+                if (_donationNth % treasure.unlockOnNth == 0) {
+                    count++;
                 }
-                count++;
             }
         }
         Treasure[] memory treasures = new Treasure[](count);
         uint j;
-        for (uint i; i < treasureCountByPoolId[_poolId]; i++) {
+        for (uint i; i < treasureIdByPoolId[_poolId].current(); i++) {
             Treasure memory treasure = treasuresByPoolId[_poolId][i];
-            if (block.timestamp > treasure.minBlockTime) {
-                if (treasure.unlockOnNth > 0 && treasure.unlockOnNth % _donationNth != 0) {
-                    continue;
+            if (block.timestamp > treasure.minBlockTime && !treasure.transferred) {
+                if (_donationNth % treasure.unlockOnNth == 0) {
+                    treasures[j] = treasure;
+                    j++;
                 }
-                treasures[j] = treasure;
-                j++;
             }
         }
 
@@ -218,7 +231,7 @@ contract TreasureManager is ERC1155Holder, ITreasureManager {
             uint minDonationTime,
             uint unlockOnNth
         ) = abi.decode(data, (uint256, uint256, uint256, uint256));
-
+        require(unlockOnNth != 0, "unlockOnNth cannot be zero.");
         uint _treasureId = _createTreasure(TreasureParams({
             poolId: poolId,
             owner: from,
