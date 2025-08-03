@@ -8,6 +8,7 @@ import "solidity-coverage";
 import "@nomicfoundation/hardhat-verify";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
+import { ethers } from "ethers";
 
 dotenv.config();
 
@@ -47,9 +48,16 @@ const config: HardhatUserConfig = {
     // If the network you are looking for is not here you can add new network settings
     hardhat: {
       forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
-        enabled: process.env.MAINNET_FORKING_ENABLED === "true",
+        url: `https://polygon-amoy.g.alchemy.com/v2/${providerApiKey}`,
+        blockNumber: 24713749,
+        enabled: process.env.POLYGON_FORKING_ENABLED === "true",
       },
+      accounts: [
+        {
+          privateKey: ethers.Wallet.createRandom().privateKey,
+          balance: "1000000000000000000000",
+        },
+      ],
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${providerApiKey}`,
