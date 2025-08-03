@@ -9,10 +9,10 @@ interface ITreasureManager {
     event TreasureAirdropSuccess(uint indexed poolId, uint indexed treasureId, address winner, TreasureKind kind);
 
     enum TreasureKind {
+        Native,
         ERC721,
         ERC1155,
-        ERC20,
-        Native
+        ERC20
     }
 
     struct TreasureParams {

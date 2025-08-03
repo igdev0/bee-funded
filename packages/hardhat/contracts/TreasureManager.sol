@@ -9,9 +9,10 @@ import {IERC1155} from "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import {ERC1155Holder} from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-contract TreasureManager is ITreasureManager, IERC1155Receiver {
+
+contract TreasureManager is ERC1155Holder, ITreasureManager {
     IDonationManager private immutable donationManager;
     IBeeFundedCore private immutable beeFundedCore;
 
@@ -32,20 +33,18 @@ contract TreasureManager is ITreasureManager, IERC1155Receiver {
         _;
     }
 
+    modifier onlyPoolOr1155TokenOwner(uint _poolId, uint _tokenId) {
+        IBeeFundedCore.Pool memory pool = beeFundedCore.getPool(_poolId);
+
+        require(pool.owner == msg.sender || IERC1155(msg.sender).balanceOf(address(this), _tokenId) > 0);
+        _;
+    }
+
     modifier onlyDonationManager {
         require(msg.sender == address(donationManager));
         _;
     }
 
-    function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
-        return
-            _interfaceId == this.supportsInterface.selector ||
-            _interfaceId == this.getUnlockedTreasures.selector ||
-            _interfaceId == this.getRandomNumber.selector ||
-            _interfaceId == this.airdropTreasure.selector ||
-            _interfaceId == this.onERC1155Received.selector ||
-            _interfaceId == this.onERC1155BatchReceived.selector;
-    }
     /**
      * @notice Generates a pseudo-random number using block properties.
      * @dev This method is not secure for randomness in production environments
@@ -62,8 +61,8 @@ contract TreasureManager is ITreasureManager, IERC1155Receiver {
         return random;
     }
 
-    function _createTreasure(TreasureParams memory _treasure) internal onlyPoolOwner(_treasure.poolId) returns (uint) {
-        require(uint8(_treasure.kind) <= uint8(TreasureKind.Native), "Invalid treasure kind");
+    function _createTreasure(TreasureParams memory _treasure) internal onlyPoolOr1155TokenOwner(_treasure.poolId, _treasure.tokenId) returns (uint) {
+        require(uint8(_treasure.kind) <= uint8(TreasureKind.ERC20), "Invalid treasure kind");
 
         if (_treasure.token == address(0) && _treasure.kind == TreasureKind.Native) {
             require(_treasure.amount > 0, "Native treasure must have amount");
@@ -84,17 +83,9 @@ contract TreasureManager is ITreasureManager, IERC1155Receiver {
                 "Contract does not own the ERC721 token"
             );
         }
-        if (_treasure.kind == TreasureKind.ERC1155) {
-            require(_treasure.tokenId > 0, "ERC1155 treasure must have tokenId");
-            require(_treasure.amount > 0, "ERC1155 treasure must have amount");
-            require(
-                IERC1155(_treasure.token).balanceOf(address(this), _treasure.tokenId) >= _treasure.amount,
-                "Insufficient ERC1155 balance in contract"
-            );
-        }
 
         uint id = treasureId.current();
-        Treasure memory treasure = Treasure({
+        treasuresByPoolId[_treasure.poolId][id] = Treasure({
             id: id,
             owner: _treasure.owner,
             token: _treasure.token,
@@ -107,7 +98,6 @@ contract TreasureManager is ITreasureManager, IERC1155Receiver {
             kind: _treasure.kind
         });
 
-        treasuresByPoolId[_treasure.poolId][id] = treasure;
         treasureId.increment();
         treasureCountByPoolId[_treasure.poolId] = treasureId.current();
         return id;
@@ -220,14 +210,14 @@ contract TreasureManager is ITreasureManager, IERC1155Receiver {
         address from,
         uint256 id,
         uint256 value,
-        bytes calldata data
-    ) external returns (bytes4) {
+        bytes memory data
+    ) public override returns (bytes4) {
         (
             uint poolId,
             uint minBlockTime,
             uint minDonationTime,
             uint unlockOnNth
-        ) = abi.decode(data, (uint, uint, uint, uint));
+        ) = abi.decode(data, (uint256, uint256, uint256, uint256));
 
         uint _treasureId = _createTreasure(TreasureParams({
             poolId: poolId,
@@ -249,17 +239,17 @@ contract TreasureManager is ITreasureManager, IERC1155Receiver {
     function onERC1155BatchReceived(
         address,
         address from,
-        uint256[] calldata ids,
-        uint256[] calldata values,
-        bytes calldata data
-    ) external returns (bytes4) {
+        uint256[] memory ids,
+        uint256[] memory values,
+        bytes memory data
+    ) public override returns (bytes4) {
         require(ids.length == values.length, "Mismatched ids/values length");
         (
             uint poolId,
             uint minBlockTime,
             uint minDonationTime,
             uint unlockOnNth
-        ) = abi.decode(data, (uint, uint, uint, uint));
+        ) = abi.decode(data, (uint256, uint256, uint256, uint256));
 
         for (uint i = 0; i < ids.length; i++) {
 
