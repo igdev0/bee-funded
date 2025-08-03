@@ -490,6 +490,14 @@ describe("BeeFunded", function () {
 
         expect(unlocked.length).to.equal(3);
       });
+
+      it("should airdrop tokens when a donation is made at a donation pool", async () => {
+        await expect(
+          donationManager.donateNative(0, "Thank you!", {
+            value: ethers.parseEther("1"),
+          }),
+        ).emit(treasureManager, "TreasureAirdropSuccess");
+      });
     });
   });
 });
