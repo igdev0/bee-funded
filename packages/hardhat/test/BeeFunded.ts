@@ -10,7 +10,7 @@ import {
   TreasureManager,
 } from "../typechain-types";
 import { expect } from "chai";
-import { AbiCoder, Signer } from "ethers";
+import { AbiCoder, HDNodeWallet, Signer } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { MockERC721 } from "../typechain-types/contracts/mocks/MockERC721.sol";
 
@@ -75,6 +75,7 @@ describe("BeeFunded", function () {
   let mockedERC721: MockERC721;
   let mockedERC1155: MockERC1155;
   let deployer: string;
+  let userWallet: HDNodeWallet;
 
   const externalId = "some-random-uuid-generated";
   const hashedExternalId = ethers.keccak256(Buffer.from(externalId));
@@ -82,6 +83,7 @@ describe("BeeFunded", function () {
     await deployments.fixture(["BeeFunded"]);
     const { deployer: _deployer } = await getNamedAccounts();
     deployer = _deployer;
+    userWallet = ethers.Wallet.createRandom();
     beeFundedCore = await ethers.getContract("BeeFundedCore", deployer);
     subscriptionManager = await ethers.getContract("SubscriptionManager", deployer);
     donationManager = await ethers.getContract("DonationManager", deployer);
@@ -428,6 +430,21 @@ describe("BeeFunded", function () {
               .connect(await ethers.getSigner(await donationManager.getAddress()))
               .airdropTreasure(deployer, 0, 0),
           ).to.revertedWith("Treasure already airdropped");
+        });
+
+        it("should be able to airdrop Native tokens", async () => {
+          await network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [await donationManager.getAddress()],
+          });
+          expect(await ethers.provider.getBalance(userWallet.getAddress())).to.equal(0);
+          await expect(
+            treasureManager
+              .connect(await ethers.getSigner(await donationManager.getAddress()))
+              .airdropTreasure(userWallet.getAddress(), 0, 1),
+          ).emit(treasureManager, "TreasureAirdropSuccess");
+
+          expect(await ethers.provider.getBalance(userWallet.getAddress())).to.equal(ethers.parseUnits("1", 18));
         });
       });
     });
