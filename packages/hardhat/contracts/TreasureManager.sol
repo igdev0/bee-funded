@@ -11,7 +11,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 
-contract TreasureManager is ITreasureManager {
+contract TreasureManager is ITreasureManager, IERC1155Receiver {
     IDonationManager private immutable donationManager;
     IBeeFundedCore private immutable beeFundedCore;
 
@@ -36,6 +36,16 @@ contract TreasureManager is ITreasureManager {
         require(msg.sender == address(donationManager));
         _;
     }
+
+    function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
+        return
+            _interfaceId == this.supportsInterface.selector ||
+            _interfaceId == this.getUnlockedTreasures.selector ||
+            _interfaceId == this.getRandomNumber.selector ||
+            _interfaceId == this.airdropTreasure.selector ||
+            _interfaceId == this.onERC1155Received.selector ||
+            _interfaceId == this.onERC1155BatchReceived.selector;
+    }
     /**
      * @notice Generates a pseudo-random number using block properties.
      * @dev This method is not secure for randomness in production environments
@@ -52,33 +62,33 @@ contract TreasureManager is ITreasureManager {
         return random;
     }
 
-    function _createTreasure(uint _poolId, address _token, uint _tokenId, uint _amount, uint _minBlockTime, uint _minDonationTime, uint _unlockOnNth, TreasureKind _kind) internal onlyPoolOwner(_poolId) returns(uint) {
-        require(uint8(_kind) <= uint8(TreasureKind.Native), "Invalid treasure kind");
+    function _createTreasure(TreasureParams memory _treasure) internal onlyPoolOwner(_treasure.poolId) returns (uint) {
+        require(uint8(_treasure.kind) <= uint8(TreasureKind.Native), "Invalid treasure kind");
 
-        if(_token == address(0) && _kind == TreasureKind.Native) {
-            require(_amount > 0, "Native treasure must have amount");
+        if (_treasure.token == address(0) && _treasure.kind == TreasureKind.Native) {
+            require(_treasure.amount > 0, "Native treasure must have amount");
         }
 
-        if (_kind == TreasureKind.ERC20) {
-            require(_amount > 0, "ERC20 treasure must have amount");
+        if (_treasure.kind == TreasureKind.ERC20) {
+            require(_treasure.amount > 0, "ERC20 treasure must have amount");
             require(
-                IERC20(_token).balanceOf(address(this)) >= _amount,
+                IERC20(_treasure.token).balanceOf(address(this)) >= _treasure.amount,
                 "Insufficient ERC20 balance in contract"
             );
         }
 
-        if (_kind == TreasureKind.ERC721) {
-            require(_tokenId > 0, "ERC721 treasure must have tokenId");
+        if (_treasure.kind == TreasureKind.ERC721) {
+            require(_treasure.tokenId > 0, "ERC721 treasure must have tokenId");
             require(
-                IERC721(_token).ownerOf(_tokenId) == address(this),
+                IERC721(_treasure.token).ownerOf(_treasure.tokenId) == address(this),
                 "Contract does not own the ERC721 token"
             );
         }
-        if (_kind == TreasureKind.ERC1155) {
-            require(_tokenId > 0, "ERC1155 treasure must have tokenId");
-            require(_amount > 0, "ERC1155 treasure must have amount");
+        if (_treasure.kind == TreasureKind.ERC1155) {
+            require(_treasure.tokenId > 0, "ERC1155 treasure must have tokenId");
+            require(_treasure.amount > 0, "ERC1155 treasure must have amount");
             require(
-                IERC1155(_token).balanceOf(address(this), _tokenId) >= _amount,
+                IERC1155(_treasure.token).balanceOf(address(this), _treasure.tokenId) >= _treasure.amount,
                 "Insufficient ERC1155 balance in contract"
             );
         }
@@ -86,20 +96,20 @@ contract TreasureManager is ITreasureManager {
         uint id = treasureId.current();
         Treasure memory treasure = Treasure({
             id: id,
-            owner: msg.sender,
-            token: _token,
-            tokenId: _tokenId,
-            amount: _amount,
+            owner: _treasure.owner,
+            token: _treasure.token,
+            tokenId: _treasure.tokenId,
+            amount: _treasure.amount,
             transferred: false,
-            minBlockTime: _minBlockTime,
-            minDonationTime: _minDonationTime,
-            unlockOnNth: _unlockOnNth,
-            kind: _kind
+            minBlockTime: _treasure.minBlockTime,
+            minDonationTime: _treasure.minDonationTime,
+            unlockOnNth: _treasure.unlockOnNth,
+            kind: _treasure.kind
         });
 
-        treasuresByPoolId[_poolId][id] = treasure;
+        treasuresByPoolId[_treasure.poolId][id] = treasure;
         treasureId.increment();
-        treasureCountByPoolId[_poolId] = treasureId.current();
+        treasureCountByPoolId[_treasure.poolId] = treasureId.current();
         return id;
     }
 
@@ -123,7 +133,7 @@ contract TreasureManager is ITreasureManager {
     function createTreasure(uint _poolId, address _token, uint _tokenId, uint _amount, uint _minBlockTime, uint _minDonationTime, uint _unlockOnNth, TreasureKind _kind) external payable onlyPoolOwner(_poolId) {
         require(_kind != TreasureKind.ERC1155, "Transfer tokens using safeTransfer(), this contract implements IERC1155Receiver");
         uint actualAmount = _kind == TreasureKind.Native ? msg.value : _amount;
-        uint id = _createTreasure(_poolId, _token, _tokenId, actualAmount, _minBlockTime, _minDonationTime, _unlockOnNth, _kind);
+        uint id = _createTreasure(TreasureParams(_poolId, msg.sender, _token, _tokenId, actualAmount, _minBlockTime, _minDonationTime, _unlockOnNth, _kind));
         emit TreasureCreatedSuccess(_poolId, id, msg.sender, _kind);
     }
 
@@ -203,6 +213,72 @@ contract TreasureManager is ITreasureManager {
         } else {
             emit TreasureAirdropFailed(_poolId, _treasureId, treasure.owner);
         }
+    }
+
+    function onERC1155Received(
+        address,
+        address from,
+        uint256 id,
+        uint256 value,
+        bytes calldata data
+    ) external returns (bytes4) {
+        (
+            uint poolId,
+            uint minBlockTime,
+            uint minDonationTime,
+            uint unlockOnNth
+        ) = abi.decode(data, (uint, uint, uint, uint));
+
+        uint _treasureId = _createTreasure(TreasureParams({
+            poolId: poolId,
+            owner: from,
+            token: msg.sender,
+            tokenId: id,
+            amount: value,
+            minBlockTime: minBlockTime,
+            minDonationTime: minDonationTime,
+            unlockOnNth: unlockOnNth,
+            kind: TreasureKind.ERC1155
+        }));
+
+        emit TreasureCreatedSuccess(poolId, _treasureId, from, TreasureKind.ERC1155);
+
+        return this.onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address,
+        address from,
+        uint256[] calldata ids,
+        uint256[] calldata values,
+        bytes calldata data
+    ) external returns (bytes4) {
+        require(ids.length == values.length, "Mismatched ids/values length");
+        (
+            uint poolId,
+            uint minBlockTime,
+            uint minDonationTime,
+            uint unlockOnNth
+        ) = abi.decode(data, (uint, uint, uint, uint));
+
+        for (uint i = 0; i < ids.length; i++) {
+
+            uint _treasureId = _createTreasure(TreasureParams({
+                poolId: poolId,
+                owner: from,
+                token: msg.sender,
+                tokenId: ids[i],
+                amount: values[i],
+                minBlockTime: minBlockTime,
+                minDonationTime: minDonationTime,
+                unlockOnNth: unlockOnNth,
+                kind: TreasureKind.ERC1155
+            }));
+
+            emit TreasureCreatedSuccess(poolId, _treasureId, from, TreasureKind.ERC1155);
+        }
+
+        return this.onERC1155BatchReceived.selector;
     }
 
     receive() external payable {}

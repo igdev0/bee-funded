@@ -25,18 +25,15 @@ const basescanApiKey = process.env.BASESCAN_API_KEY || "ZZZEIPMT1MNJ8526VV2Y744C
 
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: [
-      {
-        version: "0.8.30",
-        settings: {
-          optimizer: {
-            enabled: true,
-            // https://docs.soliditylang.org/en/latest/using-the-compiler.html#optimizer-options
-            runs: 200,
-          },
-        },
+    version: "0.8.30",
+    settings: {
+      viaIR: true,
+      optimizer: {
+        enabled: true,
+        // https://docs.soliditylang.org/en/latest/using-the-compiler.html#optimizer-options
+        runs: 200,
       },
-    ],
+    },
   },
   defaultNetwork: "localhost",
   namedAccounts: {

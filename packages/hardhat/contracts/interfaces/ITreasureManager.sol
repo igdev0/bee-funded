@@ -15,6 +15,18 @@ interface ITreasureManager {
         Native
     }
 
+    struct TreasureParams {
+        uint poolId;
+        address owner;
+        address token;
+        uint tokenId;
+        uint amount;
+        uint minBlockTime;
+        uint minDonationTime;
+        uint unlockOnNth;
+        TreasureKind kind;
+    }
+
     struct Treasure {
         uint id;
         address owner;
