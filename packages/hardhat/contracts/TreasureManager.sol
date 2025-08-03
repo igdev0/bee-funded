@@ -126,22 +126,6 @@ contract TreasureManager is ERC1155Holder, ITreasureManager {
         emit TreasureCreatedSuccess(_poolId, id, msg.sender, _kind);
     }
 
-    function getAllTreasures(uint _poolId) external view returns (Treasure[] memory) {
-
-        Treasure[] memory treasures = new Treasure[](treasureIdByPoolId[_poolId].current());
-        for (uint i; i < treasureIdByPoolId[_poolId].current(); i++) {
-            Treasure memory treasure = treasuresByPoolId[_poolId][i];
-            treasures[i] = treasure;
-        }
-
-        return treasures;
-    }
-
-    function getTreasureCount(uint _poolId) external view returns (uint) {
-        return treasureIdByPoolId[_poolId].current();
-    }
-
-
     /**
     @dev It retrieves the unlocked treasures based on the poolId and _donationNth provided
     @param _poolId – The poolId of the treasures
