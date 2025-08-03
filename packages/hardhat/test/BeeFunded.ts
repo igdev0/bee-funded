@@ -407,7 +407,23 @@ describe("BeeFunded", function () {
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
       });
+
+      it("should be able to create multiple treasures containing ERC1155 tokens", async () => {
+        const abiCoder = new AbiCoder();
+        await expect(
+          mockedERC1155.mintBatch(
+            await treasureManager.getAddress(),
+            [BigInt(2), BigInt(2)],
+            [BigInt(1), BigInt(1)],
+            abiCoder.encode(
+              ["uint256", "uint256", "uint256", "uint256"],
+              [0, treasureMinBlocktime, donationMinBlocktime, 1],
+            ),
+          ),
+        ).emit(treasureManager, "TreasureCreatedSuccess");
+      });
     });
+
     describe("Airdrop treasures", () => {
       it("should be able to airdrop ERC20 tokens", async () => {
         await network.provider.request({
@@ -472,7 +488,7 @@ describe("BeeFunded", function () {
           .connect(await ethers.getSigner(await donationManager.getAddress()))
           .getUnlockedTreasures(0, 1);
 
-        expect(unlocked.length).to.equal(1);
+        expect(unlocked.length).to.equal(3);
       });
     });
   });
