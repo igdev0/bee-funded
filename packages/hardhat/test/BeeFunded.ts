@@ -446,6 +446,20 @@ describe("BeeFunded", function () {
 
           expect(await ethers.provider.getBalance(userWallet.getAddress())).to.equal(ethers.parseUnits("1", 18));
         });
+
+        it("should be able to airdrop ERC721 treasure", async () => {
+          await network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [await donationManager.getAddress()],
+          });
+          await expect(
+            treasureManager
+              .connect(await ethers.getSigner(await donationManager.getAddress()))
+              .airdropTreasure(await userWallet.getAddress(), 0, 2),
+          ).emit(treasureManager, "TreasureAirdropSuccess");
+
+          expect(await mockedERC721.ownerOf(1)).to.equal(await userWallet.getAddress());
+        });
       });
     });
   });
