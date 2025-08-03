@@ -336,7 +336,8 @@ describe("BeeFunded", function () {
       const number = await treasureManager.getRandomNumber();
       expect(Number(number)).to.not.equal(Number.NaN);
     });
-
+    const treasureMinBlocktime = BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2);
+    const donationMinBlocktime = BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24);
     describe("Treasure creation", () => {
       it("should be able to create a treasure containing ERC20 tokens", async () => {
         await mockUSDC.transfer(await treasureManager.getAddress(), ethers.parseUnits("100", 6));
@@ -346,8 +347,8 @@ describe("BeeFunded", function () {
             await mockUSDC.getAddress(),
             BigInt(0),
             ethers.parseUnits("10", 6),
-            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
-            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
+            treasureMinBlocktime,
+            donationMinBlocktime,
             BigInt(1),
             BigInt(3),
           ),
@@ -361,8 +362,8 @@ describe("BeeFunded", function () {
             ethers.ZeroAddress,
             BigInt(0),
             0,
-            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
-            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
+            treasureMinBlocktime,
+            donationMinBlocktime,
             BigInt(1),
             BigInt(0),
             {
@@ -380,8 +381,8 @@ describe("BeeFunded", function () {
             await mockedERC721.getAddress(),
             BigInt(1),
             0,
-            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
-            BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
+            treasureMinBlocktime,
+            donationMinBlocktime,
             BigInt(1), // unlock on every donation
             BigInt(1),
           ),
@@ -399,15 +400,35 @@ describe("BeeFunded", function () {
             BigInt(1),
             abiCoder.encode(
               ["uint256", "uint256", "uint256", "uint256"],
-              [
-                0,
-                BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24 * 2),
-                BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24),
-                1,
-              ],
+              [0, treasureMinBlocktime, donationMinBlocktime, 1],
             ),
           ),
         ).emit(treasureManager, "TreasureCreatedSuccess");
+      });
+
+      describe("Airdrop treasures", () => {
+        it("should be able to airdrop ERC20 tokens", async () => {
+          await network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [await donationManager.getAddress()],
+          });
+          await expect(
+            treasureManager
+              .connect(await ethers.getSigner(await donationManager.getAddress()))
+              .airdropTreasure(deployer, 0, 0),
+          ).emit(treasureManager, "TreasureAirdropSuccess");
+        });
+        it("should not be able to airdrop treasure that's been transferred already", async () => {
+          await network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [await donationManager.getAddress()],
+          });
+          await expect(
+            treasureManager
+              .connect(await ethers.getSigner(await donationManager.getAddress()))
+              .airdropTreasure(deployer, 0, 0),
+          ).to.revertedWith("Treasure already airdropped");
+        });
       });
     });
   });
