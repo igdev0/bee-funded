@@ -12,6 +12,7 @@ import NotificationEntity from './notification/entities/notification.entity';
 import ProfileEntity from './profile/entities/profile.entity';
 import { ChainListenerModule } from './chain-listener/chain-listener.module';
 import { MailModule } from './mail/mail.module';
+import { DonationPoolModule } from './donation-pool/donation-pool.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { MailModule } from './mail/mail.module';
     ChainListenerModule,
     ProfileModule,
     MailModule,
+    DonationPoolModule,
   ],
 })
 export class AppModule {}
