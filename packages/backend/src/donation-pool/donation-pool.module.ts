@@ -4,6 +4,6 @@ import { DonationPoolController } from './donation-pool.controller';
 
 @Module({
   providers: [DonationPoolService],
-  controllers: [DonationPoolController]
+  controllers: [DonationPoolController],
 })
 export class DonationPoolModule {}
