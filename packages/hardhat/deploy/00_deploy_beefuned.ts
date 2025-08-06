@@ -100,7 +100,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   console.log(`DonationManager address: ${donationManagerAddress}} 📑`);
   console.log(`SubscriptionManager address: ${subscriptionManagerAddress}} 📑`);
   console.log(`AutomationUpKeep address: ${automationUpKeepAddress}} 📑`);
-  console.log(`AutomationUpKeep address: ${treasureManagerAddress}} 📑`);
+  console.log(`TreasureManager address: ${treasureManagerAddress}} 📑`);
 };
 
 export default deployYourContract;
