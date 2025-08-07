@@ -65,6 +65,12 @@ export class DonationPoolEntity {
   cap!: number | null;
 
   /**
+   * The cover image displayed in the card of the donation pool.
+   */
+  @Column('text', { nullable: true, default: null })
+  image!: string | null;
+
+  /**
    * Optional title of the donation pool.
    *
    * This field will be only necessary if the kind is not 'main'.
@@ -96,12 +102,6 @@ export class DonationPoolEntity {
   )
   @JoinColumn()
   profile: ProfileEntity;
-
-  /**
-   * The cover image displayed in the card of the donation pool.
-   */
-  @Column('text', { nullable: true, default: null })
-  image!: string | null;
 
   /**
    * List of tags used to categorize or filter donation pools (e.g., "education", "climate", "web3")
