@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import NotificationEntity from '../../notification/entities/notification.entity';
+import { DonationPoolEntity } from '../../donation-pool/entities/donation-pool.entity';
 
 /**
  * Profile entity representing additional user information.
@@ -87,6 +88,9 @@ export default class ProfileEntity {
   })
   cover: string;
 
+  @OneToMany(() => DonationPoolEntity, (poolEntity) => poolEntity.profile)
+  @JoinTable()
+  donation_pools: DonationPoolEntity[];
   /**
    * List of social media links associated with the profile.
    */
