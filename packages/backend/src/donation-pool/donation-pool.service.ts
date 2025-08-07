@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
 import { Repository } from 'typeorm';
 import CreateDonationPoolDto from './dto/create-donation-pool.dto';
+import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit {
@@ -38,6 +39,27 @@ export class DonationPoolService implements OnModuleInit {
       });
     }
     return await this.donationPoolRepository.save(entity);
+  }
+
+  /**
+   *
+   * @param id – Donation
+   * @param profileId – The profile id of the authenticated user.
+   * @param data – The data to be updated
+   */
+  async update(
+    id: string,
+    profileId: string,
+    data: UpdateDonationPoolDto,
+  ): Promise<DonationPoolEntity> {
+    await this.donationPoolRepository
+      .createQueryBuilder()
+      .update()
+      .set(data)
+      .where('id = :id', { id })
+      .andWhere('profileId = :profileId', { profileId })
+      .execute();
+    return this.donationPoolRepository.findOneOrFail({ where: { id: id } });
   }
 
   async onModuleInit(): Promise<void> {
