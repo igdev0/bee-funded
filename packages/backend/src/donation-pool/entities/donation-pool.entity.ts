@@ -46,7 +46,7 @@ export class DonationPoolEntity {
    * This will be updated once BeeFundedCore emits PoolCreated event
    */
   @Column('text', { nullable: true, default: null })
-  owner!: string | null;
+  owner_address!: string | null;
 
   /**
    * The token used to determine the valuation of donations (e.g. USDC, ETH).
