@@ -3,9 +3,14 @@ import { DonationPoolService } from './donation-pool.service';
 import { DonationPoolController } from './donation-pool.controller';
 import { ConfigModule } from '@nestjs/config';
 import ContractsConfig from '../contracts.config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DonationPoolEntity } from './entities/donation-pool.entity';
 
 @Module({
-  imports: [ConfigModule.forFeature(ContractsConfig)],
+  imports: [
+    TypeOrmModule.forFeature([DonationPoolEntity]),
+    ConfigModule.forFeature(ContractsConfig),
+  ],
   providers: [DonationPoolService],
   controllers: [DonationPoolController],
 })

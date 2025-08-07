@@ -10,9 +10,9 @@ import { ProfileModule } from './profile/profile.module';
 import databaseConfig from './database.config';
 import NotificationEntity from './notification/entities/notification.entity';
 import ProfileEntity from './profile/entities/profile.entity';
-import { ChainListenerModule } from './chain-listener/chain-listener.module';
 import { MailModule } from './mail/mail.module';
 import { DonationPoolModule } from './donation-pool/donation-pool.module';
+import { DonationPoolEntity } from './donation-pool/entities/donation-pool.entity';
 
 @Module({
   imports: [
@@ -40,12 +40,16 @@ import { DonationPoolModule } from './donation-pool/donation-pool.module';
           password,
           database,
           synchronize,
-          entities: [UserEntity, ProfileEntity, NotificationEntity],
+          entities: [
+            UserEntity,
+            ProfileEntity,
+            NotificationEntity,
+            DonationPoolEntity,
+          ],
         };
       },
     }),
     NotificationModule,
-    ChainListenerModule,
     ProfileModule,
     MailModule,
     DonationPoolModule,
