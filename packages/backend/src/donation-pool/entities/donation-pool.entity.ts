@@ -9,7 +9,12 @@ import {
 } from 'typeorm';
 import ProfileEntity from '../../profile/entities/profile.entity';
 
-type DonationPoolKind = 'main' | 'objective';
+export type DonationPoolKind = 'main' | 'objective';
+export type DonationPoolStatus =
+  | 'draft'
+  | 'publishing'
+  | 'published'
+  | 'failed';
 
 @Entity('donation-pool')
 export class DonationPoolEntity {
@@ -104,6 +109,11 @@ export class DonationPoolEntity {
   @Column('json', { default: [] })
   tags: string[];
 
+  /**
+   * The status of the donation pool
+   */
+  @Column('text', { default: 'draft' })
+  status: DonationPoolStatus;
   /**
    * Timestamp of when the donation pool was created.
    */
