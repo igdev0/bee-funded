@@ -8,13 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import ProfileEntity from '../../profile/entities/profile.entity';
-
-export type DonationPoolKind = 'main' | 'objective';
-export type DonationPoolStatus =
-  | 'draft'
-  | 'publishing'
-  | 'published'
-  | 'failed';
+import { DonationPoolKind, DonationPoolStatus } from '../types';
 
 @Entity('donation-pool')
 export class DonationPoolEntity {
