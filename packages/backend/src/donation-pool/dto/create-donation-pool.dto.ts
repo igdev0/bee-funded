@@ -44,8 +44,4 @@ export default class CreateDonationPoolDto {
   @ArrayMaxSize(10)
   @IsString({ each: true })
   tags?: string[];
-
-  @IsOptional()
-  @IsEnum(['draft', 'publishing', 'published', 'failed'])
-  status?: DonationPoolStatus;
 }
