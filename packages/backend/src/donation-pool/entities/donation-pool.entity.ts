@@ -96,7 +96,7 @@ export class DonationPoolEntity {
    * The cover image displayed in the card of the donation pool.
    */
   @Column('text', { nullable: true, default: null })
-  image: string | null;
+  image!: string | null;
 
   /**
    * List of tags used to categorize or filter donation pools (e.g., "education", "climate", "web3")
