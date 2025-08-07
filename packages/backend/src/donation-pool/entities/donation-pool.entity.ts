@@ -1,4 +1,5 @@
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -9,6 +10,7 @@ import {
 } from 'typeorm';
 import ProfileEntity from '../../profile/entities/profile.entity';
 import { DonationPoolKind, DonationPoolStatus } from '../types';
+import { keccak256 } from 'ethers';
 
 @Entity('donation-pool')
 export class DonationPoolEntity {
@@ -19,13 +21,17 @@ export class DonationPoolEntity {
   id!: string;
 
   /**
+   * The keccak256 hash of the id
+   */
+  @Column({ type: 'text' })
+  id_hash: string;
+  /**
    * Optional on-chain ID associated with the donation pool, mapped from the smart contract.
    *
    * This will be updated once BeeFundedCore emits PoolCreated event
    */
   @Column('int', { nullable: true, default: null })
   on_chain_id!: number | null;
-
   /**
    * Chain ID of the blockchain network where the donation pool exists.
    *
@@ -33,15 +39,12 @@ export class DonationPoolEntity {
    */
   @Column('int', { nullable: true, default: null })
   chain_id!: number | null;
-
   /**
    * Address of the wallet that owns or manages the donation pool.
    *
-   * This will be updated once BeeFundedCore emits PoolCreated event
    */
   @Column('text', { nullable: true, default: null })
   owner_address!: string | null;
-
   /**
    * The token used to determine the valuation of donations (e.g. USDC, ETH).
    *
@@ -49,7 +52,6 @@ export class DonationPoolEntity {
    */
   @Column('text', { nullable: true, default: null })
   valuation_token: string;
-
   /**
    * Optional cap (maximum amount) for donations in this pool.
    *
@@ -57,13 +59,11 @@ export class DonationPoolEntity {
    */
   @Column('int', { nullable: true, default: null })
   cap!: number | null;
-
   /**
    * The cover image displayed in the card of the donation pool.
    */
   @Column('text', { nullable: true, default: null })
   image!: string | null;
-
   /**
    * Optional title of the donation pool.
    *
@@ -71,7 +71,6 @@ export class DonationPoolEntity {
    */
   @Column('text', { nullable: true, default: null })
   title!: string | null;
-
   /**
    * Optional description providing more details about the donation pool.
    *
@@ -79,14 +78,12 @@ export class DonationPoolEntity {
    */
   @Column('text', { nullable: true, default: null })
   description!: string | null;
-
   /**
    * Type of the donation pool. Can be either 'main' or 'objective'.
    *
    */
   @Column('text')
   kind: DonationPoolKind;
-
   /**
    * The profile associated with this donation pool (inverse side of the relation).
    */
@@ -96,13 +93,11 @@ export class DonationPoolEntity {
   )
   @JoinColumn()
   profile: ProfileEntity;
-
   /**
    * List of tags used to categorize or filter donation pools (e.g., "education", "climate", "web3")
    */
   @Column('json', { default: [] })
   tags: string[];
-
   /**
    * The status of the donation pool
    */
@@ -113,10 +108,14 @@ export class DonationPoolEntity {
    */
   @CreateDateColumn()
   created_at!: Date;
-
   /**
    * Timestamp of the last update to the donation pool.
    */
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @BeforeInsert()
+  generateIdHash() {
+    this.id_hash = keccak256(this.id);
+  }
 }

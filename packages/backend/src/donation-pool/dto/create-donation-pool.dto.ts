@@ -9,7 +9,7 @@ import {
   MaxLength,
   ArrayMaxSize,
 } from 'class-validator';
-import { DonationPoolKind, DonationPoolStatus } from '../types';
+import { DonationPoolKind } from '../types';
 
 export default class CreateDonationPoolDto {
   @IsEnum(['main', 'objective'])
@@ -39,6 +39,8 @@ export default class CreateDonationPoolDto {
   @Min(0)
   cap?: number;
 
+  @IsOptional()
+  @IsString()
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(10)

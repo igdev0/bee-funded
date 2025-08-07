@@ -7,6 +7,8 @@ import { DonationPoolEntity } from './entities/donation-pool.entity';
 import { Repository } from 'typeorm';
 import CreateDonationPoolDto from './dto/create-donation-pool.dto';
 import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
+import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
+import { as } from '@faker-js/faker/dist/airline-CLphikKp';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit {
@@ -39,6 +41,24 @@ export class DonationPoolService implements OnModuleInit {
       });
     }
     return await this.donationPoolRepository.save(entity);
+  }
+
+  async publish(
+    id_hash: string,
+    dto: PublishDonationPoolDto,
+  ): Promise<DonationPoolEntity> {
+    await this.donationPoolRepository
+      .createQueryBuilder()
+      .update()
+      .set({
+        on_chain_id: dto.on_chain_id,
+        owner_address: dto.owner_address,
+        status: 'published',
+      })
+      .where('id_hash = :id_hash', { id_hash })
+      .execute();
+
+    return this.donationPoolRepository.findOneOrFail({ where: { id_hash } });
   }
 
   /**
@@ -80,9 +100,13 @@ export class DonationPoolService implements OnModuleInit {
         provider,
       );
 
-      await contract.on('DonationPoolCreated', () => {
-        console.log('DonationPoolCreated');
-      });
+      await contract.on(
+        'DonationPoolCreated',
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        async (id_hash: string, owner_address: string, on_chain_id: number) => {
+          await this.publish(id_hash, { on_chain_id, owner_address });
+        },
+      );
     }
   }
 }
