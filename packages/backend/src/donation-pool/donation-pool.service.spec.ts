@@ -1,17 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { DonationPoolService } from './donation-pool.service';
+import { TestBed, Mocked } from '@suites/unit';
+import contractsConfig from '../contracts.config';
+import { ConfigService } from '@nestjs/config';
 
 describe('DonationPoolService', () => {
   let service: DonationPoolService;
+  let configService: Mocked<ConfigService>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [DonationPoolService],
-    }).compile();
+    const { unitRef, unit } =
+      await TestBed.solitary(DonationPoolService).compile();
 
-    service = module.get<DonationPoolService>(DonationPoolService);
+    service = unit;
+    configService = unitRef.get(ConfigService);
+    configService.get.mockReturnValue(contractsConfig());
   });
-
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
