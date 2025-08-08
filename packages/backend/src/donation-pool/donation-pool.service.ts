@@ -8,7 +8,6 @@ import { Repository } from 'typeorm';
 import CreateDonationPoolDto from './dto/create-donation-pool.dto';
 import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
-import { as } from '@faker-js/faker/dist/airline-CLphikKp';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit {
