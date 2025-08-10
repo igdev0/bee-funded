@@ -82,6 +82,19 @@ export class DonationPoolService implements OnModuleInit {
   }
 
   /**
+   * This method allows you to get owned donation pool by ID.
+   * @param id – The donation pool ID
+   * @param profileId – The profileId owning the given donation pool ID
+   */
+  getOwned(id: string, profileId: string): Promise<DonationPoolEntity> {
+    return this.donationPoolRepository
+      .createQueryBuilder()
+      .where('id = :id', { id })
+      .andWhere('profileId = :profileId', { profileId })
+      .execute();
+  }
+
+  /**
    * This method gets all donation pools owned by a profileId
    * @param profileId – The profile id of the user owning pools
    */
