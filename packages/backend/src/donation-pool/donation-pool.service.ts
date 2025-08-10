@@ -85,7 +85,7 @@ export class DonationPoolService implements OnModuleInit {
    * This method gets all donation pools owned by a profileId
    * @param profileId – The profile id of the user owning pools
    */
-  getAll(profileId: string): Promise<DonationPoolEntity[]> {
+  getAllOwned(profileId: string): Promise<DonationPoolEntity[]> {
     return this.donationPoolRepository
       .createQueryBuilder()
       .where('profileId= :profileId', { profileId })
@@ -98,7 +98,7 @@ export class DonationPoolService implements OnModuleInit {
    * @param profileId – The profile id of the user owning the donation pool.
    */
 
-  async delete(id: string, profileId: string): Promise<boolean> {
+  async deleteOwned(id: string, profileId: string): Promise<boolean> {
     const result = await this.donationPoolRepository
       .createQueryBuilder()
       .where('id = :id', { id })
