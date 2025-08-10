@@ -2,18 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { App } from 'supertest/types';
 import { AuthModule } from '../src/auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DatabaseType, DataSource } from 'typeorm';
-import { UserEntity } from '../src/user/entities/user.entity';
-import ProfileEntity from '../src/profile/entities/profile.entity';
+import { ConfigModule } from '@nestjs/config';
+import { DataSource } from 'typeorm';
 import * as request from 'supertest';
-import DatabaseConfig from '../src/database.config';
 import * as cookieParser from 'cookie-parser';
-import NotificationEntity from '../src/notification/entities/notification.entity';
 import { ethers } from 'ethers';
 import { SiweMessage } from 'siwe';
-
+import { DatabaseModule } from '../src/database/database.module';
 interface ParsedCookie {
   name: string;
   value: string;
@@ -51,32 +46,7 @@ describe('AuthController (e2e)', () => {
           envFilePath: '.env.test.local',
           isGlobal: true,
         }),
-        TypeOrmModule.forRootAsync({
-          imports: [ConfigModule.forFeature(DatabaseConfig)],
-          inject: [ConfigService],
-          useFactory(config: ConfigService) {
-            const type = config.get<DatabaseType>('db.type');
-            const host: string = config.get('db.host') ?? 'localhost';
-            const port: number = config.get('db.port') ?? 5432;
-            const database: string = config.get('db.database') ?? 'yourdb';
-            const username: string = config.get('db.username') ?? 'admin';
-            const password: string = config.get('db.password') ?? 'admin';
-            const synchronize: boolean = config.get('db.sync') ?? false;
-            if (!type) {
-              throw new Error('Database type must be set');
-            }
-            return {
-              type: type as keyof object, // or mysql, sqlite, etc.
-              host,
-              port,
-              username,
-              password,
-              database,
-              synchronize,
-              entities: [UserEntity, ProfileEntity, NotificationEntity],
-            };
-          },
-        }),
+        DatabaseModule,
         AuthModule,
       ],
     }).compile();

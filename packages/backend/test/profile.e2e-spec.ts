@@ -2,13 +2,8 @@ import { INestApplication } from '@nestjs/common';
 import { App } from 'supertest/types';
 import { ethers } from 'ethers';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import DatabaseConfig from '../src/database.config';
-import { DatabaseType, DataSource } from 'typeorm';
-import { UserEntity } from '../src/user/entities/user.entity';
-import ProfileEntity from '../src/profile/entities/profile.entity';
-import NotificationEntity from '../src/notification/entities/notification.entity';
+import { ConfigModule } from '@nestjs/config';
+import { DataSource } from 'typeorm';
 import * as cookieParser from 'cookie-parser';
 import { ProfileModule } from '../src/profile/profile.module';
 import * as fs from 'node:fs';
@@ -18,6 +13,7 @@ import { AuthModule } from '../src/auth/auth.module';
 import { SiweMessage } from 'siwe';
 import * as process from 'node:process';
 import { MailModule } from '../src/mail/mail.module';
+import { DatabaseModule } from '../src/database/database.module';
 
 const uploadsDir = process.cwd() + '/uploads';
 
@@ -70,32 +66,7 @@ describe('ProfileController (e2e)', () => {
           envFilePath: '.env.test.local',
           isGlobal: true,
         }),
-        TypeOrmModule.forRootAsync({
-          imports: [ConfigModule.forFeature(DatabaseConfig)],
-          inject: [ConfigService],
-          useFactory(config: ConfigService) {
-            const type = config.get<DatabaseType>('db.type');
-            const host: string = config.get('db.host') ?? 'localhost';
-            const port: number = config.get('db.port') ?? 5432;
-            const database: string = config.get('db.database') ?? 'yourdb';
-            const username: string = config.get('db.username') ?? 'admin';
-            const password: string = config.get('db.password') ?? 'admin';
-            const synchronize: boolean = config.get('db.sync') ?? false;
-            if (!type) {
-              throw new Error('Database type must be set');
-            }
-            return {
-              type: type as keyof object, // or mysql, sqlite, etc.
-              host,
-              port,
-              username,
-              password,
-              database,
-              synchronize,
-              entities: [UserEntity, ProfileEntity, NotificationEntity],
-            };
-          },
-        }),
+        DatabaseModule,
         AuthModule,
         ProfileModule,
         MailModule,
