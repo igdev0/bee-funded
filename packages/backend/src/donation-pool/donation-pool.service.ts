@@ -81,6 +81,25 @@ export class DonationPoolService implements OnModuleInit {
     return this.donationPoolRepository.findOneOrFail({ where: { id: id } });
   }
 
+  /**
+   * This method handles the removal of a donation pool
+   * @param id – The id of the donation pool entity
+   * @param profileId – The profile id of the user owning the donation pool.
+   */
+
+  async delete(id: string, profileId: string): Promise<boolean> {
+    const result = await this.donationPoolRepository
+      .createQueryBuilder()
+      .where('id = :id', { id })
+      .andWhere('profileId = :profileId', { profileId })
+      .delete()
+      .execute();
+    if (result.affected) {
+      return result.affected > 0;
+    }
+    return false;
+  }
+
   async onModuleInit(): Promise<void> {
     const chains = this.config.get<ChainConfig[]>('contracts');
     if (!chains) {
