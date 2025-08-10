@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChainConfig } from '../contracts.config';
 import { Contract, WebSocketProvider } from 'ethers';
@@ -10,7 +10,9 @@ import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 
 @Injectable()
-export class DonationPoolService implements OnModuleInit {
+export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
+  private providers: WebSocketProvider[] = [];
+
   constructor(
     private readonly config: ConfigService,
     @InjectRepository(DonationPoolEntity)
@@ -132,7 +134,7 @@ export class DonationPoolService implements OnModuleInit {
 
     for (const chain of chains) {
       const provider = new WebSocketProvider(chain.rpcUrl);
-
+      this.providers.push(provider);
       const { abi: beeFundedCoreAbi, address: beeFundedCoreAddress } =
         chain.contracts.BeeFundedCore;
 
@@ -150,5 +152,17 @@ export class DonationPoolService implements OnModuleInit {
         },
       );
     }
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    const chains = this.config.get<ChainConfig[]>('contracts');
+    if (!chains) {
+      throw new Error('Contracts config must be set');
+    }
+    await Promise.all(
+      this.providers.map((provider) => {
+        return provider.destroy();
+      }),
+    );
   }
 }

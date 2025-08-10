@@ -11,6 +11,7 @@ import {
 import ProfileEntity from '../../profile/entities/profile.entity';
 import { DonationPoolKind, DonationPoolStatus } from '../types';
 import { keccak256 } from 'ethers';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity('donation-pool')
 export class DonationPoolEntity {
@@ -115,6 +116,9 @@ export class DonationPoolEntity {
 
   @BeforeInsert()
   generateIdHash() {
-    this.id_hash = keccak256(this.id);
+    if (!this.id) {
+      this.id = uuidv4();
+    }
+    this.id_hash = keccak256(Buffer.from(this.id, 'hex'));
   }
 }

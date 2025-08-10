@@ -9,7 +9,6 @@ import { ProfileModule } from '../src/profile/profile.module';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as request from 'supertest';
-import { AuthModule } from '../src/auth/auth.module';
 import { SiweMessage } from 'siwe';
 import * as process from 'node:process';
 import { MailModule } from '../src/mail/mail.module';
