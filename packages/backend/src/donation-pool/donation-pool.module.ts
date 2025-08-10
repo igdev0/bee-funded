@@ -5,11 +5,13 @@ import { ConfigModule } from '@nestjs/config';
 import ContractsConfig from '../contracts.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DonationPoolEntity]),
     ConfigModule.forFeature(ContractsConfig),
+    AuthModule,
   ],
   providers: [DonationPoolService],
   controllers: [DonationPoolController],
