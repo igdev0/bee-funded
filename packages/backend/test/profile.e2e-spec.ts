@@ -67,7 +67,6 @@ describe('ProfileController (e2e)', () => {
           isGlobal: true,
         }),
         DatabaseModule,
-        AuthModule,
         ProfileModule,
         MailModule,
       ],
