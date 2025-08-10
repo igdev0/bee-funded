@@ -8,8 +8,8 @@ import { INestApplication } from '@nestjs/common';
 import { ethers } from 'ethers';
 import { SiweMessage } from 'siwe';
 import * as request from 'supertest';
-import { execSync } from 'node:child_process';
 import { DataSource } from 'typeorm';
+import { DonationPoolStatus } from '../src/donation-pool/types';
 
 describe('Donation Pool', () => {
   let app: INestApplication<App>;
@@ -70,8 +70,10 @@ describe('Donation Pool', () => {
         .post('/donation-pool')
         .set('authorization', `Bearer ${user.accessToken}`)
         .send({ kind: 'main' });
-
       expect(res.statusCode).toBe(201);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(res.body.status as DonationPoolStatus).toBe('publishing');
     });
   });
 
