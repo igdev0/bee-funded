@@ -27,17 +27,23 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
    * - It should ignore any other inputs if the kind is set to 'main'.
    *
    * @param dto – CreateDonationPoolDto
+   * @param profileId – The profile owning this donation pool
    */
-  async create(dto: CreateDonationPoolDto): Promise<DonationPoolEntity> {
+  async create(
+    dto: CreateDonationPoolDto,
+    profileId: string,
+  ): Promise<DonationPoolEntity> {
     let entity: DonationPoolEntity;
     if (dto.kind == 'main') {
       entity = this.donationPoolRepository.create({
         kind: 'main',
+        profile: { id: profileId },
         status: 'publishing',
       });
     } else {
       entity = this.donationPoolRepository.create({
         ...dto,
+        profile: { id: profileId },
         status: 'publishing',
       });
     }
@@ -58,8 +64,9 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
       })
       .where('id_hash = :id_hash', { id_hash })
       .execute();
-
-    return this.donationPoolRepository.findOneOrFail({ where: { id_hash } });
+    return this.donationPoolRepository.findOneByOrFail({
+      id_hash,
+    });
   }
 
   /**
@@ -90,10 +97,11 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
    */
   getOwned(id: string, profileId: string): Promise<DonationPoolEntity> {
     return this.donationPoolRepository
-      .createQueryBuilder()
-      .where('id = :id', { id })
-      .andWhere('profileId = :profileId', { profileId })
-      .execute();
+      .createQueryBuilder('pool')
+      .leftJoin('pool.profile', 'profile')
+      .where('profile.id = :profileId', { profileId })
+      .andWhere('pool.id = :id', { id })
+      .getOneOrFail();
   }
 
   /**
@@ -133,7 +141,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     }
 
     for (const chain of chains) {
-      const provider = new WebSocketProvider(chain.rpcUrl);
+      const provider = new WebSocketProvider(chain.wsUrl);
       this.providers.push(provider);
       const { abi: beeFundedCoreAbi, address: beeFundedCoreAddress } =
         chain.contracts.BeeFundedCore;
@@ -147,8 +155,11 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
       await contract.on(
         'DonationPoolCreated',
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        async (id_hash: string, owner_address: string, on_chain_id: number) => {
-          await this.publish(id_hash, { on_chain_id, owner_address });
+        async (on_chain_id: bigint, owner_address: string, id_hash: bigint) => {
+          await this.publish(`0x${id_hash.toString(16)}`, {
+            on_chain_id,
+            owner_address,
+          });
         },
       );
     }

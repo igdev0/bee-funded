@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
@@ -19,8 +20,14 @@ export class DonationPoolController {
 
   @UseGuards(AuthGuard)
   @Post()
-  create(@Body() body: CreateDonationPoolDto) {
-    return this.donationPoolService.create(body);
+  create(@GetUser() user: UserEntity, @Body() body: CreateDonationPoolDto) {
+    return this.donationPoolService.create(body, user.profile.id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  get(@GetUser() user: UserEntity, @Param('id') id: string) {
+    return this.donationPoolService.getOwned(id, user.profile.id);
   }
 
   @UseGuards(AuthGuard)

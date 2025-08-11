@@ -4,7 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -31,8 +31,8 @@ export class DonationPoolEntity {
    *
    * This will be updated once BeeFundedCore emits PoolCreated event
    */
-  @Column('int', { nullable: true, default: null })
-  on_chain_id!: number | null;
+  @Column('bigint', { nullable: true, default: null })
+  on_chain_id!: bigint | null;
   /**
    * Chain ID of the blockchain network where the donation pool exists.
    *
@@ -87,11 +87,10 @@ export class DonationPoolEntity {
   /**
    * The profile associated with this donation pool (inverse side of the relation).
    */
-  @OneToMany(
+  @ManyToOne(
     () => ProfileEntity,
     (profileEntity) => profileEntity.donation_pools,
   )
-  @JoinColumn()
   profile: ProfileEntity;
   /**
    * List of tags used to categorize or filter donation pools (e.g., "education", "climate", "web3")

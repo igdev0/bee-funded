@@ -1,8 +1,8 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export default class PublishDonationPoolDto {
-  @IsNumber()
-  on_chain_id: number;
+  @IsString()
+  on_chain_id: bigint;
 
   @IsString()
   owner_address: string;
