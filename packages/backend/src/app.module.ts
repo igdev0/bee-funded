@@ -6,6 +6,7 @@ import { ProfileModule } from './profile/profile.module';
 import { MailModule } from './mail/mail.module';
 import { DonationPoolModule } from './donation-pool/donation-pool.module';
 import { DatabaseModule } from './database/database.module';
+import { FileStorageModule } from './file-storage/file-storage.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { DatabaseModule } from './database/database.module';
     MailModule,
     DonationPoolModule,
     DatabaseModule,
+    FileStorageModule,
   ],
 })
 export class AppModule {}
