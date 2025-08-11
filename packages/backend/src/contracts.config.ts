@@ -46,7 +46,7 @@ export default registerAs(
         chainId: 31337,
         contracts: {
           BeeFundedCore: {
-            address: '0xB002BFC1b01598F1FD5e8308899f5E24C5e7Ae0b',
+            address: '0x58cF3AAd02CE9C9c6f8a3fDCe16E431186A1E6a1',
             abi: [
               {
                 inputs: [
@@ -344,7 +344,7 @@ export default registerAs(
             ],
           },
           SubscriptionManager: {
-            address: '0x1cA141EEf170B401F1D126Bb62978f1C018d5d4d',
+            address: '0x0A082182e5Fe2498DD0c8306130DED843c9905B7',
             abi: [
               {
                 inputs: [
@@ -777,7 +777,7 @@ export default registerAs(
             ],
           },
           DonationManager: {
-            address: '0xd7A5DF108f864eAd693C2d6362eE8477EEf7e08A',
+            address: '0x64bcC240308db721179d67F8Fe70b2219EA7A5A0',
             abi: [
               {
                 inputs: [
@@ -1135,7 +1135,7 @@ export default registerAs(
             ],
           },
           AutomationUpkeep: {
-            address: '0xA200ceC4374e2dd72b597EBA1440FDbE10c1dd3E',
+            address: '0xeAbAf20E15250E9dB81799e08bf16f820C293819',
             abi: [
               {
                 inputs: [
@@ -1324,7 +1324,7 @@ export default registerAs(
             ],
           },
           TreasureManager: {
-            address: '0x8c229C97eCCcEcA4cc1A4B2b872551F343076c36',
+            address: '0xea6c86D8E470c72fe51fd189Fdad5b0443AC1ac2',
             abi: [
               {
                 inputs: [
