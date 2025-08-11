@@ -12,7 +12,7 @@ import { DataSource } from 'typeorm';
 import { DonationPoolStatus } from '../src/donation-pool/types';
 import { ChainConfig } from '../src/contracts.config';
 import { DonationPoolEntity } from '../src/donation-pool/entities/donation-pool.entity';
-import { as } from '@faker-js/faker/dist/airline-CLphikKp';
+import * as process from 'node:process';
 
 describe('Donation Pool', () => {
   let app: INestApplication<App>;
@@ -166,6 +166,12 @@ describe('Donation Pool', () => {
         expect(res.body.status as DonationPoolStatus).toBe('published');
       }
     });
+  });
+
+  it('should be able to update donation pool image', async () => {
+    await request(httpServer)
+      .patch(`/donation-pool/${objectiveDonationPool.id}/update-image`)
+      .attach('image', `${process.cwd()}/assets/default-avatar.png`);
   });
 
   afterAll(async () => {
