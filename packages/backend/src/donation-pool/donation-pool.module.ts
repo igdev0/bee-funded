@@ -6,10 +6,12 @@ import ContractsConfig from '../contracts.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
 import { AuthModule } from '../auth/auth.module';
+import { FileStorageModule } from '../file-storage/file-storage.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DonationPoolEntity]),
+    FileStorageModule,
     ConfigModule.forFeature(ContractsConfig),
     AuthModule,
   ],
