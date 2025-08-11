@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -89,7 +90,6 @@ export default class ProfileEntity {
   cover: string;
 
   @OneToMany(() => DonationPoolEntity, (poolEntity) => poolEntity.profile)
-  @JoinTable()
   donation_pools: DonationPoolEntity[];
   /**
    * List of social media links associated with the profile.
