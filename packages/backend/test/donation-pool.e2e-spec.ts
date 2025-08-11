@@ -12,6 +12,7 @@ import { DataSource } from 'typeorm';
 import { DonationPoolStatus } from '../src/donation-pool/types';
 import { ChainConfig } from '../src/contracts.config';
 import { DonationPoolEntity } from '../src/donation-pool/entities/donation-pool.entity';
+import { as } from '@faker-js/faker/dist/airline-CLphikKp';
 
 describe('Donation Pool', () => {
   let app: INestApplication<App>;
@@ -65,29 +66,71 @@ describe('Donation Pool', () => {
       user.profileId = authRes.body.user.profile.id as string;
     }
   });
-
+  let mainDonationPool = {
+    id: '',
+    id_hash: '',
+  };
+  let objectiveDonationPool = {
+    id: '',
+    id_hash: '',
+  };
   describe('POST /donation-pool', () => {
-    let hashedDonationPoolId: string;
-    let donationPoolId: string;
     it('should create a donation pool with', async () => {
       const res = await request(httpServer)
         .post('/donation-pool')
         .set('authorization', `Bearer ${user.accessToken}`)
         .send({ kind: 'main' });
       expect(res.statusCode).toBe(201);
-      donationPoolId = (res.body as DonationPoolEntity).id;
-      hashedDonationPoolId = (res.body as DonationPoolEntity).id_hash;
+
+      mainDonationPool = {
+        id: (res.body as DonationPoolEntity).id,
+        id_hash: (res.body as DonationPoolEntity).id_hash,
+      };
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(res.body.status as DonationPoolStatus).toBe('publishing');
     });
 
-    it('should be able to retrieve a donation pool', async () => {
-      const existingDonationPool = await request(httpServer)
-        .get(`/donation-pool/${donationPoolId}`)
-        .set('authorization', `Bearer ${user.accessToken}`);
-      expect(existingDonationPool.statusCode).toBe(200);
+    it('should be able to create a objective kind of donation pool', async () => {
+      const res = await request(httpServer)
+        .post(`/donation-pool`)
+        .set('authorization', `Bearer ${user.accessToken}`)
+        .send({
+          kind: 'objective',
+          title: 'Some title',
+          description: 'Some description',
+          tags: ['test'],
+        });
+      objectiveDonationPool = {
+        id: (res.body as DonationPoolEntity).id,
+        id_hash: (res.body as DonationPoolEntity).id_hash,
+      };
+      expect(res.statusCode).toBe(201);
     });
+  });
 
+  describe('PATCH /donation-pool/:id', () => {
+    it('should be able to update a donation pool', async () => {
+      const res = await request(httpServer)
+        .patch(`/donation-pool/${objectiveDonationPool.id}`)
+        .set('authorization', `Bearer ${user.accessToken}`)
+        .send({
+          title: 'Updated title',
+          description: 'Updated description',
+          tags: ['Updated'],
+        });
+
+      expect(res.statusCode).toBe(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(res.body.title as string).toEqual('Updated title');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(res.body.description as string).toEqual('Updated description');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(res.body.tags as string).toEqual(['Updated']);
+    });
+  });
+
+  describe('On contract DonationPoolCreated event', () => {
     it('should modify the status of the donation pool once published onchain', async () => {
       const config = app.get(ConfigService);
 
@@ -111,11 +154,11 @@ describe('Donation Pool', () => {
         await contract.createPool(
           '0xc63f7b99a289435e0f51f87fc7392961d42ce9c6',
           parseUnits('0', 6),
-          hashedDonationPoolId,
+          mainDonationPool.id_hash,
         );
 
         const res = await request(httpServer)
-          .get(`/donation-pool/${donationPoolId}`)
+          .get(`/donation-pool/${mainDonationPool.id}`)
           .set('authorization', `Bearer ${user.accessToken}`);
 
         expect(res.statusCode).toBe(200);
