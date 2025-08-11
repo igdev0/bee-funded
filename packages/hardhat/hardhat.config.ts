@@ -18,7 +18,7 @@ const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr2
 // If not set, it uses the hardhat account 0 private key.
 // You can generate a random account with `yarn generate` or `yarn account:import` to import your existing PK
 const deployerPrivateKey =
-  process.env.__RUNTIME_DEPLOYER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+  process.env.__RUNTIME_DEPLOYER_PRIVATE_KEY ?? "0x899938eb382711b1a52d714eed8be585b8eed7cadb33ce4ed593b530d2845d53";
 // If not set, it uses our block explorers default API keys.
 const etherscanApiKey = process.env.ETHERSCAN_MAINNET_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 const etherscanOptimisticApiKey = process.env.ETHERSCAN_OPTIMISTIC_API_KEY || "RM62RDISS1RH448ZY379NX625ASG1N633R";
@@ -54,8 +54,8 @@ const config: HardhatUserConfig = {
       },
       accounts: [
         {
-          privateKey: ethers.Wallet.createRandom().privateKey,
-          balance: "1000000000000000000000",
+          privateKey: deployerPrivateKey,
+          balance: ethers.parseUnits("1000000", 18).toString(),
         },
       ],
     },
