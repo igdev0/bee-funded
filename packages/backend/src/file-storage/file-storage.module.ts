@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import * as multer from 'multer';
-import process from 'node:process';
-import fs from 'node:fs';
+import * as fs from 'node:fs';
+import * as process from 'node:process';
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
