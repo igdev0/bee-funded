@@ -66,29 +66,29 @@ export class NotificationService {
   /**
    * Marks a notification as read in the database.
    * @param notificationId - The ID of the notification to update
-   * @param userId - The ID of the user owning this notification
+   * @param profileId - The ID of the user owning this notification
    */
-  async markAsRead(notificationId: string, userId: string) {
+  async markAsRead(notificationId: string, profileId: string) {
     await this.notificationRepository
       .createQueryBuilder()
-      .where('userId = :userId', { userId })
+      .where('profileId = :profileId', { profileId })
       .andWhere('id = :id', { id: notificationId })
       .update({ is_read: true })
       .execute();
   }
 
   async getNotifications(
-    userId: string,
+    profileId: string,
     offset: number = 0,
     limit: number = 10,
   ) {
     const count = await this.notificationRepository
       .createQueryBuilder()
-      .where('NotificationEntity.userId = :userId', { userId })
+      .where('NotificationEntity.profileId = :profileId', { profileId })
       .getCount();
     const data = await this.notificationRepository
       .createQueryBuilder()
-      .where('NotificationEntity.userId = :userId', { userId })
+      .where('NotificationEntity.profileId = :profileId', { profileId })
       .orderBy('NotificationEntity.created_at', 'DESC')
       .offset(offset)
       .limit(limit)
@@ -102,10 +102,10 @@ export class NotificationService {
     };
   }
 
-  getTotalUnread(userId: string) {
+  getTotalUnread(profileId: string) {
     return this.notificationRepository
       .createQueryBuilder()
-      .where('NotificationEntity.userId = :userId', { userId })
+      .where('NotificationEntity.profileId = :profileId', { profileId })
       .where('NotificationEntity.is_read = false')
       .getCount();
   }
