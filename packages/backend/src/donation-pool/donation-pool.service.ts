@@ -113,7 +113,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     return this.donationPoolRepository
       .createQueryBuilder()
       .where('profileId = :profileId', { profileId })
-      .execute();
+      .getMany();
   }
 
   /**
