@@ -131,5 +131,30 @@ describe('DonationPoolService', () => {
         profileId,
       });
     });
+
+    it('should be able to delete a owned donation pool', async () => {
+      const deleteFn = jest.fn();
+      const andWhere = jest.fn();
+      const where = jest.fn();
+      // @ts-expect-error Ignore, this is just a mock.
+      donationPoolRepository.createQueryBuilder.mockReturnValue({
+        where: where.mockReturnValue({
+          andWhere: andWhere.mockReturnValue({
+            delete: deleteFn.mockReturnValue({
+              execute: jest.fn().mockResolvedValue({ affected: 1 }),
+            }),
+          }),
+        }),
+      });
+      const id = 'some-donation-pool-id';
+      const profileId = 'some-profile-id';
+      await service.deleteOwned(id, profileId);
+
+      expect(where).toHaveBeenCalledWith('id = :id', { id });
+
+      expect(andWhere).toHaveBeenCalledWith('profileId = :profileId', {
+        profileId,
+      });
+    });
   });
 });
