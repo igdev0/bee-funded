@@ -25,10 +25,13 @@ describe('DonationPoolService', () => {
 
   describe('creating a donation pool', () => {
     it('should be able to create a main donation pool', async () => {
-      await service.create({ kind: 'main' });
+      await service.create({ kind: 'main' }, 'some-profile-id');
 
       expect(donationPoolRepository.create).toHaveBeenCalledWith({
         kind: 'main',
+        profile: {
+          id: 'some-profile-id',
+        },
         status: 'publishing',
       });
     });
@@ -43,10 +46,13 @@ describe('DonationPoolService', () => {
         title: 'Some title',
         valuation_token: '0x00000000000',
       };
-      await service.create(data);
+      await service.create(data, 'some-profile-id');
 
       expect(donationPoolRepository.create).toHaveBeenCalledWith({
         ...data,
+        profile: {
+          id: 'some-profile-id',
+        },
         status: 'publishing',
       });
     });
