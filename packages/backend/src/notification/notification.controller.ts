@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
@@ -13,6 +14,7 @@ import { GetUser } from '../user/user.decorator';
 import { AuthGuard } from '../auth/auth.guard';
 import { UserEntity } from '../user/entities/user.entity';
 import { UserI } from '../user/user.interface';
+import { NotificationSettingsDto } from './dto/notification-settings.dto';
 
 const MAX_LIMIT = 20;
 
@@ -59,6 +61,14 @@ export class NotificationController {
       offset,
       limit,
     );
+  }
+
+  @Patch('/settings')
+  async updateSettings(
+    @GetUser() user: UserI,
+    @Body() body: NotificationSettingsDto,
+  ) {
+    return this.notificationService.updateSettings(user.profile.id, body);
   }
 
   // PATCH endpoint to mark a specific notification as read
