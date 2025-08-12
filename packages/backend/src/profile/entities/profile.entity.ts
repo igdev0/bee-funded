@@ -1,9 +1,7 @@
 import {
-  AfterInsert,
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -14,7 +12,6 @@ import {
 import { UserEntity } from '../../user/entities/user.entity';
 import NotificationEntity from '../../notification/entities/notification.entity';
 import { DonationPoolEntity } from '../../donation-pool/entities/donation-pool.entity';
-import NotificationSettingsEntity from '../../notification/entities/notification-settings.entity';
 
 /**
  * Profile entity representing additional user information.
