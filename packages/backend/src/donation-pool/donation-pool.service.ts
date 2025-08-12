@@ -112,7 +112,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
   getAllOwned(profileId: string): Promise<DonationPoolEntity[]> {
     return this.donationPoolRepository
       .createQueryBuilder()
-      .where('profileId= :profileId', { profileId })
+      .where('profileId = :profileId', { profileId })
       .execute();
   }
 
