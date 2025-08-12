@@ -114,7 +114,9 @@ export default class ProfileEntity {
   /**
    * Profile notifications
    */
-  @OneToMany(() => NotificationEntity, (notification) => notification.profile)
+  @OneToMany(() => NotificationEntity, (notification) => notification.profile, {
+    onDelete: 'CASCADE',
+  })
   notifications: NotificationEntity[];
   /**
    * Profiles this profile is following.
