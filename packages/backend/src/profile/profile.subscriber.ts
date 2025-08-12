@@ -25,7 +25,7 @@ export class ProfileSubscriber
 
     // Create a new NotificationSettings entity with default values
     const newSettings = new NotificationSettings();
-    newSettings.profile.id = profile.id; // Assign the profile ID
+    newSettings.profile = { id: profile.id } as ProfileEntity; // Assign the profile ID
 
     // Use the entity manager to save the new settings entity
     await this.dataSource.manager.save(newSettings);
