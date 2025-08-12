@@ -89,6 +89,9 @@ export default class ProfileEntity {
   })
   cover: string;
 
+  @OneToOne(() => NotificationEntity, (notification) => notification.id)
+  notification_settings: NotificationEntity;
+
   @OneToMany(() => DonationPoolEntity, (poolEntity) => poolEntity.profile)
   donation_pools: DonationPoolEntity[];
   /**

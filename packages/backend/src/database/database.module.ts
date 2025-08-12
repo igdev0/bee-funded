@@ -7,6 +7,7 @@ import ProfileEntity from '../profile/entities/profile.entity';
 import NotificationEntity from '../notification/entities/notification.entity';
 import databaseConfig from './database.config';
 import { DonationPoolEntity } from '../donation-pool/entities/donation-pool.entity';
+import NotificationSettingsEntity from '../notification/entities/notification-settings.entity';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { DonationPoolEntity } from '../donation-pool/entities/donation-pool.enti
             UserEntity,
             ProfileEntity,
             NotificationEntity,
+            NotificationSettingsEntity,
             DonationPoolEntity,
           ],
         };

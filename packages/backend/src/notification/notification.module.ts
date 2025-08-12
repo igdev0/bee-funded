@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationController } from './notification.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
+import NotificationSettingsEntity from './entities/notification-settings.entity';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { UserModule } from '../user/user.module';
   providers: [NotificationService],
   exports: [
     NotificationService,
-    TypeOrmModule.forFeature([NotificationEntity]),
+    TypeOrmModule.forFeature([NotificationEntity, NotificationSettingsEntity]),
   ],
   controllers: [NotificationController],
 })
