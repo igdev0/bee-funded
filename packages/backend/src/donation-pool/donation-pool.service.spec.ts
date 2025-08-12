@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
 import CreateDonationPoolDto from './dto/create-donation-pool.dto';
+import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 
 describe('DonationPoolService', () => {
   let service: DonationPoolService;
@@ -55,6 +56,33 @@ describe('DonationPoolService', () => {
         },
         status: 'publishing',
       });
+    });
+
+    it('should be able to update a donation pool', async () => {
+      // @ts-expect-error Ignore, this is just a mock
+      donationPoolRepository.createQueryBuilder.mockReturnValue({
+        update: jest.fn().mockReturnValue({
+          set: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({
+              andWhere: jest.fn().mockReturnValue({
+                andWhere: jest.fn().mockReturnValue({
+                  execute: jest.fn().mockResolvedValue({}),
+                }),
+              }),
+            }),
+          }),
+        }),
+      });
+      const updateValues: UpdateDonationPoolDto = {
+        title: 'Updated title',
+      };
+
+      await service.update('some-uuid', 'profile-id', updateValues);
+
+      expect(
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        donationPoolRepository.createQueryBuilder().update().set,
+      ).toHaveBeenCalledWith(updateValues);
     });
   });
 });
