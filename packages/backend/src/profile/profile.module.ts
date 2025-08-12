@@ -8,6 +8,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { MailModule } from '../mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { FileStorageModule } from '../file-storage/file-storage.module';
+import NotificationSettingsEntity from '../notification/entities/notification-settings.entity';
+import { ProfileSubscriber } from './profile.subscriber';
 
 @Module({
   imports: [
@@ -16,9 +18,9 @@ import { FileStorageModule } from '../file-storage/file-storage.module';
     FileStorageModule,
     MailModule,
     ConfigModule.forRoot(),
-    TypeOrmModule.forFeature([ProfileEntity]),
+    TypeOrmModule.forFeature([ProfileEntity, NotificationSettingsEntity]),
   ],
   controllers: [ProfileController],
-  providers: [ProfileService],
+  providers: [ProfileService, ProfileSubscriber],
 })
 export class ProfileModule {}
