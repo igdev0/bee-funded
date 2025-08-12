@@ -1,4 +1,11 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import ProfileEntity from '../../profile/entities/profile.entity';
 import { NotificationSettings } from '../notification.interface';
 
@@ -35,4 +42,10 @@ export default class NotificationSettingsEntity {
    */
   @Column('jsonb', { default: defaultNotificationSettings })
   settings: NotificationSettings;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }
