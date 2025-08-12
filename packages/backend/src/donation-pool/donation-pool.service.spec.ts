@@ -113,5 +113,23 @@ describe('DonationPoolService', () => {
         where('profile.id = :profileId', { profileId }).andWhere,
       ).toHaveBeenCalledWith('pool.id = :id', { id });
     });
+
+    it('should be able to retrieve owned donation pool', async () => {
+      // @ts-expect-error Ignore, this is just a mock
+      donationPoolRepository.createQueryBuilder.mockReturnValue({
+        where: jest.fn().mockReturnValue({
+          getMany: jest.fn().mockResolvedValue({}),
+        }),
+      });
+      const profileId = 'some-profile-id';
+      await service.getAllOwned(profileId);
+
+      expect(
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        donationPoolRepository.createQueryBuilder().where,
+      ).toHaveBeenCalledWith('profileId = :profileId', {
+        profileId,
+      });
+    });
   });
 });
