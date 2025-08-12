@@ -15,16 +15,16 @@ const defaultNotificationSettings: NotificationSettings = {
       enabled: true,
       notifications: {
         new_follower: true,
-        followers_pool_creation: true,
-        donation_pool_creation: true,
+        followersPoolCreation: true,
+        donationPoolCreation: true,
       },
     },
-    in_app: {
+    inApp: {
       enabled: true,
       notifications: {
         new_follower: true,
-        followers_pool_creation: true,
-        donation_pool_creation: true,
+        followersPoolCreation: true,
+        donationPoolCreation: true,
       },
     },
   },
