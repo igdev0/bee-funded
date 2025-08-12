@@ -88,10 +88,14 @@ export default class ProfileEntity {
   })
   cover: string;
 
-  @OneToOne(() => NotificationEntity, (notification) => notification.id)
+  @OneToOne(() => NotificationEntity, (notification) => notification.id, {
+    onDelete: 'CASCADE',
+  })
   notification_settings: NotificationEntity;
 
-  @OneToMany(() => DonationPoolEntity, (poolEntity) => poolEntity.profile)
+  @OneToMany(() => DonationPoolEntity, (poolEntity) => poolEntity.profile, {
+    onDelete: 'CASCADE',
+  })
   donation_pools: DonationPoolEntity[];
   /**
    * List of social media links associated with the profile.
