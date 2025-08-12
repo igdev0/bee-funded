@@ -84,5 +84,34 @@ describe('DonationPoolService', () => {
         donationPoolRepository.createQueryBuilder().update().set,
       ).toHaveBeenCalledWith(updateValues);
     });
+
+    it('should be able to retrieve owned donation pool', async () => {
+      // @ts-expect-error Ignore, this is just a mock
+      donationPoolRepository.createQueryBuilder.mockReturnValue({
+        leftJoin: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            andWhere: jest.fn().mockReturnValue({
+              getOneOrFail: jest.fn().mockResolvedValue({}),
+            }),
+          }),
+        }),
+      });
+      const id = 'some-donation-pool-id';
+      const profileId = 'some-profile-id';
+      await service.getOwned(id, profileId);
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      const where = donationPoolRepository
+        .createQueryBuilder()
+        .leftJoin('profile', 'profile').where;
+      expect(where).toHaveBeenCalledWith('profile.id = :profileId', {
+        profileId,
+      });
+
+      expect(
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        where('profile.id = :profileId', { profileId }).andWhere,
+      ).toHaveBeenCalledWith('pool.id = :id', { id });
+    });
   });
 });
