@@ -12,8 +12,8 @@ export interface NotificationI {
 
 export interface NotificationTypes {
   new_follower: boolean;
-  donation_pool_creation: boolean;
-  followers_pool_creation: boolean;
+  donationPoolCreation: boolean;
+  followersPoolCreation: boolean;
 }
 
 export interface NotificationChannel {
@@ -23,7 +23,7 @@ export interface NotificationChannel {
 
 export interface NotificationSettingsChannels {
   email: NotificationChannel;
-  in_app: NotificationChannel;
+  inApp: NotificationChannel;
 }
 
 export interface NotificationSettings {

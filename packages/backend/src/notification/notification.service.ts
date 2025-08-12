@@ -4,6 +4,8 @@ import { NotificationI } from './notification.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import NotificationEntity from './entities/notification.entity';
 import { Repository } from 'typeorm';
+import { NotificationSettingsDto } from './dto/notification-settings.dto';
+import NotificationSettingsEntity from './entities/notification-settings.entity';
 
 @Injectable()
 export class NotificationService {
@@ -13,6 +15,8 @@ export class NotificationService {
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepository: Repository<NotificationEntity>,
+    @InjectRepository(NotificationSettingsEntity)
+    private readonly notificationSettingsRepository: Repository<NotificationSettingsEntity>,
   ) {}
 
   /**
@@ -100,6 +104,19 @@ export class NotificationService {
       limit,
       count,
     };
+  }
+
+  async updateSettings(profileId: string, payload: NotificationSettingsDto) {
+    await this.notificationSettingsRepository
+      .createQueryBuilder()
+      .update()
+      .set({ settings: payload })
+      .where('profileId = :profileId', { profileId })
+      .execute();
+    return this.notificationSettingsRepository
+      .createQueryBuilder()
+      .where('profileId = :profileId', { profileId })
+      .getOneOrFail();
   }
 
   getTotalUnread(profileId: string) {
