@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import CreateDonationPoolDto from './dto/create-donation-pool.dto';
 import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
+import { ProfileService } from '../profile/profile.service';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
@@ -17,6 +18,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     private readonly config: ConfigService,
     @InjectRepository(DonationPoolEntity)
     private readonly donationPoolRepository: Repository<DonationPoolEntity>,
+    private readonly profileService: ProfileService,
   ) {}
 
   /**

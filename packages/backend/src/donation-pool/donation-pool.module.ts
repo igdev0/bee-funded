@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
 import { AuthModule } from '../auth/auth.module';
 import { FileStorageModule } from '../file-storage/file-storage.module';
+import { ProfileModule } from '../profile/profile.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { FileStorageModule } from '../file-storage/file-storage.module';
     FileStorageModule,
     ConfigModule.forFeature(ContractsConfig),
     AuthModule,
+    ProfileModule,
   ],
   providers: [DonationPoolService],
   controllers: [DonationPoolController],

@@ -9,7 +9,7 @@ import NotificationSettingsEntity from './entities/notification-settings.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([NotificationEntity]),
+    TypeOrmModule.forFeature([NotificationEntity, NotificationSettingsEntity]),
     AuthModule,
     UserModule,
   ],

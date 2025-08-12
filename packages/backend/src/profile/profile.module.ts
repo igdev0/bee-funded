@@ -22,5 +22,6 @@ import { ProfileSubscriber } from './profile.subscriber';
   ],
   controllers: [ProfileController],
   providers: [ProfileService, ProfileSubscriber],
+  exports: [ProfileService, TypeOrmModule],
 })
 export class ProfileModule {}
