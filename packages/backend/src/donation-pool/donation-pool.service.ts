@@ -70,7 +70,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   *
+   * It updates any donation pool that is created as a objective
    * @param id – Donation
    * @param profileId – The profile id of the authenticated user.
    * @param data – The data to be updated
@@ -86,6 +86,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
       .set(data)
       .where('id = :id', { id })
       .andWhere('profileId = :profileId', { profileId })
+      .andWhere('kind = :kind', { kind: 'objective' })
       .execute();
     return this.donationPoolRepository.findOneOrFail({ where: { id: id } });
   }
