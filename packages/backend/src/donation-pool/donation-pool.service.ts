@@ -208,7 +208,8 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
               avatar: true,
             },
           );
-          await this.notificationService.saveAndSend(follower.id, {
+
+          const data = await this.notificationService.save(follower.id, {
             type: 'donation_pool_created',
             title: '{display_name} Launched a Pool!',
             actor: actorProfile,
@@ -216,6 +217,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
               '{display_name} just launched a new donation pool! Check it out and show your support!',
             metadata: {},
           });
+          this.notificationService.send(follower.id, data);
         }
 
         if (followerSettings.channels.email.enabled) {

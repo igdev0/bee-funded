@@ -44,42 +44,48 @@ export class NotificationService {
     }
   }
 
+  prepareData(data: NotificationEntity) {
+    return {
+      ...data,
+      title: data.title.replace(
+        '{display_name}',
+        data.actor.display_name as string,
+      ),
+      message: data.message.replace(
+        '{display_name}',
+        data.actor.display_name as string,
+      ),
+    };
+  }
+
   /**
    * Saves a new notification in the database and pushes it to the user's SSE stream if connected.
    * @param profile_id - The user profile to send the notification to
    * @param data - The notification payload (excluding id, created_at, updated_at)
    */
-  async saveAndSend(
-    profile_id: string,
-    data: Omit<NotificationI, 'id' | 'created_at' | 'updated_at' | 'is_read'>,
-  ) {
+  send(profile_id: string, data: NotificationEntity) {
     const stream = this.userStreams.get(profile_id);
-    const entity = this.notificationRepository.create({
-      ...data,
-      is_read: false,
-      actor: data.actor,
-      profile: { id: profile_id },
-    });
-
-    const saved = await this.notificationRepository.save(entity);
     // Send the notification over SSE if the user is connected
     if (stream) {
       stream.next(
         new MessageEvent(data.type, {
-          data: {
-            ...saved,
-            title: saved.title.replace(
-              '{display_name}',
-              data.actor.display_name as string,
-            ),
-            message: saved.message.replace(
-              '{display_name}',
-              data.actor.display_name as string,
-            ),
-          },
+          data: this.prepareData(data),
         }),
       );
     }
+  }
+
+  save(
+    profile_id: string,
+    data: Omit<NotificationI, 'id' | 'created_at' | 'updated_at' | 'is_read'>,
+  ) {
+    const entity = this.notificationRepository.create({
+      ...data,
+      is_read: false,
+      profile: { id: profile_id },
+    });
+
+    return this.notificationRepository.save(entity);
   }
 
   /**
