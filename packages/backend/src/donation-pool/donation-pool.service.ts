@@ -10,7 +10,6 @@ import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 import { ProfileService } from '../profile/profile.service';
 import { NotificationService } from '../notification/notification.service';
-import ProfileEntity from '../profile/entities/profile.entity';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
@@ -69,8 +68,9 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
       })
       .where('id_hash = :id_hash', { id_hash })
       .execute();
-    return this.donationPoolRepository.findOneByOrFail({
-      id_hash,
+    return this.donationPoolRepository.findOneOrFail({
+      where: { id_hash },
+      relations: ['profile'],
     });
   }
 
