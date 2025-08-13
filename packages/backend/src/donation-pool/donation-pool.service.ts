@@ -159,43 +159,8 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
 
       await contract.on(
         'DonationPoolCreated',
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        async (on_chain_id: bigint, owner_address: string, id_hash: bigint) => {
-          const donationPoolEntity = await this.publish(
-            `0x${id_hash.toString(16)}`,
-            {
-              on_chain_id,
-              owner_address,
-            },
-          );
-          const followers = await this.profileService.getFollowers(
-            donationPoolEntity.profile.id,
-          );
-
-          for (const follower of followers) {
-            const { settings: followerSettings } =
-              await this.notificationService.getSettings(follower.id);
-
-            if (followerSettings.channels.inApp.enabled) {
-              // Notify in app
-              if (
-                followerSettings.channels.inApp.notifications
-                  .followingPoolCreation
-              ) {
-                await this.notificationService.saveAndSend(follower.id, {
-                  type: 'on_chain',
-                  title: 'New ',
-                  message: '',
-                  metadata: {},
-                });
-              }
-
-              if (followerSettings.channels.email.enabled) {
-                // @todo implement the notification template
-              }
-            }
-          }
-        },
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises,@typescript-eslint/unbound-method
+        this.onDonationCreated,
       );
     }
   }
@@ -210,5 +175,42 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
         return provider.destroy();
       }),
     );
+  }
+
+  private async onDonationCreated(
+    on_chain_id: bigint,
+    owner_address: string,
+    id_hash: bigint,
+  ) {
+    const donationPoolEntity = await this.publish(`0x${id_hash.toString(16)}`, {
+      on_chain_id,
+      owner_address,
+    });
+    const followers = await this.profileService.getFollowers(
+      donationPoolEntity.profile.id,
+    );
+
+    for (const follower of followers) {
+      const { settings: followerSettings } =
+        await this.notificationService.getSettings(follower.id);
+
+      if (followerSettings.channels.inApp.enabled) {
+        // Notify in app
+        if (
+          followerSettings.channels.inApp.notifications.followingPoolCreation
+        ) {
+          await this.notificationService.saveAndSend(follower.id, {
+            type: 'on_chain',
+            title: 'New ',
+            message: '',
+            metadata: {},
+          });
+        }
+
+        if (followerSettings.channels.email.enabled) {
+          // @todo implement the notification template
+        }
+      }
+    }
   }
 }
