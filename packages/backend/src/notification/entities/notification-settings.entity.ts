@@ -15,7 +15,7 @@ const defaultNotificationSettings: NotificationSettings = {
       enabled: true,
       notifications: {
         new_follower: true,
-        followersPoolCreation: true,
+        followingPoolCreation: true,
         donationPoolCreation: true,
       },
     },
@@ -23,7 +23,7 @@ const defaultNotificationSettings: NotificationSettings = {
       enabled: true,
       notifications: {
         new_follower: true,
-        followersPoolCreation: true,
+        followingPoolCreation: true,
         donationPoolCreation: true,
       },
     },

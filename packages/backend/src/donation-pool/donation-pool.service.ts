@@ -10,6 +10,7 @@ import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 import { ProfileService } from '../profile/profile.service';
 import { NotificationService } from '../notification/notification.service';
+import ProfileEntity from '../profile/entities/profile.entity';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
@@ -199,10 +200,20 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
         if (
           followerSettings.channels.inApp.notifications.followingPoolCreation
         ) {
+          const actorProfile = await this.profileService.getProfile(
+            donationPoolEntity.profile.id,
+            {
+              id: true,
+              display_name: true,
+              avatar: true,
+            },
+          );
           await this.notificationService.saveAndSend(follower.id, {
-            type: 'on_chain',
-            title: 'New ',
-            message: '',
+            type: 'donation_pool_created',
+            title: '{display_name} Launched a Pool!',
+            actor: actorProfile,
+            message:
+              '{display_name} just launched a new donation pool! Check it out and show your support!',
             metadata: {},
           });
         }

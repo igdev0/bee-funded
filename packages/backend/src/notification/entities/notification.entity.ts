@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -20,10 +21,17 @@ export default class NotificationEntity {
   @Column({ type: 'text' })
   message: string;
 
-  @ManyToOne(() => ProfileEntity, (profile) => profile.notifications, {
+  @ManyToOne(() => ProfileEntity, (profile) => profile.received_notifications, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'profile_id' })
   profile: ProfileEntity;
+
+  @ManyToOne(() => ProfileEntity, (profile) => profile.acted_notifications, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'actor_id' })
+  actor: ProfileEntity;
 
   @Column({ type: 'text' })
   type: NotificationType;

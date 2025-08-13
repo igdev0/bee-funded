@@ -1,9 +1,12 @@
-export type NotificationType = 'system' | 'on_chain' | 'custom';
+import ProfileEntity from '../profile/entities/profile.entity';
+
+export type NotificationType = 'donation_pool_created';
 export interface NotificationI {
   id: string;
   title: string;
   message: string;
-  type: 'system' | 'on_chain' | 'custom';
+  type: NotificationType;
+  actor: ProfileEntity;
   is_read: boolean;
   metadata: object;
   created_at: Date;

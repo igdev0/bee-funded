@@ -135,9 +135,10 @@ describe('ProfileService', () => {
 
   it('should be able to get profile', async () => {
     const profileId = 'some-uuid';
-    await service.getProfile(profileId);
-    expect(profileRepository.findOne).toHaveBeenCalledWith({
+    await service.getProfile(profileId, {});
+    expect(profileRepository.findOneOrFail).toHaveBeenCalledWith({
       where: { id: profileId },
+      select: {},
     });
   });
 

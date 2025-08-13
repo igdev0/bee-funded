@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -112,12 +113,20 @@ export default class ProfileEntity {
   followers: ProfileEntity[];
 
   /**
-   * Profile notifications
+   * Received notifications
    */
   @OneToMany(() => NotificationEntity, (notification) => notification.profile, {
     onDelete: 'CASCADE',
   })
-  notifications: NotificationEntity[];
+  received_notifications: NotificationEntity[];
+
+  /**
+   * Acted notifications (notifications where you are just the actor)
+   */
+  @OneToMany(() => NotificationEntity, (notification) => notification.profile, {
+    onDelete: 'CASCADE',
+  })
+  acted_notifications: NotificationEntity[];
   /**
    * Profiles this profile is following.
    */

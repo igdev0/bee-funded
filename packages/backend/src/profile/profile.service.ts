@@ -6,7 +6,11 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import {
+  FindOptionsSelect,
+  FindOptionsSelectByString,
+  Repository,
+} from 'typeorm';
 import ProfileEntity from './entities/profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -155,9 +159,13 @@ export class ProfileService {
   /**
    * Gets the profile
    * @param id – The profile id obtained from user.profile.id
+   * @param select – The fields that you want to select
    */
-  getProfile(id: string): Promise<ProfileEntity | null> {
-    return this.profileRepository.findOne({ where: { id } });
+  getProfile(
+    id: string,
+    select = [] as FindOptionsSelect<ProfileEntity>,
+  ): Promise<ProfileEntity> {
+    return this.profileRepository.findOneOrFail({ where: { id }, select });
   }
 
   /**

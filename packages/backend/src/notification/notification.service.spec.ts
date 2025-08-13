@@ -2,6 +2,7 @@ import { NotificationService } from './notification.service';
 import { Mocked, TestBed } from '@suites/unit';
 import { Repository } from 'typeorm';
 import NotificationEntity from './entities/notification.entity';
+import ProfileEntity from '../profile/entities/profile.entity';
 
 describe('NotificationService', () => {
   let service: NotificationService;
@@ -24,14 +25,16 @@ describe('NotificationService', () => {
     const userId = 'some-user-id';
     const stream = service.connectUser(userId);
     const notification = {
-      id: 'some-uuid',
-      type: 'system',
-      is_read: false,
-      title: 'Some title',
-      message: 'Some message',
-      created_at: new Date(),
-      updated_at: new Date(),
+      id: 'some-id',
       metadata: {},
+      actor: { id: 'some-actor-id' } as ProfileEntity,
+      profile: { id: 'some-profile-id' } as ProfileEntity,
+      message: 'Some message',
+      updated_at: new Date(),
+      created_at: new Date(),
+      title: 'Some title',
+      type: 'donation_pool_created',
+      is_read: false,
     } as NotificationEntity;
 
     notificationRepository.create.mockReturnValue(notification);
@@ -39,8 +42,9 @@ describe('NotificationService', () => {
     const next = jest.spyOn(stream, 'next');
 
     await service.saveAndSend(userId, {
-      type: 'system',
+      type: 'donation_pool_created',
       metadata: {},
+      actor: { id: 'some-id' } as ProfileEntity,
       title: 'Some title',
       message: 'Some message',
     });

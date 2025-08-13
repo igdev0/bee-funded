@@ -34,33 +34,34 @@ export class NotificationService {
   /**
    * Disconnects a user by completing their stream and removing it from memory.
    * Called when a client disconnects from the SSE endpoint.
-   * @param profileId - The user's profile ID
+   * @param profile_id - The user's profile ID
    */
-  disconnectUser(profileId: string) {
-    const stream = this.userStreams.get(profileId);
+  disconnectUser(profile_id: string) {
+    const stream = this.userStreams.get(profile_id);
     if (stream) {
       stream.complete();
-      this.userStreams.delete(profileId);
+      this.userStreams.delete(profile_id);
     }
   }
 
   /**
    * Saves a new notification in the database and pushes it to the user's SSE stream if connected.
-   * @param profileId - The user profile to send the notification to
+   * @param profile_id - The user profile to send the notification to
    * @param data - The notification payload (excluding id, created_at, updated_at)
    */
   async saveAndSend(
-    profileId: string,
+    profile_id: string,
     data: Omit<NotificationI, 'id' | 'created_at' | 'updated_at' | 'is_read'>,
   ) {
-    const stream = this.userStreams.get(profileId);
+    const stream = this.userStreams.get(profile_id);
     const entity = this.notificationRepository.create({
       ...data,
       is_read: false,
-      profile: { id: profileId },
+      actor: data.actor,
+      profile: { id: profile_id },
     });
-    const saved = await this.notificationRepository.save(entity);
 
+    const saved = await this.notificationRepository.save(entity);
     // Send the notification over SSE if the user is connected
     if (stream) {
       stream.next(new MessageEvent(data.type, { data: saved }));
@@ -70,29 +71,29 @@ export class NotificationService {
   /**
    * Marks a notification as read in the database.
    * @param notificationId - The ID of the notification to update
-   * @param profileId - The ID of the user owning this notification
+   * @param profile_id - The ID of the user owning this notification
    */
-  async markAsRead(notificationId: string, profileId: string) {
+  async markAsRead(notificationId: string, profile_id: string) {
     await this.notificationRepository
       .createQueryBuilder()
-      .where('profileId = :profileId', { profileId })
+      .where('profile_id = :profile_id', { profile_id })
       .andWhere('id = :id', { id: notificationId })
       .update({ is_read: true })
       .execute();
   }
 
   async getNotifications(
-    profileId: string,
+    profile_id: string,
     offset: number = 0,
     limit: number = 10,
   ) {
     const count = await this.notificationRepository
       .createQueryBuilder()
-      .where('NotificationEntity.profileId = :profileId', { profileId })
+      .where('NotificationEntity.profile_id = :profile_id', { profile_id })
       .getCount();
     const data = await this.notificationRepository
       .createQueryBuilder()
-      .where('NotificationEntity.profileId = :profileId', { profileId })
+      .where('NotificationEntity.profile_id = :profile_id', { profile_id })
       .orderBy('NotificationEntity.created_at', 'DESC')
       .offset(offset)
       .limit(limit)
@@ -106,30 +107,30 @@ export class NotificationService {
     };
   }
 
-  async getSettings(profileId: string) {
+  async getSettings(profile_id: string) {
     return this.notificationSettingsRepository
       .createQueryBuilder()
-      .where('profileId = :profileId', { profileId })
+      .where('profile_id = :profile_id', { profile_id })
       .getOneOrFail();
   }
 
-  async updateSettings(profileId: string, payload: NotificationSettingsDto) {
+  async updateSettings(profile_id: string, payload: NotificationSettingsDto) {
     await this.notificationSettingsRepository
       .createQueryBuilder()
       .update()
       .set({ settings: payload })
-      .where('profileId = :profileId', { profileId })
+      .where('profile_id = :profile_id', { profile_id })
       .execute();
     return this.notificationSettingsRepository
       .createQueryBuilder()
-      .where('profileId = :profileId', { profileId })
+      .where('profile_id = :profile_id', { profile_id })
       .getOneOrFail();
   }
 
-  getTotalUnread(profileId: string) {
+  getTotalUnread(profile_id: string) {
     return this.notificationRepository
       .createQueryBuilder()
-      .where('NotificationEntity.profileId = :profileId', { profileId })
+      .where('NotificationEntity.profile_id = :profile_id', { profile_id })
       .where('NotificationEntity.is_read = false')
       .getCount();
   }
