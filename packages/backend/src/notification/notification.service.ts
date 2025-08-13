@@ -64,7 +64,21 @@ export class NotificationService {
     const saved = await this.notificationRepository.save(entity);
     // Send the notification over SSE if the user is connected
     if (stream) {
-      stream.next(new MessageEvent(data.type, { data: saved }));
+      stream.next(
+        new MessageEvent(data.type, {
+          data: {
+            ...saved,
+            title: saved.title.replace(
+              '{display_name}',
+              data.actor.display_name as string,
+            ),
+            message: saved.message.replace(
+              '{display_name}',
+              data.actor.display_name as string,
+            ),
+          },
+        }),
+      );
     }
   }
 
