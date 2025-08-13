@@ -9,6 +9,7 @@ import CreateDonationPoolDto from './dto/create-donation-pool.dto';
 import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 import { ProfileService } from '../profile/profile.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
@@ -19,6 +20,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     @InjectRepository(DonationPoolEntity)
     private readonly donationPoolRepository: Repository<DonationPoolEntity>,
     private readonly profileService: ProfileService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -159,10 +161,40 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
         'DonationPoolCreated',
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         async (on_chain_id: bigint, owner_address: string, id_hash: bigint) => {
-          await this.publish(`0x${id_hash.toString(16)}`, {
-            on_chain_id,
-            owner_address,
-          });
+          const donationPoolEntity = await this.publish(
+            `0x${id_hash.toString(16)}`,
+            {
+              on_chain_id,
+              owner_address,
+            },
+          );
+          const followers = await this.profileService.getFollowers(
+            donationPoolEntity.profile.id,
+          );
+
+          for (const follower of followers) {
+            const { settings: followerSettings } =
+              await this.notificationService.getSettings(follower.id);
+
+            if (followerSettings.channels.inApp.enabled) {
+              // Notify in app
+              if (
+                followerSettings.channels.inApp.notifications
+                  .followingPoolCreation
+              ) {
+                await this.notificationService.saveAndSend(follower.id, {
+                  type: 'on_chain',
+                  title: 'New ',
+                  message: '',
+                  metadata: {},
+                });
+              }
+
+              if (followerSettings.channels.email.enabled) {
+                // @todo implement the notification template
+              }
+            }
+          }
         },
       );
     }

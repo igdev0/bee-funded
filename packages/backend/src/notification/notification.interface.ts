@@ -13,7 +13,7 @@ export interface NotificationI {
 export interface NotificationTypes {
   new_follower: boolean;
   donationPoolCreation: boolean;
-  followersPoolCreation: boolean;
+  followingPoolCreation: boolean;
 }
 
 export interface NotificationChannel {

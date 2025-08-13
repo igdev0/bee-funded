@@ -161,6 +161,23 @@ export class ProfileService {
   }
 
   /**
+   * Get followers
+   * @param id – The profile ID.
+   */
+
+  async getFollowers(id: string): Promise<ProfileEntity[]> {
+    const profile = await this.profileRepository.findOneOrFail({
+      where: {
+        id,
+      },
+      select: ['followers'],
+      relations: ['followers'],
+    });
+
+    return profile.followers;
+  }
+
+  /**
    * It follows a profile
    * @param followerId – The profile id of the person who is following someone else.
    * @param followeeId – The profile id of the person who is being followed.

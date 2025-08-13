@@ -106,6 +106,13 @@ export class NotificationService {
     };
   }
 
+  async getSettings(profileId: string) {
+    return this.notificationSettingsRepository
+      .createQueryBuilder()
+      .where('profileId = :profileId', { profileId })
+      .getOneOrFail();
+  }
+
   async updateSettings(profileId: string, payload: NotificationSettingsDto) {
     await this.notificationSettingsRepository
       .createQueryBuilder()
