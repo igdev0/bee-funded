@@ -8,6 +8,15 @@ export interface EmailVerification {
   expiresIn: string;
 }
 
+export interface NotificationContext {
+  actorImage: string;
+  actorDisplayName: string;
+  name: string;
+  notificationMessage: string;
+  actionUrl: string;
+  notificationsSettingsUrl: string;
+}
+
 export interface Envelope {
   from: string;
   to: string[];
@@ -49,6 +58,15 @@ export class MailService {
         verificationCode: context.code,
         verificationUrl: `${appFrontendUrl}/verify-email?code=${context.code}`,
       },
+    });
+  }
+
+  sendNotification(to: string, context: NotificationContext) {
+    return this.mail.sendMail({
+      template: 'notification',
+      subject: `New notification from ${context.actorDisplayName}`,
+      to,
+      context,
     });
   }
 }
