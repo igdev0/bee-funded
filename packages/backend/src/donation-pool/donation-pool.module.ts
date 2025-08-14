@@ -8,6 +8,7 @@ import { DonationPoolEntity } from './entities/donation-pool.entity';
 import { AuthModule } from '../auth/auth.module';
 import { FileStorageModule } from '../file-storage/file-storage.module';
 import { ProfileModule } from '../profile/profile.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ProfileModule } from '../profile/profile.module';
     ConfigModule.forFeature(ContractsConfig),
     AuthModule,
     ProfileModule,
+    MailModule,
   ],
   providers: [DonationPoolService],
   controllers: [DonationPoolController],

@@ -10,6 +10,7 @@ import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 import { ProfileService } from '../profile/profile.service';
 import { NotificationService } from '../notification/notification.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
@@ -21,6 +22,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     private readonly donationPoolRepository: Repository<DonationPoolEntity>,
     private readonly profileService: ProfileService,
     private readonly notificationService: NotificationService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -190,7 +192,6 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     const followers = await this.profileService.getFollowers(
       donationPoolEntity.profile.id,
     );
-
     for (const follower of followers) {
       const { settings: followerSettings } =
         await this.notificationService.getSettings(follower.id);
@@ -221,7 +222,18 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
         }
 
         if (followerSettings.channels.email.enabled) {
-          // @todo implement the notification template
+          if (
+            followerSettings.channels.email.notifications.followingPoolCreation
+          ) {
+            await this.mailService.sendNotification(follower.id, {
+              notificationsSettingsUrl: '/', // @todo: Update this to the settings url
+              name: follower.display_name ?? '',
+              actorDisplayName: donationPoolEntity.profile.display_name ?? '',
+              actionUrl: '/', // @todo: Update this to the action URL
+              actorImage: donationPoolEntity.profile.avatar,
+              notificationMessage: `User ${donationPoolEntity.profile.display_name} has created a new donation pool!`,
+            });
+          }
         }
       }
     }
