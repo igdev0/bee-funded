@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { Subject } from 'rxjs';
-import { NotificationI } from './notification.interface';
+import {
+  NotificationI,
+  NotificationSettingsChannels,
+  NotificationTypes,
+} from './notification.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import NotificationEntity from './entities/notification.entity';
 import { Repository } from 'typeorm';
 import { NotificationSettingsDto } from './dto/notification-settings.dto';
 import NotificationSettingsEntity from './entities/notification-settings.entity';
+import { ProfileService } from '../profile/profile.service';
+import ProfileEntity from '../profile/entities/profile.entity';
 
 @Injectable()
 export class NotificationService {
@@ -17,6 +23,7 @@ export class NotificationService {
     private readonly notificationRepository: Repository<NotificationEntity>,
     @InjectRepository(NotificationSettingsEntity)
     private readonly notificationSettingsRepository: Repository<NotificationSettingsEntity>,
+    private readonly profileService: ProfileService,
   ) {}
 
   /**
@@ -153,5 +160,37 @@ export class NotificationService {
       .where('NotificationEntity.profile_id = :profile_id', { profile_id })
       .where('NotificationEntity.is_read = false')
       .getCount();
+  }
+
+  async getFollowersForPreference(
+    profileId: string,
+    preference: keyof NotificationTypes,
+  ) {
+    const followers = await this.profileService.getFollowers(profileId);
+    const channels = [
+      'email',
+      'inApp',
+    ] as (keyof NotificationSettingsChannels)[];
+
+    const cache = new Map<
+      keyof NotificationSettingsChannels,
+      ProfileEntity[]
+    >();
+
+    for (const channel of channels) {
+      const cachedFollowers: ProfileEntity[] = [];
+      for (const follower of followers) {
+        const { settings } = await this.getSettings(follower.id);
+        if (
+          settings.channels[channel].enabled &&
+          settings.channels[channel].notifications[preference]
+        ) {
+          cachedFollowers.push(follower);
+        }
+        cache.set(channel, cachedFollowers);
+      }
+    }
+
+    return cache;
   }
 }

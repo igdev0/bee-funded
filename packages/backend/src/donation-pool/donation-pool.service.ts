@@ -185,57 +185,40 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     owner_address: string,
     id_hash: bigint,
   ) {
-    const donationPoolEntity = await this.publish(`0x${id_hash.toString(16)}`, {
-      on_chain_id,
-      owner_address,
-    });
-    const followers = await this.profileService.getFollowers(
-      donationPoolEntity.profile.id,
+    const { profile: actorProfile } = await this.publish(
+      `0x${id_hash.toString(16)}`,
+      {
+        on_chain_id,
+        owner_address,
+      },
     );
-    for (const follower of followers) {
-      const { settings: followerSettings } =
-        await this.notificationService.getSettings(follower.id);
+    const subscribers =
+      await this.notificationService.getFollowersForPreference(
+        actorProfile.id,
+        'donationPoolCreation',
+      );
 
-      if (followerSettings.channels.inApp.enabled) {
-        // Notify in app
-        if (
-          followerSettings.channels.inApp.notifications.followingPoolCreation
-        ) {
-          const actorProfile = await this.profileService.getProfile(
-            donationPoolEntity.profile.id,
-            {
-              id: true,
-              display_name: true,
-              avatar: true,
-            },
-          );
+    for (const subscriber of subscribers.get('inApp') ?? []) {
+      const notification = await this.notificationService.save(subscriber.id, {
+        type: 'donation_pool_created',
+        title: '{display_name} Launched a Pool!',
+        actor: actorProfile,
+        message:
+          '{display_name} just launched a new donation pool! Check it out and show your support!',
+        metadata: {},
+      });
+      this.notificationService.send(subscriber.id, notification);
+    }
 
-          const data = await this.notificationService.save(follower.id, {
-            type: 'donation_pool_created',
-            title: '{display_name} Launched a Pool!',
-            actor: actorProfile,
-            message:
-              '{display_name} just launched a new donation pool! Check it out and show your support!',
-            metadata: {},
-          });
-          this.notificationService.send(follower.id, data);
-        }
-
-        if (followerSettings.channels.email.enabled) {
-          if (
-            followerSettings.channels.email.notifications.followingPoolCreation
-          ) {
-            await this.mailService.sendNotification(follower.id, {
-              notificationsSettingsUrl: '/', // @todo: Update this to the settings url
-              name: follower.display_name ?? '',
-              actorDisplayName: donationPoolEntity.profile.display_name ?? '',
-              actionUrl: '/', // @todo: Update this to the action URL
-              actorImage: donationPoolEntity.profile.avatar,
-              notificationMessage: `User ${donationPoolEntity.profile.display_name} has created a new donation pool!`,
-            });
-          }
-        }
-      }
+    for (const subscriber of subscribers.get('email') ?? []) {
+      await this.mailService.sendNotification(subscriber.id, {
+        notificationsSettingsUrl: '/', // @todo: Update this to the settings url
+        name: subscriber.display_name ?? '',
+        actorDisplayName: actorProfile.display_name ?? '',
+        actionUrl: '/', // @todo: Update this to the action URL
+        actorImage: actorProfile.avatar,
+        notificationMessage: `User ${actorProfile.display_name} has created a new donation pool!`,
+      });
     }
   }
 }
