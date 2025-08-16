@@ -134,7 +134,13 @@ export class NotificationService {
       count,
     };
   }
-
+  /**
+   * Retrieves the notification settings for a given profile.
+   *
+   * @param profile_id – The ID of the profile whose notification settings should be fetched.
+   * @returns The notification settings entity associated with the given profile.
+   * @throws NotFoundError if no settings are found for the provided profile_id.
+   */
   async getSettings(profile_id: string) {
     return this.notificationSettingsRepository
       .createQueryBuilder()
