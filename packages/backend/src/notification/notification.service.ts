@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import {
+  MailMessageI,
   NotificationI,
   NotificationSettingsChannels,
   NotificationTypes,
+  SaveNotificationI,
 } from './notification.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import NotificationEntity from './entities/notification.entity';
@@ -12,6 +14,7 @@ import { NotificationSettingsDto } from './dto/notification-settings.dto';
 import NotificationSettingsEntity from './entities/notification-settings.entity';
 import { ProfileService } from '../profile/profile.service';
 import ProfileEntity from '../profile/entities/profile.entity';
+import { MailService, NotificationContext } from '../mail/mail.service';
 
 @Injectable()
 export class NotificationService {
@@ -24,6 +27,7 @@ export class NotificationService {
     @InjectRepository(NotificationSettingsEntity)
     private readonly notificationSettingsRepository: Repository<NotificationSettingsEntity>,
     private readonly profileService: ProfileService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -82,10 +86,7 @@ export class NotificationService {
     }
   }
 
-  save(
-    profile_id: string,
-    data: Omit<NotificationI, 'id' | 'created_at' | 'updated_at' | 'is_read'>,
-  ) {
+  save(profile_id: string, data: SaveNotificationI) {
     const entity = this.notificationRepository.create({
       ...data,
       is_read: false,
@@ -192,5 +193,57 @@ export class NotificationService {
     }
 
     return cache;
+  }
+
+  async processActorNotifications(
+    actorProfile: ProfileEntity,
+    inAppMessage: SaveNotificationI,
+    mailMessage: NotificationContext,
+  ) {
+    // 1. Notify the actor in app
+    const { settings: actorNotificationSettings } = await this.getSettings(
+      actorProfile.id,
+    );
+    if (
+      actorNotificationSettings.channels.inApp.enabled &&
+      actorNotificationSettings.channels.inApp.notifications
+        .donationPoolCreation
+    ) {
+      const notification = await this.save(actorProfile.id, inAppMessage);
+      this.send(actorProfile.id, notification);
+    }
+
+    // 2. Notify the actor by email
+    if (
+      actorNotificationSettings.channels.email.enabled &&
+      actorNotificationSettings.channels.email.notifications
+        .donationPoolCreation
+    ) {
+      await this.mailService.sendNotification(actorProfile.id, mailMessage);
+    }
+  }
+
+  async processFollowersNotifications(
+    actorProfile: ProfileEntity,
+    inAppMessage: SaveNotificationI,
+    mailMessage: MailMessageI,
+  ) {
+    // 2. Process notifications for subscribers
+    const subscribers = await this.getFollowersForPreference(
+      actorProfile.id,
+      'donationPoolCreation',
+    );
+
+    for (const subscriber of subscribers.get('inApp') ?? []) {
+      const notification = await this.save(subscriber.id, inAppMessage);
+      this.send(subscriber.id, notification);
+    }
+
+    for (const subscriber of subscribers.get('email') ?? []) {
+      await this.mailService.sendNotification(subscriber.id, {
+        ...mailMessage,
+        name: subscriber.display_name ?? '',
+      });
+    }
   }
 }
