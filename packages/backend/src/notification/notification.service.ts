@@ -231,6 +231,23 @@ export class NotificationService {
     return cache;
   }
 
+  /**
+   * Sends notifications to the actor (the profile performing an action) through
+   * enabled channels based on their personal notification settings.
+   *
+   * This method handles two channels:
+   * 1. In-app notifications
+   * 2. Email notifications
+   *
+   * @param actorProfile – The profile entity of the actor to notify.
+   * @param inAppMessage – The in-app notification content to be saved and sent.
+   * @param mailMessage – The email notification content to be sent via MailService.
+   *
+   * @remarks
+   * The method first checks the actor's notification settings for each channel.
+   * Only if the channel is enabled and the specific notification type
+   * (`donationPoolCreation`) is allowed will it send the notification.
+   */
   async processActorNotifications(
     actorProfile: ProfileEntity,
     inAppMessage: SaveNotificationI,
@@ -259,6 +276,23 @@ export class NotificationService {
     }
   }
 
+  /**
+   * Sends notifications to all followers/subscribers of the actor profile
+   * who have enabled the specific notification preference.
+   *
+   * This method handles two channels:
+   * 1. In-app notifications
+   * 2. Email notifications
+   *
+   * @param actorProfile – The profile entity of the actor who triggered the notification.
+   * @param inAppMessage – The in-app notification content to be saved and sent to followers.
+   * @param mailMessage – The email notification content to be sent to followers via MailService.
+   *
+   * @remarks
+   * The method first retrieves the list of followers who have enabled the
+   * 'donationPoolCreation' notification preference for each channel.
+   * Then, it sends notifications only to those followers on their enabled channels.
+   */
   async processFollowersNotifications(
     actorProfile: ProfileEntity,
     inAppMessage: SaveNotificationI,
