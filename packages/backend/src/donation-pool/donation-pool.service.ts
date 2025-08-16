@@ -10,7 +10,7 @@ import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 import { ProfileService } from '../profile/profile.service';
 import { NotificationService } from '../notification/notification.service';
-import { MailService, NotificationContext } from '../mail/mail.service';
+import { MailService, NotificationMailContext } from '../mail/mail.service';
 import { SaveNotificationI } from '../notification/notification.interface';
 
 @Injectable()
@@ -256,7 +256,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
       metadata: {},
     };
 
-    const emailMessage: NotificationContext = {
+    const emailMessage: NotificationMailContext = {
       notificationsSettingsUrl: '/', // @todo: Update this to the settings url
       name: actorProfile.display_name ?? '',
       actorDisplayName: actorProfile.display_name ?? '',

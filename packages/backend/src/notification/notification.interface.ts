@@ -20,7 +20,7 @@ export type SaveNotificationI = Omit<
   'id' | 'created_at' | 'updated_at' | 'is_read'
 >;
 
-export type MailMessageI = Omit<NotificationMailContext, 'name'>;
+export type FollowerMailMessage = Omit<NotificationMailContext, 'name'>;
 
 export interface NotificationTypes {
   new_follower: boolean;

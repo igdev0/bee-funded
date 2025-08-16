@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import {
-  MailMessageI,
+  FollowerMailMessage,
   NotificationI,
   NotificationSettingsChannels,
   NotificationTypes,
@@ -320,7 +320,7 @@ export class NotificationService {
   async processFollowersNotifications(
     actorProfile: ProfileEntity,
     inAppMessage: SaveNotificationI,
-    mailMessage: MailMessageI,
+    mailMessage: FollowerMailMessage,
   ) {
     // 2. Process notifications for subscribers
     const subscribers = await this.getFollowersForPreference(
