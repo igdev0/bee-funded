@@ -183,6 +183,22 @@ export class NotificationService {
       .getCount();
   }
 
+  /**
+   * Retrieves followers of a profile who have a specific notification preference enabled.
+   *
+   * For each notification channel (e.g., email, in-app), it filters the followers
+   * based on their personal notification settings.
+   *
+   * @param profileId – The ID of the profile whose followers should be checked.
+   * @param preference – The notification type/key to filter followers for (e.g., "donation_pool_created").
+   * @returns A Map where each key is a notification channel, and the value is an array of
+   *          ProfileEntity objects representing followers who have that preference enabled.
+   *
+   * @example
+   *   const followersMap = await getFollowersForPreference("123", "donation_pool_created");
+   *   // followersMap.get("email") -> followers who want email notifications for this type
+   *   // followersMap.get("inApp") -> followers who want in-app notifications for this type
+   */
   async getFollowersForPreference(
     profileId: string,
     preference: keyof NotificationTypes,
