@@ -169,6 +169,12 @@ export class NotificationService {
       .getOneOrFail();
   }
 
+  /**
+   * Counts the total number of unread notifications for a given profile.
+   *
+   * @param profile_id – The ID of the profile whose unread notifications should be counted.
+   * @returns The total count of unread notifications.
+   */
   getTotalUnread(profile_id: string) {
     return this.notificationRepository
       .createQueryBuilder()
