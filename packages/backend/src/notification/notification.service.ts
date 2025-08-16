@@ -18,7 +18,7 @@ import ProfileEntity from '../profile/entities/profile.entity';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { NotificationConfigI } from './notification.config';
-import { ActorNotificationMessage } from '../mail/mail.interface';
+import { TokenizerService } from '../tokenizer/tokenizer.service';
 
 @Injectable()
 export class NotificationService {
@@ -34,6 +34,7 @@ export class NotificationService {
     private readonly profileService: ProfileService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    private readonly tokenizerService: TokenizerService,
   ) {
     this.config = this.configService.get<NotificationConfigI>(
       'notification',
@@ -315,7 +316,9 @@ export class NotificationService {
         notificationsSettingsPath: this.config.settingsPath,
         actorImage: actorProfile.avatar,
         actionPath: mailMessage.actionPath,
-        notificationMessage: mailMessage.message,
+        notificationMessage: this.tokenizerService.format(mailMessage.message, {
+          display_name: actorProfile.display_name ?? '',
+        }),
       });
     }
   }
@@ -363,7 +366,9 @@ export class NotificationService {
         notificationsSettingsPath: this.config.settingsPath,
         actorImage: actorProfile.avatar,
         actionPath: mailMessage.actionPath,
-        notificationMessage: mailMessage.message,
+        notificationMessage: this.tokenizerService.format(mailMessage.message, {
+          display_name: actorProfile.display_name ?? '',
+        }),
       });
     }
   }

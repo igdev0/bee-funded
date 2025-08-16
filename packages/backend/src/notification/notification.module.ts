@@ -10,6 +10,7 @@ import { ProfileModule } from '../profile/profile.module';
 import { MailModule } from '../mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import NotificationConfig from './notification.config';
+import { TokenizerModule } from '../tokenizer/tokenizer.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import NotificationConfig from './notification.config';
     ProfileModule,
     MailModule,
     ConfigModule.forFeature(NotificationConfig),
+    TokenizerModule,
   ],
   providers: [NotificationService],
   exports: [
