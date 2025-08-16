@@ -147,6 +147,20 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     return false;
   }
 
+  /**
+   * Lifecycle hook called when the module is initialized.
+   *
+   * Sets up WebSocket providers for each configured blockchain network and
+   *  subscribe to the `DonationPoolCreated` event on the BeeFundedCore contract.
+   *
+   * @remarks
+   * - Fetches chain configurations from the application config (`contracts` key).
+   * - Throws an error if no chain configurations are found.
+   * - For each chain, it:
+   *   1. Creates a WebSocketProvider and stores it in `this.providers`.
+   *   2. Instantiates the BeeFundedCore contract using its ABI and address.
+   *   3. Subscribe to the `DonationPoolCreated` event, invoking `onDonationCreated` when triggered.
+   */
   async onModuleInit(): Promise<void> {
     const chains = this.config.get<ChainConfig[]>('contracts');
     if (!chains) {
@@ -173,6 +187,17 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Lifecycle hook called when the module is being destroyed.
+   *
+   * Cleans up all WebSocket providers that were initialized during `onModuleInit`.
+   *
+   * @remarks
+   * - Fetches chain configurations from the application config (`contracts` key) to ensure chains are set.
+   * - Throws an error if no chain configurations are found.
+   * - Calls `destroy()` on each WebSocketProvider in `this.providers` to properly close connections.
+   * - Use `Promise.all` to wait for all providers to be destroyed concurrently.
+   */
   async onModuleDestroy(): Promise<void> {
     const chains = this.config.get<ChainConfig[]>('contracts');
     if (!chains) {
@@ -185,6 +210,23 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
+  /**
+   * Event handler triggered when a new donation pool is created on-chain.
+   *
+   * This method processes and sends notifications to both the actor (creator)
+   * and their followers based on their notification settings.
+   *
+   * @param on_chain_id – The on-chain ID of the newly created donation pool.
+   * @param owner_address – The blockchain address of the actor who created the pool.
+   * @param id_hash – The hash ID of the donation pool (used to fetch and publish the pool entity).
+   *
+   * @remarks
+   * Steps performed by this method:
+   * 1. Call `publish` to update the donation pool entity with on-chain data and retrieve the actor profile.
+   * 2. Prepares in-app and email notifications for the actor and sends them using `processActorNotifications`.
+   * 3. Prepares in-app and email notifications for followers and sends them using `processFollowersNotifications`.
+   * 4. Placeholders like `{display_name}` in follower messages are meant to be replaced before sent to the user.
+   */
   private async onDonationCreated(
     on_chain_id: bigint,
     owner_address: string,
