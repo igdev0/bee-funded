@@ -22,8 +22,6 @@ describe('NotificationService', () => {
   });
 
   it('Should be able to send notification', async () => {
-    const userId = 'some-user-id';
-    const stream = service.connectUser(userId);
     const notification = {
       id: 'some-id',
       metadata: {},
@@ -37,17 +35,22 @@ describe('NotificationService', () => {
       is_read: false,
     } as NotificationEntity;
 
+    const stream = service.connectUser(notification.profile.id);
+
     notificationRepository.create.mockReturnValue(notification);
     notificationRepository.save.mockResolvedValue(notification);
-    const next = jest.spyOn(stream, 'next');
 
-    await service.saveAndSend(userId, {
+    const entity = await service.save(notification.profile.id, {
       type: 'donation_pool_created',
       metadata: {},
       actor: { id: 'some-id' } as ProfileEntity,
       title: 'Some title',
       message: 'Some message',
     });
+
+    const next = jest.spyOn(stream, 'next');
+
+    service.send(notification.profile.id, entity);
 
     expect(next).toHaveBeenCalled();
   });
