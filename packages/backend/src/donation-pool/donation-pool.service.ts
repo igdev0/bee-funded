@@ -279,7 +279,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     // ==========================================
     const followerInAppMessage: ProcessInAppMessage = {
       type: 'donation_pool_created',
-      title: '{display_name} Launched a Pool!',
+      title: 'A profile you follow launched a Pool!',
       message:
         '{display_name} just launched a new donation pool! Check it out and show your support!',
       metadata: {},
@@ -287,7 +287,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
 
     const followerMailMessage: ProcessMailMessage = {
       actionPath: `/donation-pool/${id}`,
-      message: `User has created a new donation pool!`,
+      message: `{display_name} just launched a new donation pool! Check it out and show your support!`,
     };
 
     await this.notificationService.processFollowersNotifications(
