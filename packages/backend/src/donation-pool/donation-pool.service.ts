@@ -11,11 +11,7 @@ import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 import { ProfileService } from '../profile/profile.service';
 import { NotificationService } from '../notification/notification.service';
 import { MailService, NotificationContext } from '../mail/mail.service';
-import ProfileEntity from '../profile/entities/profile.entity';
-import {
-  NotificationI,
-  SaveNotificationI,
-} from '../notification/notification.interface';
+import { SaveNotificationI } from '../notification/notification.interface';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
