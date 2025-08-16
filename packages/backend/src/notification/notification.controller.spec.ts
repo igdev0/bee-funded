@@ -8,6 +8,8 @@ import { NotificationService } from './notification.service';
 import { UserI } from '../user/user.interface';
 import NotificationEntity from './entities/notification.entity';
 import ProfileEntity from '../profile/entities/profile.entity';
+import { ConfigModule } from '@nestjs/config';
+import NotificationConfig from './notification.config';
 
 const user: UserI = {
   id: 'user-id',
@@ -45,6 +47,7 @@ describe('NotificationController', () => {
   let service: NotificationService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule.forFeature(NotificationConfig)],
       controllers: [NotificationController],
       providers: [NotificationService],
     })
