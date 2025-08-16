@@ -61,6 +61,18 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     return await this.donationPoolRepository.save(entity);
   }
 
+  /**
+   * Publishes a donation pool by updating its on-chain ID, owner address, and status.
+   *
+   * @param id_hash – The hash ID of the donation pool to be published.
+   * @param dto – An object containing the on-chain ID and owner address to update.
+   * @returns The updated DonationPoolEntity with its associated profile.
+   *
+   * @remarks
+   * - Updates the `on_chain_id`, `owner_address`, and sets the `status` to 'published'.
+   * - After updating, fetches the updated entity including the related profile.
+   * - Throws an error if no donation pool is found with the provided `id_hash`.
+   */
   async publish(
     id_hash: string,
     dto: PublishDonationPoolDto,
