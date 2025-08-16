@@ -7,6 +7,7 @@ import { MailModule } from './mail/mail.module';
 import { DonationPoolModule } from './donation-pool/donation-pool.module';
 import { DatabaseModule } from './database/database.module';
 import { FileStorageModule } from './file-storage/file-storage.module';
+import { TokenizerModule } from './tokenizer/tokenizer.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { FileStorageModule } from './file-storage/file-storage.module';
     DonationPoolModule,
     DatabaseModule,
     FileStorageModule,
+    TokenizerModule,
   ],
 })
 export class AppModule {}
