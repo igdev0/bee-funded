@@ -8,6 +8,8 @@ import { UserModule } from '../user/user.module';
 import NotificationSettingsEntity from './entities/notification-settings.entity';
 import { ProfileModule } from '../profile/profile.module';
 import { MailModule } from '../mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
+import NotificationConfig from './notification.config';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { MailModule } from '../mail/mail.module';
     UserModule,
     ProfileModule,
     MailModule,
+    ConfigModule.forFeature(NotificationConfig),
   ],
   providers: [NotificationService],
   exports: [

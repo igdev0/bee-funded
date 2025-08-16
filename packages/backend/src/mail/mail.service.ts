@@ -1,53 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
-
-export interface EmailVerification {
-  code: string;
-  name: string;
-  expiresIn: string;
-}
-
-export interface NotificationMailContext {
-  name: string;
-  actorImage: string;
-  actorDisplayName: string;
-  notificationMessage: string;
-  actionUrl: string;
-  notificationsSettingsUrl: string;
-}
-
-export interface Envelope {
-  from: string;
-  to: string[];
-}
-
-export interface MailResponse {
-  accepted: string[];
-  rejected: any[];
-  ehlo: string[];
-  envelopeTime: number;
-  messageTime: number;
-  messageSize: number;
-  response: string;
-  envelope: Envelope;
-  messageId: string;
-}
+import {
+  EmailVerification,
+  MailResponse,
+  NotificationMailContext,
+} from './mail.interface';
 
 @Injectable()
 export class MailService {
+  private appFrontendUrl: string;
+
   constructor(
     private readonly mail: MailerService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.appFrontendUrl = this.configService.get<string>(
+      'APP_FRONTEND_URL',
+    ) as string;
+  }
 
   sendEmailVerification(
     to: string,
     context: EmailVerification,
   ): Promise<MailResponse> {
-    const appFrontendUrl = this.configService.get<string>(
-      'APP_FRONTEND_URL',
-    ) as string;
     return this.mail.sendMail({
       template: 'verification-email',
       subject: 'Email Verification',
@@ -56,7 +32,7 @@ export class MailService {
         name: context.name,
         expiresIn: context.expiresIn,
         verificationCode: context.code,
-        verificationUrl: `${appFrontendUrl}/verify-email?code=${context.code}`,
+        verificationUrl: `${this.appFrontendUrl}/verify-email?code=${context.code}`,
       },
     });
   }
@@ -66,7 +42,11 @@ export class MailService {
       template: 'notification',
       subject: `New notification from ${context.actorDisplayName}`,
       to,
-      context,
+      context: {
+        ...context,
+        notificationsSettingsPath: `${this.appFrontendUrl}${context.notificationsSettingsPath}`,
+        actionUrl: `${this.appFrontendUrl}${context.actionPath}`,
+      },
     });
   }
 }

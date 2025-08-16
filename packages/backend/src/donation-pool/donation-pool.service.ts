@@ -10,8 +10,13 @@ import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 import { ProfileService } from '../profile/profile.service';
 import { NotificationService } from '../notification/notification.service';
-import { MailService, NotificationMailContext } from '../mail/mail.service';
-import { SaveNotificationI } from '../notification/notification.interface';
+import { MailService } from '../mail/mail.service';
+import {
+  ProcessInAppMessage,
+  ProcessMailMessage,
+  SaveNotificationI,
+} from '../notification/notification.interface';
+import { NotificationMailContext } from '../mail/mail.interface';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
@@ -240,7 +245,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     owner_address: string,
     id_hash: bigint,
   ) {
-    const { profile: actorProfile } = await this.publish(
+    const { profile: actorProfile, id } = await this.publish(
       `0x${id_hash.toString(16)}`,
       {
         on_chain_id,
@@ -248,49 +253,43 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
       },
     );
 
-    const actorMessage: SaveNotificationI = {
+    // 1. Prepare and send messages to the actor
+    // ==========================================
+    const actorInAppMessage: ProcessInAppMessage = {
       type: 'donation_pool_created',
       title: 'Donation pool created',
-      actor: actorProfile,
       message: 'Your donation pool was created',
       metadata: {},
     };
 
-    const emailMessage: NotificationMailContext = {
-      notificationsSettingsUrl: '/', // @todo: Update this to the settings url
-      name: actorProfile.display_name ?? '',
-      actorDisplayName: actorProfile.display_name ?? '',
-      actionUrl: '/', // @todo: Update this to the action URL
-      actorImage: actorProfile.avatar,
-      notificationMessage: `Your donation pool was created`,
+    const actorMailMessage: ProcessMailMessage = {
+      actionPath: `/donation-pool/${id}`,
+      message: `Your donation pool was created`,
     };
-    // 1. Process notifications for an actor
     await this.notificationService.processActorNotifications(
       actorProfile,
-      actorMessage,
-      emailMessage,
+      actorInAppMessage,
+      actorMailMessage,
     );
 
-    const followerMessage: SaveNotificationI = {
+    // 2. Prepare and send messages to the followers
+    // ==========================================
+    const followerInAppMessage: ProcessInAppMessage = {
       type: 'donation_pool_created',
       title: '{display_name} Launched a Pool!',
-      actor: actorProfile,
       message:
         '{display_name} just launched a new donation pool! Check it out and show your support!',
       metadata: {},
     };
 
-    const followerMailMessage = {
-      notificationsSettingsUrl: '/', // @todo: Update this to the settings url
-      actorDisplayName: actorProfile.display_name ?? '',
-      actionUrl: '/', // @todo: Update this to the action URL
-      actorImage: actorProfile.avatar,
-      notificationMessage: `User {} has created a new donation pool!`,
+    const followerMailMessage: ProcessMailMessage = {
+      actionPath: `/donation-pool/${id}`,
+      message: `User has created a new donation pool!`,
     };
 
     await this.notificationService.processFollowersNotifications(
       actorProfile,
-      followerMessage,
+      followerInAppMessage,
       followerMailMessage,
     );
   }

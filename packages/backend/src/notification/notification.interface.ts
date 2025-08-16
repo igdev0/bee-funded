@@ -1,5 +1,4 @@
 import ProfileEntity from '../profile/entities/profile.entity';
-import { NotificationMailContext } from '../mail/mail.service';
 
 export type NotificationType = 'donation_pool_created';
 
@@ -20,7 +19,12 @@ export type SaveNotificationI = Omit<
   'id' | 'created_at' | 'updated_at' | 'is_read'
 >;
 
-export type FollowerMailMessage = Omit<NotificationMailContext, 'name'>;
+export type ProcessInAppMessage = Omit<SaveNotificationI, 'actor'>;
+
+export interface ProcessMailMessage {
+  message: string;
+  actionPath: string;
+}
 
 export interface NotificationTypes {
   new_follower: boolean;

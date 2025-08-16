@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import {
-  FollowerMailMessage,
+  ProcessMailMessage,
   NotificationI,
   NotificationSettingsChannels,
   NotificationTypes,
+  ProcessInAppMessage,
   SaveNotificationI,
 } from './notification.interface';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,12 +15,16 @@ import { NotificationSettingsDto } from './dto/notification-settings.dto';
 import NotificationSettingsEntity from './entities/notification-settings.entity';
 import { ProfileService } from '../profile/profile.service';
 import ProfileEntity from '../profile/entities/profile.entity';
-import { MailService, NotificationMailContext } from '../mail/mail.service';
+import { MailService } from '../mail/mail.service';
+import { ConfigService } from '@nestjs/config';
+import { NotificationConfigI } from './notification.config';
+import { ActorNotificationMessage } from '../mail/mail.interface';
 
 @Injectable()
 export class NotificationService {
   // A map to hold active SSE streams per connected user
   private userStreams = new Map<string, Subject<MessageEvent<NotificationI>>>();
+  private config: NotificationConfigI;
 
   constructor(
     @InjectRepository(NotificationEntity)
@@ -28,7 +33,12 @@ export class NotificationService {
     private readonly notificationSettingsRepository: Repository<NotificationSettingsEntity>,
     private readonly profileService: ProfileService,
     private readonly mailService: MailService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.config = this.configService.get<NotificationConfigI>(
+      'notification',
+    ) as NotificationConfigI;
+  }
 
   /**
    * Establishes a new SSE stream for a user and stores it in memory.
@@ -274,8 +284,8 @@ export class NotificationService {
    */
   async processActorNotifications(
     actorProfile: ProfileEntity,
-    inAppMessage: SaveNotificationI,
-    mailMessage: NotificationMailContext,
+    inAppMessage: ProcessInAppMessage,
+    mailMessage: ProcessMailMessage,
   ) {
     // 1. Notify the actor in app
     const { settings: actorNotificationSettings } = await this.getSettings(
@@ -286,7 +296,10 @@ export class NotificationService {
       actorNotificationSettings.channels.inApp.notifications
         .donationPoolCreation
     ) {
-      const notification = await this.save(actorProfile.id, inAppMessage);
+      const notification = await this.save(actorProfile.id, {
+        ...inAppMessage,
+        actor: actorProfile,
+      });
       this.send(actorProfile.id, notification);
     }
 
@@ -296,7 +309,14 @@ export class NotificationService {
       actorNotificationSettings.channels.email.notifications
         .donationPoolCreation
     ) {
-      await this.mailService.sendNotification(actorProfile.id, mailMessage);
+      await this.mailService.sendNotification(actorProfile.id, {
+        name: actorProfile.display_name ?? '',
+        actorDisplayName: actorProfile.display_name ?? '',
+        notificationsSettingsPath: this.config.settingsPath,
+        actorImage: actorProfile.avatar,
+        actionPath: mailMessage.actionPath,
+        notificationMessage: mailMessage.message,
+      });
     }
   }
 
@@ -319,8 +339,8 @@ export class NotificationService {
    */
   async processFollowersNotifications(
     actorProfile: ProfileEntity,
-    inAppMessage: SaveNotificationI,
-    mailMessage: FollowerMailMessage,
+    inAppMessage: ProcessInAppMessage,
+    mailMessage: ProcessMailMessage,
   ) {
     // 2. Process notifications for subscribers
     const subscribers = await this.getFollowersForPreference(
@@ -329,14 +349,21 @@ export class NotificationService {
     );
 
     for (const subscriber of subscribers.get('inApp') ?? []) {
-      const notification = await this.save(subscriber.id, inAppMessage);
+      const notification = await this.save(subscriber.id, {
+        ...inAppMessage,
+        actor: actorProfile,
+      });
       this.send(subscriber.id, notification);
     }
 
     for (const subscriber of subscribers.get('email') ?? []) {
       await this.mailService.sendNotification(subscriber.id, {
-        ...mailMessage,
         name: subscriber.display_name ?? '',
+        actorDisplayName: actorProfile.display_name ?? '',
+        notificationsSettingsPath: this.config.settingsPath,
+        actorImage: actorProfile.avatar,
+        actionPath: mailMessage.actionPath,
+        notificationMessage: mailMessage.message,
       });
     }
   }
