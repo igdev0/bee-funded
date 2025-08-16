@@ -14,7 +14,7 @@ import { NotificationSettingsDto } from './dto/notification-settings.dto';
 import NotificationSettingsEntity from './entities/notification-settings.entity';
 import { ProfileService } from '../profile/profile.service';
 import ProfileEntity from '../profile/entities/profile.entity';
-import { MailService, NotificationContext } from '../mail/mail.service';
+import { MailService, NotificationMailContext } from '../mail/mail.service';
 
 @Injectable()
 export class NotificationService {
@@ -97,6 +97,7 @@ export class NotificationService {
       );
     }
   }
+
   /**
    * Creates and persists a new in-app notification for a specific profile.
    *
@@ -156,6 +157,7 @@ export class NotificationService {
       count,
     };
   }
+
   /**
    * Retrieves the notification settings for a given profile.
    *
@@ -273,7 +275,7 @@ export class NotificationService {
   async processActorNotifications(
     actorProfile: ProfileEntity,
     inAppMessage: SaveNotificationI,
-    mailMessage: NotificationContext,
+    mailMessage: NotificationMailContext,
   ) {
     // 1. Notify the actor in app
     const { settings: actorNotificationSettings } = await this.getSettings(

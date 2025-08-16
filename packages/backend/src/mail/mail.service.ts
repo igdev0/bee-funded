@@ -8,10 +8,10 @@ export interface EmailVerification {
   expiresIn: string;
 }
 
-export interface NotificationContext {
+export interface NotificationMailContext {
+  name: string;
   actorImage: string;
   actorDisplayName: string;
-  name: string;
   notificationMessage: string;
   actionUrl: string;
   notificationsSettingsUrl: string;
@@ -61,7 +61,7 @@ export class MailService {
     });
   }
 
-  sendNotification(to: string, context: NotificationContext) {
+  sendNotification(to: string, context: NotificationMailContext) {
     return this.mail.sendMail({
       template: 'notification',
       subject: `New notification from ${context.actorDisplayName}`,
