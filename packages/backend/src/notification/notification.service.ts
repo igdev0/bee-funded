@@ -148,6 +148,14 @@ export class NotificationService {
       .getOneOrFail();
   }
 
+  /**
+   * Updates the notification settings for a given profile.
+   *
+   * @param profile_id – The ID of the profile whose settings should be updated.
+   * @param payload – The new notification settings to persist.
+   * @returns The updated notification settings entity.
+   * @throws NotFoundError if no settings are found for the provided profile_id.
+   */
   async updateSettings(profile_id: string, payload: NotificationSettingsDto) {
     await this.notificationSettingsRepository
       .createQueryBuilder()
