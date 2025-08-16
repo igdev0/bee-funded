@@ -11,6 +11,7 @@ import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
 import { ProfileService } from '../profile/profile.service';
 import { NotificationService } from '../notification/notification.service';
 import { MailService } from '../mail/mail.service';
+import ProfileEntity from '../profile/entities/profile.entity';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
@@ -180,6 +181,45 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
+  private async processActorNotifications(actorProfile: ProfileEntity) {
+    // 1. Notify the actor in app
+    const { settings: actorNotificationSettings } =
+      await this.notificationService.getSettings(actorProfile.id);
+    if (
+      actorNotificationSettings.channels.inApp.enabled &&
+      actorNotificationSettings.channels.inApp.notifications
+        .donationPoolCreation
+    ) {
+      const notification = await this.notificationService.save(
+        actorProfile.id,
+        {
+          type: 'donation_pool_created',
+          title: 'Donation pool created',
+          actor: actorProfile,
+          message: 'Your donation pool was created',
+          metadata: {},
+        },
+      );
+      this.notificationService.send(actorProfile.id, notification);
+    }
+
+    // 2. Notify the actor by email
+    if (
+      actorNotificationSettings.channels.email.enabled &&
+      actorNotificationSettings.channels.email.notifications
+        .donationPoolCreation
+    ) {
+      await this.mailService.sendNotification(actorProfile.id, {
+        notificationsSettingsUrl: '/', // @todo: Update this to the settings url
+        name: actorProfile.display_name ?? '',
+        actorDisplayName: actorProfile.display_name ?? '',
+        actionUrl: '/', // @todo: Update this to the action URL
+        actorImage: actorProfile.avatar,
+        notificationMessage: `Your donation pool was created`,
+      });
+    }
+  }
+
   private async onDonationCreated(
     on_chain_id: bigint,
     owner_address: string,
@@ -192,6 +232,11 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
         owner_address,
       },
     );
+
+    // 1. Process notifications for an actor
+    await this.processActorNotifications(actorProfile);
+
+    // 2. Process notifications for subscribers
     const subscribers =
       await this.notificationService.getFollowersForPreference(
         actorProfile.id,
