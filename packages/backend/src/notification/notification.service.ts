@@ -55,6 +55,18 @@ export class NotificationService {
     }
   }
 
+  /**
+   * Prepares a notification entity for display by replacing placeholders
+   * in the title and message with actual actor data.
+   *
+   * @param data – The notification entity containing title, message, and actor information.
+   * @returns A new object with the `title` and `message` fields updated, where
+   *          any `{display_name}` placeholders are replaced with the actor's display name.
+   *
+   * @remarks
+   * This method currently replaces only the `{display_name}` token.
+   * Additional placeholders can be added if needed in the future.
+   */
   prepareData(data: NotificationEntity) {
     return {
       ...data,
@@ -85,7 +97,17 @@ export class NotificationService {
       );
     }
   }
-
+  /**
+   * Creates and persists a new in-app notification for a specific profile.
+   *
+   * @param profile_id – The ID of the profile to which the notification belongs.
+   * @param data – The notification content and metadata to be saved.
+   * @returns The saved notification entity.
+   *
+   * @remarks
+   * The notification is always initialized as unread (`is_read: false`)
+   * when created.
+   */
   save(profile_id: string, data: SaveNotificationI) {
     const entity = this.notificationRepository.create({
       ...data,
