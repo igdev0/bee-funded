@@ -24,6 +24,7 @@ import NotificationConfig from './notification.config';
   exports: [
     NotificationService,
     TypeOrmModule.forFeature([NotificationEntity, NotificationSettingsEntity]),
+    ConfigModule.forFeature(NotificationConfig),
   ],
   controllers: [NotificationController],
 })

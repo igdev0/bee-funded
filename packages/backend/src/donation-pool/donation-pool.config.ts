@@ -1,3 +1,13 @@
 import { registerAs } from '@nestjs/config';
 
-export default registerAs('pool', () => ({}));
+export interface DonationPoolConfig {
+  baseViewDonationPoolPath: string;
+}
+export default registerAs(
+  'donation-pool',
+  () =>
+    ({
+      baseViewDonationPoolPath:
+        process.env.DONATION_POOL_BASE_PATH ?? '/donation-pool',
+    }) as DonationPoolConfig,
+);

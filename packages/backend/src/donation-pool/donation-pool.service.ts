@@ -14,16 +14,15 @@ import { MailService } from '../mail/mail.service';
 import {
   ProcessInAppMessage,
   ProcessMailMessage,
-  SaveNotificationI,
 } from '../notification/notification.interface';
-import { NotificationMailContext } from '../mail/mail.interface';
+import { DonationPoolConfig } from './donation-pool.config';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
   private providers: WebSocketProvider[] = [];
 
   constructor(
-    private readonly config: ConfigService,
+    private readonly configService: ConfigService,
     @InjectRepository(DonationPoolEntity)
     private readonly donationPoolRepository: Repository<DonationPoolEntity>,
     private readonly profileService: ProfileService,
@@ -175,7 +174,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
    *   3. Subscribe to the `DonationPoolCreated` event, invoking `onDonationCreated` when triggered.
    */
   async onModuleInit(): Promise<void> {
-    const chains = this.config.get<ChainConfig[]>('contracts');
+    const chains = this.configService.get<ChainConfig[]>('contracts');
     if (!chains) {
       throw new Error('Contracts config must be set');
     }
@@ -212,7 +211,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
    * - Use `Promise.all` to wait for all providers to be destroyed concurrently.
    */
   async onModuleDestroy(): Promise<void> {
-    const chains = this.config.get<ChainConfig[]>('contracts');
+    const chains = this.configService.get<ChainConfig[]>('contracts');
     if (!chains) {
       throw new Error('Contracts config must be set');
     }
@@ -262,8 +261,12 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
       metadata: {},
     };
 
+    const config = this.configService.get<DonationPoolConfig>(
+      'donation-pool',
+    ) as DonationPoolConfig;
+
     const actorMailMessage: ProcessMailMessage = {
-      actionPath: `/donation-pool/${id}`,
+      actionPath: `${actorProfile.username}/${config.baseViewDonationPoolPath}/${id}`,
       message: `Your donation pool was created`,
     };
     await this.notificationService.processActorNotifications(
