@@ -193,8 +193,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
 
       await contract.on(
         'DonationPoolCreated',
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises,@typescript-eslint/unbound-method
-        this.onDonationCreated,
+        await this.onDonationCreated.bind(this),
       );
     }
   }
