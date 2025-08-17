@@ -28,6 +28,6 @@ export class ProfileSubscriber
     newSettings.profile = { id: profile.id } as ProfileEntity; // Assign the profile ID
 
     // Use the entity manager to save the new settings entity
-    await this.dataSource.manager.save(newSettings);
+    await event.manager.save(newSettings);
   }
 }

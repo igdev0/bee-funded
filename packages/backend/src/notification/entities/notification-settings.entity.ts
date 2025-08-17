@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -35,7 +36,10 @@ export default class NotificationSettingsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @OneToOne(() => ProfileEntity, (profile) => profile.id)
+  @OneToOne(() => ProfileEntity, (profile) => profile.id, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'profile_id' })
   profile: ProfileEntity;
   /**
    *  The user selected settings applied

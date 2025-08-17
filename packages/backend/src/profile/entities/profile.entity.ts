@@ -92,6 +92,7 @@ export default class ProfileEntity {
   @OneToOne(() => NotificationEntity, (notification) => notification.id, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'notification_settings_id' })
   notification_settings: NotificationEntity;
 
   @OneToMany(() => DonationPoolEntity, (poolEntity) => poolEntity.profile, {
