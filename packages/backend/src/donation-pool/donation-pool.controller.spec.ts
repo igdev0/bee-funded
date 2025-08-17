@@ -7,7 +7,7 @@ describe('DonationPoolController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [DonationPoolController],
+      controllers: [DonationPoolController],
     })
       .useMocker(() => new ModuleMocker(global))
       .compile();
