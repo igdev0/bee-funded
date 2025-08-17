@@ -10,6 +10,7 @@ import { FileStorageModule } from '../file-storage/file-storage.module';
 import { ProfileModule } from '../profile/profile.module';
 import { MailModule } from '../mail/mail.module';
 import DonationPoolConfig from './donation-pool.config';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import DonationPoolConfig from './donation-pool.config';
     FileStorageModule,
     ConfigModule.forFeature(ContractsConfig),
     ConfigModule.forFeature(DonationPoolConfig),
+    NotificationModule,
     AuthModule,
     ProfileModule,
     MailModule,
