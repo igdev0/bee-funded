@@ -179,7 +179,9 @@ export class NotificationService {
   async getSettings(profile_id: string) {
     return this.notificationSettingsRepository
       .createQueryBuilder()
-      .where('profile_id = :profile_id', { profile_id })
+      .where('profile_id = :profile_id', {
+        profile_id,
+      })
       .getOneOrFail();
   }
 
