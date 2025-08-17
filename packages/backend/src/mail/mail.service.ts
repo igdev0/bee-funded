@@ -44,7 +44,7 @@ export class MailService {
       to,
       context: {
         ...context,
-        notificationsSettingsPath: `${this.appFrontendUrl}${context.notificationsSettingsPath}`,
+        notificationsSettingsUrl: `${this.appFrontendUrl}${context.notificationsSettingsPath}`,
         actionUrl: `${this.appFrontendUrl}${context.actionPath}`,
       },
     });
