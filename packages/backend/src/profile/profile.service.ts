@@ -68,7 +68,7 @@ export class ProfileService {
     const code = await this.generateVerificationCode(profile.email);
     const isTestMode = this.configService.get<string>('NODE_ENV') === 'test';
     if (!isTestMode) {
-      await this.mailService.sendEmailVerification(profile.email, {
+      await this.mailService.sendVerificationEmail(profile.email, {
         expiresIn: '5 Minutes',
         code,
         name: profile.display_name ?? profile.email?.split('@')[0],

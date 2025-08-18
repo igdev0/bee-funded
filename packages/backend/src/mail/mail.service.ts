@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import {
-  EmailVerification,
-  MailResponse,
+  Context,
+  EmailVerificationContext,
+  EmailVerificationContextPayload,
   NotificationMailContext,
+  SendMailPayload,
 } from './mail.interface';
 
 @Injectable()
@@ -20,25 +22,32 @@ export class MailService {
     ) as string;
   }
 
-  sendEmailVerification(
-    to: string,
-    context: EmailVerification,
-  ): Promise<MailResponse> {
+  sendMail<C extends Context>(payload: SendMailPayload<C>) {
+    if (this.configService.get<string>('NODE_ENV') === 'test') {
+      return true;
+    }
     return this.mail.sendMail({
-      template: 'verification-email',
-      subject: 'Email Verification',
+      template: payload.template,
+      subject: payload.subject,
+      to: payload.to,
+      context: payload.context,
+    });
+  }
+
+  sendVerificationEmail(to: string, context: EmailVerificationContext) {
+    return this.sendMail<EmailVerificationContextPayload>({
+      template: 'email-verification',
+      subject: 'Verify your email',
       to,
       context: {
-        name: context.name,
-        expiresIn: context.expiresIn,
-        verificationCode: context.code,
+        ...context,
         verificationUrl: `${this.appFrontendUrl}/verify-email?code=${context.code}`,
       },
     });
   }
 
   sendNotification(to: string, context: NotificationMailContext) {
-    return this.mail.sendMail({
+    return this.sendMail({
       template: 'notification',
       subject: `New notification from ${context.actorDisplayName}`,
       to,
