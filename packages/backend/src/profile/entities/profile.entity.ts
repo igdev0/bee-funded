@@ -13,6 +13,7 @@ import {
 import { UserEntity } from '../../user/entities/user.entity';
 import NotificationEntity from '../../notification/entities/notification.entity';
 import { DonationPoolEntity } from '../../donation-pool/entities/donation-pool.entity';
+import DonationEntity from '../../donation/entity/donation.entity';
 
 /**
  * Profile entity representing additional user information.
@@ -94,6 +95,11 @@ export default class ProfileEntity {
   })
   @JoinColumn({ name: 'notification_settings_id' })
   notification_settings: NotificationEntity;
+
+  @OneToMany(() => DonationEntity, (donation) => donation.donor_profile, {
+    onDelete: 'CASCADE',
+  })
+  donations: DonationEntity[];
 
   @OneToMany(() => DonationPoolEntity, (poolEntity) => poolEntity.profile, {
     onDelete: 'CASCADE',

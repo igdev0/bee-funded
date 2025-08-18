@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -11,6 +12,7 @@ import ProfileEntity from '../../profile/entities/profile.entity';
 import { DonationPoolKind, DonationPoolStatus } from '../types';
 import { keccak256 } from 'ethers';
 import { v4 as uuidv4 } from 'uuid';
+import DonationEntity from '../../donation/entity/donation.entity';
 
 @Entity('donation-pool')
 export class DonationPoolEntity {
@@ -91,6 +93,11 @@ export class DonationPoolEntity {
     (profileEntity) => profileEntity.donation_pools,
   )
   profile: ProfileEntity;
+
+  @OneToMany(() => DonationEntity, (donationEntity) => donationEntity.pool, {
+    onDelete: 'CASCADE',
+  })
+  donations: DonationEntity[];
   /**
    * List of tags used to categorize or filter donation pools (e.g., "education", "climate", "web3")
    */
