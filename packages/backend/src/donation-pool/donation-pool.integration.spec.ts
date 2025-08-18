@@ -120,6 +120,10 @@ describe('Donation Pool integration tests', () => {
     expect(notificationSave).toHaveBeenCalled();
   });
 
+  it('should send the notification', () => {
+    expect(notificationSend).toHaveBeenCalled();
+  });
+
   afterAll(async () => {
     const datasource = app.get(DataSource);
     await datasource.dropDatabase();
