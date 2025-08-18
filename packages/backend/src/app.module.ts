@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { FileStorageModule } from './file-storage/file-storage.module';
 import { TokenizerModule } from './tokenizer/tokenizer.module';
 import { ChainModule } from './chain/chain.module';
+import { DonationModule } from './donation/donation.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ChainModule } from './chain/chain.module';
     FileStorageModule,
     TokenizerModule,
     ChainModule,
+    DonationModule,
   ],
 })
 export class AppModule {}
