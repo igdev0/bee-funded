@@ -9,16 +9,49 @@ import { UserEntity } from '../user/entities/user.entity';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
 import { ConfigService } from '@nestjs/config';
 import { ChainConfig } from '../contracts.config';
+import { NotificationService } from '../notification/notification.service';
+import SpyInstance = jest.SpyInstance;
 
 describe('Donation Pool integration tests', () => {
   let app: TestingModule;
   let userWallet: Wallet;
   let user: UserEntity;
   let donationPoolService: DonationPoolService;
+
+  let notificationGetSettings: SpyInstance<
+    ReturnType<NotificationService['getSettings']>
+  >;
+
+  let notificationSend: SpyInstance<ReturnType<NotificationService['send']>>;
+  let notificationSave: SpyInstance<ReturnType<NotificationService['save']>>;
+  let processActorNotifications: SpyInstance<
+    ReturnType<NotificationService['processActorNotifications']>
+  >;
+  let processFollowersNotifications: SpyInstance<
+    ReturnType<NotificationService['processFollowersNotifications']>
+  >;
+  let onDonationCreated: SpyInstance<
+    ReturnType<DonationPoolService['onDonationCreated']>
+  >;
   beforeAll(async () => {
     app = await Test.createTestingModule({
       imports: [DatabaseModule, DonationPoolModule],
     }).compile();
+
+    donationPoolService = app.get(DonationPoolService);
+    onDonationCreated = jest.spyOn(donationPoolService, 'onDonationCreated');
+    const notificationService = app.get(NotificationService);
+    notificationGetSettings = jest.spyOn(notificationService, 'getSettings');
+    notificationSend = jest.spyOn(notificationService, 'send');
+    notificationSave = jest.spyOn(notificationService, 'save');
+    processActorNotifications = jest.spyOn(
+      notificationService,
+      'processActorNotifications',
+    );
+    processFollowersNotifications = jest.spyOn(
+      notificationService,
+      'processFollowersNotifications',
+    );
     await app.init();
     const userService = app.get(UserService);
     userWallet = new ethers.Wallet(
@@ -28,11 +61,10 @@ describe('Donation Pool integration tests', () => {
     user = await userService.create({
       wallet_address: await userWallet.getAddress(),
     });
-
-    donationPoolService = app.get(DonationPoolService);
   });
 
   let donationPool: DonationPoolEntity;
+
   it('should be able to create a donation pool', async () => {
     const entity = await donationPoolService.create(
       { kind: 'main' },
@@ -42,7 +74,7 @@ describe('Donation Pool integration tests', () => {
     expect(entity).toBeDefined();
   });
 
-  it('should be able to publish a donation pool', async () => {
+  it('should publish a donation pool and update the database', async () => {
     const contractsConfig = app
       .get(ConfigService)
       .get<ChainConfig[]>('contracts');
@@ -63,12 +95,25 @@ describe('Donation Pool integration tests', () => {
       donationPool.id_hash,
     );
 
+    expect(onDonationCreated).toHaveBeenCalled();
+
     donationPool = await donationPoolService.getOwned(
       donationPool.id,
       user.profile.id,
     );
-
     expect(donationPool.status).toEqual('published');
+  });
+
+  it('should get notifications settings', () => {
+    expect(notificationGetSettings).toHaveBeenCalled();
+  });
+
+  it('should process actor notifications', () => {
+    expect(processActorNotifications).toHaveBeenCalled();
+  });
+
+  it('should process follower notifications', () => {
+    expect(processFollowersNotifications).toHaveBeenCalled();
   });
 
   afterAll(async () => {

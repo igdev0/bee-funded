@@ -238,7 +238,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
    * 3. Prepares in-app and email notifications for followers and sends them using `processFollowersNotifications`.
    * 4. Placeholders like `{display_name}` in follower messages are meant to be replaced before sent to the user.
    */
-  private async onDonationCreated(
+  async onDonationCreated(
     on_chain_id: bigint,
     owner_address: string,
     id_hash: bigint,
