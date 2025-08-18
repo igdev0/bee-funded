@@ -36,7 +36,7 @@ export interface ChainConfig {
 }
 
 export default registerAs(
-  'contracts',
+  'chains',
   () =>
     [
       {

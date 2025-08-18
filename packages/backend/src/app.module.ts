@@ -8,6 +8,7 @@ import { DonationPoolModule } from './donation-pool/donation-pool.module';
 import { DatabaseModule } from './database/database.module';
 import { FileStorageModule } from './file-storage/file-storage.module';
 import { TokenizerModule } from './tokenizer/tokenizer.module';
+import { ChainModule } from './chain/chain.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TokenizerModule } from './tokenizer/tokenizer.module';
     DatabaseModule,
     FileStorageModule,
     TokenizerModule,
+    ChainModule,
   ],
 })
 export class AppModule {}

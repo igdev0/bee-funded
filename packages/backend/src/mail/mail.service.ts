@@ -24,7 +24,9 @@ export class MailService {
 
   sendMail<C extends Context>(payload: SendMailPayload<C>) {
     if (this.configService.get<string>('NODE_ENV') === 'test') {
-      return true;
+      return {
+        envelope: { to: [payload.to] },
+      };
     }
     return this.mail.sendMail({
       template: payload.template,

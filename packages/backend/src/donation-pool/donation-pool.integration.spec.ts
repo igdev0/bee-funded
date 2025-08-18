@@ -8,7 +8,7 @@ import { ethers, parseUnits, Wallet } from 'ethers';
 import { UserEntity } from '../user/entities/user.entity';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
 import { ConfigService } from '@nestjs/config';
-import { ChainConfig } from '../contracts.config';
+import { ChainConfig } from '../chain/chain.config';
 import { NotificationService } from '../notification/notification.service';
 import SpyInstance = jest.SpyInstance;
 
@@ -75,9 +75,7 @@ describe('Donation Pool integration tests', () => {
   });
 
   it('should publish a donation pool and update the database', async () => {
-    const contractsConfig = app
-      .get(ConfigService)
-      .get<ChainConfig[]>('contracts');
+    const contractsConfig = app.get(ConfigService).get<ChainConfig[]>('chains');
     if (!contractsConfig) {
       throw new Error('No contract config found.');
     }

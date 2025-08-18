@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ChainConfig } from '../contracts.config';
+import { ChainConfig } from '../chain/chain.config';
 import { Contract, WebSocketProvider } from 'ethers';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
@@ -174,7 +174,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
    *   3. Subscribe to the `DonationPoolCreated` event, invoking `onDonationCreated` when triggered.
    */
   async onModuleInit(): Promise<void> {
-    const chains = this.configService.get<ChainConfig[]>('contracts');
+    const chains = this.configService.get<ChainConfig[]>('chains');
     if (!chains) {
       throw new Error('Contracts config must be set');
     }
@@ -210,7 +210,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
    * - Use `Promise.all` to wait for all providers to be destroyed concurrently.
    */
   async onModuleDestroy(): Promise<void> {
-    const chains = this.configService.get<ChainConfig[]>('contracts');
+    const chains = this.configService.get<ChainConfig[]>('chains');
     if (!chains) {
       throw new Error('Contracts config must be set');
     }

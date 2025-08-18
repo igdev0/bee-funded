@@ -1,6 +1,6 @@
 import { DonationPoolService } from './donation-pool.service';
 import { Mocked, TestBed } from '@suites/unit';
-import contractsConfig from '../contracts.config';
+import contractsConfig from '../chain/chain.config';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { DonationPoolEntity } from './entities/donation-pool.entity';

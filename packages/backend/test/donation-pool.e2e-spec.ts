@@ -10,7 +10,7 @@ import { SiweMessage } from 'siwe';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
 import { DonationPoolStatus } from '../src/donation-pool/types';
-import { ChainConfig } from '../src/contracts.config';
+import { ChainConfig } from '../src/chain/chain.config';
 import { DonationPoolEntity } from '../src/donation-pool/entities/donation-pool.entity';
 import * as process from 'node:process';
 
