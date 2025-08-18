@@ -116,6 +116,10 @@ describe('Donation Pool integration tests', () => {
     expect(processFollowersNotifications).toHaveBeenCalled();
   });
 
+  it('should save the notification', () => {
+    expect(notificationSave).toHaveBeenCalled();
+  });
+
   afterAll(async () => {
     const datasource = app.get(DataSource);
     await datasource.dropDatabase();
