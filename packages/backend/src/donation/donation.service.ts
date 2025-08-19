@@ -5,6 +5,9 @@ import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { ChainConfig } from '../chain/chain.config';
 import { Contract, WebSocketProvider } from 'ethers';
+import { SaveDonationDto } from './dto/save-donation.dto';
+import { UserService } from '../user/user.service';
+import { DonationPoolService } from '../donation-pool/donation-pool.service';
 
 @Injectable()
 export class DonationService implements OnModuleInit, OnModuleDestroy {
@@ -14,12 +17,36 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @InjectRepository(DonationEntity)
     private readonly donationRepository: Repository<DonationEntity>,
+    private readonly donationPoolService: DonationPoolService,
+    private readonly userService: UserService,
     private readonly chainConfig: ConfigService,
   ) {
     const chains = this.chainConfig.get<ChainConfig[]>('chains');
     if (!chains) {
       throw new Error('Chain configuration not set');
     }
+  }
+
+  async save(payload: SaveDonationDto): Promise<void> {
+    const donatorProfile = await this.userService.findOneByWalletAddress(
+      payload.donor_address,
+    );
+    const profile = donatorProfile?.profile;
+
+    const donationPool = await this.donationPoolService.getOneByOnChainPoolId(
+      BigInt(payload.pool_id),
+    );
+
+    const entity = this.donationRepository.create({
+      amount: BigInt(payload.amount),
+      donor_address: payload.donor_address,
+      donor_profile: profile,
+      token: payload.token,
+      message: payload.message,
+      is_recurring: payload.is_recurring,
+      pool: donationPool,
+    });
+    await this.donationRepository.save(entity);
   }
 
   async onModuleInit(): Promise<void> {

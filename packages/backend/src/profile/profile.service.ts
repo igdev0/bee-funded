@@ -6,11 +6,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import {
-  FindOptionsSelect,
-  FindOptionsSelectByString,
-  Repository,
-} from 'typeorm';
+import { FindOptionsSelect, Repository } from 'typeorm';
 import ProfileEntity from './entities/profile.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -19,6 +15,7 @@ import { CacheManagerStore } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
+import { DonationPoolService } from '../donation-pool/donation-pool.service';
 
 @Injectable()
 export class ProfileService {
@@ -28,6 +25,7 @@ export class ProfileService {
     @Inject(CACHE_MANAGER) private readonly cacheService: CacheManagerStore,
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
+    private readonly donationProfile: DonationPoolService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
   ) {}

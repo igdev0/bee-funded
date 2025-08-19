@@ -130,6 +130,14 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * A method that gets a donation pool by on-chain id.
+   * @param id – The ID generated on-chain.
+   */
+  getOneByOnChainPoolId(id: bigint) {
+    return this.donationPoolRepository.findOneByOrFail({ on_chain_id: id });
+  }
+
+  /**
    * This method gets all donation pools owned by a profileId
    * @param profileId – The profile id of the user owning pools
    */
