@@ -81,11 +81,20 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
-  private onDonationSuccess(
-    poolId: bigint,
-    donor: string,
+  private async onDonationSuccess(
+    pool_id: bigint,
+    donor_address: string,
     token: string,
     amount: bigint,
     message: string,
-  ) {}
+  ) {
+    await this.save({
+      amount: amount.toString(),
+      donor_address,
+      pool_id: pool_id.toString(),
+      token,
+      is_recurring: false,
+      message,
+    });
+  }
 }
