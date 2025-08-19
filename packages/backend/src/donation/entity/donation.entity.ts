@@ -28,6 +28,9 @@ export default class DonationEntity {
   })
   pool: DonationPoolEntity;
 
+  /**
+   * A boolean indicating if the donation is a reoccurring type of donation.
+   */
   @Column('boolean')
   is_recurring: boolean;
   /**
