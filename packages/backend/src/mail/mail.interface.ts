@@ -27,7 +27,11 @@ export interface SendMailPayload<C extends Context> {
   to: string;
   from?: string;
   subject: string;
-  template: 'notification' | 'email-verification' | 'donation-receipt';
+  template:
+    | 'notification'
+    | 'email-verification'
+    | 'donation-receipt'
+    | 'donation-received';
   context: C;
 }
 
