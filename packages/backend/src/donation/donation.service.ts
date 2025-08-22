@@ -8,6 +8,8 @@ import { Contract, WebSocketProvider } from 'ethers';
 import { SaveDonationDto } from './dto/save-donation.dto';
 import { UserService } from '../user/user.service';
 import { DonationPoolService } from '../donation-pool/donation-pool.service';
+import { NotificationService } from '../notification/notification.service';
+import ProfileEntity from '../profile/entities/profile.entity';
 
 @Injectable()
 export class DonationService implements OnModuleInit, OnModuleDestroy {
@@ -18,6 +20,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     @InjectRepository(DonationEntity)
     private readonly donationRepository: Repository<DonationEntity>,
     private readonly donationPoolService: DonationPoolService,
+    private readonly notificationService: NotificationService,
     private readonly userService: UserService,
     private readonly chainConfig: ConfigService,
   ) {
@@ -27,7 +30,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async save(payload: SaveDonationDto): Promise<void> {
+  async save(payload: SaveDonationDto): Promise<ProfileEntity | null> {
     const donatorProfile = await this.userService.findOneByWalletAddress(
       payload.donor_address,
     );
@@ -47,6 +50,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       pool: donationPool,
     });
     await this.donationRepository.save(entity);
+    return donatorProfile?.profile || null;
   }
 
   async onModuleInit(): Promise<void> {
@@ -65,7 +69,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
   /**
    * Lifecycle hook called when the module is being destroyed.
    *
-   * Cleans up all WebSocket providers that were initialized during `onModuleInit`.
+   * Cleans up all WebSocket providers initialized during `onModuleInit`.
    *
    * @remarks
    * - Fetches chain configurations from the application config (`contracts` key) to ensure chains are set.
@@ -88,7 +92,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     amount: bigint,
     message: string,
   ) {
-    await this.save({
+    const actorProfile = await this.save({
       amount: amount.toString(),
       donor_address,
       pool_id: pool_id.toString(),
@@ -96,5 +100,21 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       is_recurring: false,
       message,
     });
+
+    if (actorProfile) {
+      await this.notificationService.processActorNotifications(
+        actorProfile,
+        {
+          message,
+          title: 'Your donation was successfully processed.',
+          metadata: {},
+          type: 'donation_processed',
+        },
+        {
+          message: 'Thank you for donating',
+          actionPath: 'donation',
+        },
+      );
+    }
   }
 }

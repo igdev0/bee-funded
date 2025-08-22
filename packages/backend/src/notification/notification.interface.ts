@@ -1,6 +1,6 @@
 import ProfileEntity from '../profile/entities/profile.entity';
 
-export type NotificationType = 'donation_pool_created';
+export type NotificationType = 'donation_pool_created' | 'donation_processed';
 
 export interface NotificationI {
   id: string;

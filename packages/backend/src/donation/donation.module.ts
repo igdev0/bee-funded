@@ -6,12 +6,14 @@ import DonationEntity from './entity/donation.entity';
 import { ChainModule } from '../chain/chain.module';
 import { ProfileModule } from '../profile/profile.module';
 import { DonationPoolModule } from '../donation-pool/donation-pool.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
     ChainModule,
     ProfileModule,
     DonationPoolModule,
+    NotificationModule,
     TypeOrmModule.forFeature([DonationEntity]),
   ],
   providers: [DonationService],

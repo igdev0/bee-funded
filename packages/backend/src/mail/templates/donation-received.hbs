@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>New Donation Received</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            padding: 24px;
+        }
+        h1 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+        p {
+            font-size: 14px;
+            color: #374151;
+            margin: 8px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #111827;
+        }
+        .donation {
+            margin: 20px 0;
+            padding: 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        .donation p {
+            margin: 6px 0;
+            font-size: 14px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>You’ve received a new donation 🎉</h1>
+    <p>
+        Great news! A donor has just contributed to your project. Here are the details:
+    </p>
+
+    <div class="donation">
+        <p><span class="highlight">Donor:</span> {{donorName}}</p>
+        <p><span class="highlight">Date:</span> {{date}}</p>
+        <p><span class="highlight">Amount:</span> {{amount}} {{token}}</p>
+        <p><span class="highlight">Transaction Hash:</span>
+            <a href="{{explorerUrl}}" target="_blank">{{txHash}}</a>
+        </p>
+    </div>
+
+    <p>
+        Keep up the amazing work! This contribution is now part of your campaign.
+    </p>
+
+    <div class="footer">
+        <p>BeeFunded – Empowering donations on-chain</p>
+        <p>&copy; {{year}} BeeFunded. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
