@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Donation Receipt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            padding: 24px;
+        }
+        h1 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+        p {
+            font-size: 14px;
+            color: #374151;
+            margin: 8px 0;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #111827;
+        }
+        .receipt {
+            margin: 20px 0;
+            padding: 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        .receipt p {
+            margin: 6px 0;
+            font-size: 14px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Thank you for your donation, {{donorName}}!</h1>
+    <p>
+        We’re grateful for your support. Below is a summary of your recent token donation:
+    </p>
+
+    <div class="receipt">
+        <p><span class="highlight">Date:</span> {{date}}</p>
+        <p><span class="highlight">Amount:</span> {{amount}} {{token}}</p>
+        <p><span class="highlight">Transaction Hash:</span>
+            <a href="{{explorerUrl}}" target="_blank">{{txHash}}</a>
+        </p>
+        <p><span class="highlight">Recipient:</span> {{recipient}}</p>
+    </div>
+
+    <p>
+        Your contribution helps us continue our mission. This email serves as your donation receipt.
+    </p>
+
+    <div class="footer">
+        <p>If you have any questions, please contact us at <a href="mailto:support@beefunded.org">support@beefunded.org</a>.</p>
+        <p>&copy; {{year}} BeeFunded. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
