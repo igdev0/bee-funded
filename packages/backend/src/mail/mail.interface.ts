@@ -10,30 +10,58 @@ export interface NotificationMailContext {
   actorDisplayName: string;
   notificationMessage: string;
   actionPath: string;
+  actionUrl?: string;
   notificationsSettingsPath: string;
+  notificationsSettingsUrl?: string;
 }
 
-export type Context =
-  | NotificationMailContext
-  | EmailVerificationContextPayload
-  | EmailVerificationContext;
+export interface DonationReceivedContext {
+  donorName: string;
+  date: string;
+  amount: string;
+  txHash: string;
+  explorerUrl: string;
+  year: string | number;
+}
+
+export interface DonationReceiptContext {
+  donorName: string;
+  date: string;
+  amount: string | number;
+  token: string;
+  txHash: string;
+  explorerUrl: string;
+  recipient: string;
+  year: string | number;
+}
 
 export interface EmailVerificationContextPayload
   extends EmailVerificationContext {
   verificationUrl: string;
 }
 
-export interface SendMailPayload<C extends Context> {
+export type SendMailTemplates =
+  | {
+      template: 'notification';
+      context: NotificationMailContext;
+    }
+  | {
+      template: 'email-verification';
+      context: EmailVerificationContextPayload;
+    }
+  | {
+      template: 'donation-receipt';
+      context: DonationReceiptContext;
+    }
+  | {
+      template: 'donation-received';
+      context: DonationReceivedContext;
+    };
+
+export type SendMailPayload = {
   to: string;
-  from?: string;
   subject: string;
-  template:
-    | 'notification'
-    | 'email-verification'
-    | 'donation-receipt'
-    | 'donation-received';
-  context: C;
-}
+} & SendMailTemplates;
 
 export type ActorNotificationMessage = Omit<
   NotificationMailContext,
