@@ -4,12 +4,15 @@ import DonationEntity from './entity/donation.entity';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { ChainConfig } from '../chain/chain.config';
-import { Contract, WebSocketProvider } from 'ethers';
+import { Contract, Log, WebSocketProvider } from 'ethers';
 import { SaveDonationDto } from './dto/save-donation.dto';
 import { UserService } from '../user/user.service';
 import { DonationPoolService } from '../donation-pool/donation-pool.service';
 import { NotificationService } from '../notification/notification.service';
 import ProfileEntity from '../profile/entities/profile.entity';
+import { MailService } from '../mail/mail.service';
+import { ChainService } from '../chain/chain.service';
+import { ac } from '@faker-js/faker/dist/airline-CLphikKp';
 
 @Injectable()
 export class DonationService implements OnModuleInit, OnModuleDestroy {
@@ -21,8 +24,10 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     private readonly donationRepository: Repository<DonationEntity>,
     private readonly donationPoolService: DonationPoolService,
     private readonly notificationService: NotificationService,
+    private readonly mailService: MailService,
     private readonly userService: UserService,
     private readonly chainConfig: ConfigService,
+    private readonly chainService: ChainService,
   ) {
     const chains = this.chainConfig.get<ChainConfig[]>('chains');
     if (!chains) {
@@ -37,7 +42,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     const profile = donatorProfile?.profile;
 
     const donationPool = await this.donationPoolService.getOneByOnChainPoolId(
-      BigInt(payload.pool_id),
+      BigInt(payload.on_chain_pool_id),
     );
 
     const entity = this.donationRepository.create({
@@ -48,6 +53,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       message: payload.message,
       is_recurring: payload.is_recurring,
       pool: donationPool,
+      tx_hash: payload.tx_hash,
     });
     await this.donationRepository.save(entity);
     return donatorProfile?.profile || null;
@@ -91,30 +97,73 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     token: string,
     amount: bigint,
     message: string,
+    event: Log,
   ) {
     const actorProfile = await this.save({
       amount: amount.toString(),
       donor_address,
-      pool_id: pool_id.toString(),
+      on_chain_pool_id: pool_id.toString(),
       token,
       is_recurring: false,
       message,
+      tx_hash: event.transactionHash,
     });
+    const pool = await this.donationPoolService.getOneByOnChainPoolId(
+      pool_id,
+      {
+        id: true,
+        profile: {
+          id: true,
+          display_name: true,
+        },
+      },
+      ['profile'],
+    );
+
+    const chain = this.chainService.getChainById(pool.chain_id as number); // We can ignore the null case, as the pool should have been created already
 
     if (actorProfile) {
-      await this.notificationService.processActorNotifications(
-        actorProfile,
-        {
-          message,
-          title: 'Your donation was successfully processed.',
-          metadata: {},
-          type: 'donation_processed',
-        },
-        {
-          message: 'Thank you for donating',
-          actionPath: 'donation',
-        },
+      const { settings } = await this.notificationService.getSettings(
+        actorProfile.id,
       );
+
+      if (
+        settings.channels.inApp.enabled &&
+        settings.channels.inApp.notifications.donationReceipt
+      ) {
+        const notificationEntity = await this.notificationService.save(
+          actorProfile.id,
+          {
+            type: 'donation_receipt',
+            title: 'Donation completed successfully',
+            message: 'Thank you for donating!',
+            actor: actorProfile,
+          },
+        );
+        this.notificationService.send(actorProfile.id, notificationEntity);
+      }
+
+      if (
+        settings.channels.email.enabled &&
+        settings.channels.email.notifications.donationReceipt
+      ) {
+        await this.mailService.sendMail({
+          template: 'donation-receipt',
+          context: {
+            donorName: actorProfile.display_name || actorProfile.username,
+            date: new Date().getDate().toLocaleString(),
+            amount: amount.toString(),
+            token,
+            explorerUrl: `${chain.explorerUrl}?txHash=${event.transactionHash}`,
+            txHash: event.transactionHash,
+            recipient: pool.profile
+              ? pool.profile.display_name || pool.profile.username
+              : 'No recipient name',
+          },
+          subject: 'Donation receipt',
+          to: actorProfile.email as string,
+        });
+      }
     }
   }
 }

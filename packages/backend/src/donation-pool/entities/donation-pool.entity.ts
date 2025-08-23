@@ -92,7 +92,7 @@ export class DonationPoolEntity {
     () => ProfileEntity,
     (profileEntity) => profileEntity.donation_pools,
   )
-  profile: ProfileEntity;
+  profile?: ProfileEntity;
 
   @OneToMany(() => DonationEntity, (donationEntity) => donationEntity.pool, {
     onDelete: 'CASCADE',

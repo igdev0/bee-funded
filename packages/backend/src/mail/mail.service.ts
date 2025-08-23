@@ -30,7 +30,7 @@ export class MailService {
       template: payload.template,
       subject: payload.subject,
       to: payload.to,
-      context: payload.context,
+      context: { ...payload.context, year: new Date().getFullYear() },
     });
   }
 

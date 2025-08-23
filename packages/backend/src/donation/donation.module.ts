@@ -7,6 +7,7 @@ import { ChainModule } from '../chain/chain.module';
 import { ProfileModule } from '../profile/profile.module';
 import { DonationPoolModule } from '../donation-pool/donation-pool.module';
 import { NotificationModule } from '../notification/notification.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { NotificationModule } from '../notification/notification.module';
     ProfileModule,
     DonationPoolModule,
     NotificationModule,
+    MailModule,
     TypeOrmModule.forFeature([DonationEntity]),
   ],
   providers: [DonationService],

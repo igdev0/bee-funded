@@ -40,6 +40,12 @@ export default class DonationEntity {
   donor_address: string;
 
   /**
+   * Blockchain transaction hash
+   */
+  @Column('text')
+  tx_hash: string;
+
+  /**
    * Optional relation to a Profile (if the donor has an account in the system). Cascade delete applies.
    */
   @ManyToOne(() => ProfileEntity, (profile) => profile.donations, {

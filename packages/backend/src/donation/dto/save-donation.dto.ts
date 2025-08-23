@@ -5,7 +5,7 @@ export class SaveDonationDto {
    * The on-chain donation pool ID
    */
   @IsNumberString()
-  pool_id: string;
+  on_chain_pool_id: string;
 
   /**
    * A boolean indicating if the donation is recurring
@@ -29,6 +29,12 @@ export class SaveDonationDto {
    */
   @IsNumberString()
   amount: string;
+
+  /**
+   * Blockchain transaction hash
+   */
+  @IsString()
+  tx_hash: string;
 
   /**
    * The optional message associated with the donation.

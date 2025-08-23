@@ -4,7 +4,7 @@ import { ChainConfig } from '../chain/chain.config';
 import { Contract, WebSocketProvider } from 'ethers';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DonationPoolEntity } from './entities/donation-pool.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsSelect, Repository } from 'typeorm';
 import CreateDonationPoolDto from './dto/create-donation-pool.dto';
 import UpdateDonationPoolDto from './dto/update-donation-pool.dto';
 import PublishDonationPoolDto from './dto/publish-donation-pool.dto';
@@ -16,6 +16,7 @@ import {
   ProcessMailMessage,
 } from '../notification/notification.interface';
 import { DonationPoolConfig } from './donation-pool.config';
+import ProfileEntity from '../profile/entities/profile.entity';
 
 @Injectable()
 export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
@@ -132,9 +133,19 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
   /**
    * A method that gets a donation pool by on-chain id.
    * @param id – The ID generated on-chain.
+   * @param select – Select fields
+   * @param relations – The relations to load e.g.: profile
    */
-  getOneByOnChainPoolId(id: bigint) {
-    return this.donationPoolRepository.findOneByOrFail({ on_chain_id: id });
+  getOneByOnChainPoolId(
+    id: bigint,
+    select: FindOptionsSelect<DonationPoolEntity> = {},
+    relations: string[] = [],
+  ) {
+    return this.donationPoolRepository.findOneOrFail({
+      where: { on_chain_id: id },
+      select,
+      relations,
+    });
   }
 
   /**
@@ -273,11 +284,11 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     ) as DonationPoolConfig;
 
     const actorMailMessage: ProcessMailMessage = {
-      actionPath: `${actorProfile.username}/${config.baseViewDonationPoolPath}/${id}`,
+      actionPath: `${actorProfile?.username}/${config.baseViewDonationPoolPath}/${id}`,
       message: `Your donation pool was created`,
     };
     await this.notificationService.processActorNotifications(
-      actorProfile,
+      actorProfile as ProfileEntity,
       actorInAppMessage,
       actorMailMessage,
     );
@@ -298,7 +309,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     };
 
     await this.notificationService.processFollowersNotifications(
-      actorProfile,
+      actorProfile as ProfileEntity,
       followerInAppMessage,
       followerMailMessage,
     );

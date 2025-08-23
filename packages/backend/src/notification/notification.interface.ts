@@ -1,6 +1,10 @@
 import ProfileEntity from '../profile/entities/profile.entity';
 
-export type NotificationType = 'donation_pool_created' | 'donation_processed';
+export type NotificationType =
+  | 'donation_pool_created'
+  | 'donation_processed'
+  | 'donation_receipt'
+  | 'donation_received';
 
 export interface NotificationI {
   id: string;
@@ -9,7 +13,7 @@ export interface NotificationI {
   type: NotificationType;
   actor: ProfileEntity;
   is_read: boolean;
-  metadata: object;
+  metadata?: object;
   created_at: Date;
   updated_at: Date;
 }
@@ -30,6 +34,8 @@ export interface NotificationTypes {
   new_follower: boolean;
   donationPoolCreation: boolean;
   followingPoolCreation: boolean;
+  donationReceipt: boolean;
+  donationReceived: boolean;
 }
 
 export interface NotificationChannel {

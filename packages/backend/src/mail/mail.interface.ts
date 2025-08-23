@@ -21,7 +21,7 @@ export interface DonationReceivedContext {
   amount: string;
   txHash: string;
   explorerUrl: string;
-  year: string | number;
+  year?: string | number;
 }
 
 export interface DonationReceiptContext {
@@ -32,7 +32,7 @@ export interface DonationReceiptContext {
   txHash: string;
   explorerUrl: string;
   recipient: string;
-  year: string | number;
+  year?: string | number;
 }
 
 export interface EmailVerificationContextPayload

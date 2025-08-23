@@ -32,6 +32,7 @@ export interface ChainConfig {
   chainName: string;
   wsUrl: string;
   rpcUrl: string;
+  explorerUrl: string;
   contracts: ContractsConfig;
 }
 
@@ -44,6 +45,7 @@ export default registerAs(
         rpcUrl: 'http://127.0.0.1:8545',
         wsUrl: 'ws://127.0.0.1:8545',
         chainId: 31337,
+        explorerUrl: 'http://127.0.0.1:8545',
         contracts: {
           BeeFundedCore: {
             address: '0x58cF3AAd02CE9C9c6f8a3fDCe16E431186A1E6a1',
