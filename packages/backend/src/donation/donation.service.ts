@@ -199,7 +199,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       await this.mailService.sendMail({
         template: 'donation-received',
         to: poolOwnerProfile.email,
-        subject: 'You have recived a new donation',
+        subject: 'You have received a new donation',
         context: {
           donorName: actorProfile
             ? actorProfile?.display_name || actorProfile.username
