@@ -12,7 +12,6 @@ import { NotificationService } from '../notification/notification.service';
 import ProfileEntity from '../profile/entities/profile.entity';
 import { MailService } from '../mail/mail.service';
 import { ChainService } from '../chain/chain.service';
-import { ac } from '@faker-js/faker/dist/airline-CLphikKp';
 
 @Injectable()
 export class DonationService implements OnModuleInit, OnModuleDestroy {
@@ -108,19 +107,20 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       message,
       tx_hash: event.transactionHash,
     });
-    const pool = await this.donationPoolService.getOneByOnChainPoolId(
-      pool_id,
-      {
-        id: true,
-        profile: {
+    const { chain_id, profile: poolOwnerProfile } =
+      await this.donationPoolService.getOneByOnChainPoolId(
+        pool_id,
+        {
           id: true,
-          display_name: true,
+          profile: {
+            id: true,
+            display_name: true,
+          },
         },
-      },
-      ['profile'],
-    );
+        ['profile'],
+      );
 
-    const chain = this.chainService.getChainById(pool.chain_id as number); // We can ignore the null case, as the pool should have been created already
+    const chain = this.chainService.getChainById(chain_id as number); // We can ignore the null case, as the pool should have been created already
 
     if (actorProfile) {
       const { settings } = await this.notificationService.getSettings(
@@ -156,8 +156,8 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
             token,
             explorerUrl: `${chain.explorerUrl}?txHash=${event.transactionHash}`,
             txHash: event.transactionHash,
-            recipient: pool.profile
-              ? pool.profile.display_name || pool.profile.username
+            recipient: poolOwnerProfile
+              ? poolOwnerProfile.display_name || poolOwnerProfile.username
               : 'No recipient name',
           },
           subject: 'Donation receipt',
