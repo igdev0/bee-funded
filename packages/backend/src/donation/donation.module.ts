@@ -8,11 +8,13 @@ import { ProfileModule } from '../profile/profile.module';
 import { DonationPoolModule } from '../donation-pool/donation-pool.module';
 import { NotificationModule } from '../notification/notification.module';
 import { MailModule } from '../mail/mail.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     ChainModule,
     ProfileModule,
+    UserModule,
     DonationPoolModule,
     NotificationModule,
     MailModule,
@@ -20,5 +22,6 @@ import { MailModule } from '../mail/mail.module';
   ],
   providers: [DonationService],
   controllers: [DonationController],
+  exports: [DonationService],
 })
 export class DonationModule {}

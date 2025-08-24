@@ -24,6 +24,7 @@ import { ChainModule } from '../chain/chain.module';
     MailModule,
   ],
   providers: [DonationPoolService],
+  exports: [DonationPoolService],
   controllers: [DonationPoolController],
 })
 export class DonationPoolModule {}

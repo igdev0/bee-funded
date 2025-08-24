@@ -35,10 +35,10 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
   }
 
   async save(payload: SaveDonationDto): Promise<ProfileEntity | null> {
-    const donatorProfile = await this.userService.findOneByWalletAddress(
+    const user = await this.userService.findOneByWalletAddress(
       payload.donor_address,
     );
-    const profile = donatorProfile?.profile;
+    const profile = user?.profile;
 
     const donationPool = await this.donationPoolService.getOneByOnChainPoolId(
       BigInt(payload.on_chain_pool_id),
@@ -55,7 +55,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       tx_hash: payload.tx_hash,
     });
     await this.donationRepository.save(entity);
-    return donatorProfile?.profile || null;
+    return user?.profile || null;
   }
 
   async onModuleInit(): Promise<void> {
