@@ -16,6 +16,8 @@ const defaultNotificationSettings: NotificationSettings = {
       enabled: true,
       notifications: {
         new_follower: true,
+        donationReceived: true,
+        donationReceipt: true,
         followingPoolCreation: true,
         donationPoolCreation: true,
       },
@@ -23,6 +25,8 @@ const defaultNotificationSettings: NotificationSettings = {
     inApp: {
       enabled: true,
       notifications: {
+        donationReceived: true,
+        donationReceipt: true,
         new_follower: true,
         followingPoolCreation: true,
         donationPoolCreation: true,
