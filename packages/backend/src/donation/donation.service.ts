@@ -90,86 +90,64 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
-  private async onDonationSuccess(
-    pool_id: bigint,
-    donor_address: string,
+  private async processDonationReceiptNotifications(
+    actorProfile: ProfileEntity,
+    poolOwnerProfile: ProfileEntity,
+    explorerUrl: string,
     token: string,
     amount: bigint,
-    message: string,
-    event: Log,
-  ) {
-    const actorProfile = await this.save({
-      amount: amount.toString(),
-      donor_address,
-      on_chain_pool_id: pool_id.toString(),
-      token,
-      is_recurring: false,
-      message,
-      tx_hash: event.transactionHash,
-    });
-    const { chain_id, profile: poolOwnerProfile } =
-      await this.donationPoolService.getOneByOnChainPoolId(
-        pool_id,
-        {
-          id: true,
-          profile: {
-            id: true,
-            display_name: true,
-          },
-        },
-        ['profile'],
-      );
+    transactionHash: string,
+  ): Promise<void> {
+    const { settings } = await this.notificationService.getSettings(
+      actorProfile.id,
+    );
 
-    if (!poolOwnerProfile) {
-      throw new Error('The pool owner does not exist');
-    }
-
-    const chain = this.chainService.getChainById(chain_id as number); // We can ignore the null case, as the pool should have been created already
-    const explorerUrl = `${chain.explorerUrl}?txHash=${event.transactionHash}`;
-    if (actorProfile) {
-      const { settings } = await this.notificationService.getSettings(
+    if (
+      settings.channels.inApp.enabled &&
+      settings.channels.inApp.notifications.donationReceipt
+    ) {
+      const notificationEntity = await this.notificationService.save(
         actorProfile.id,
+        {
+          type: 'donation_receipt',
+          title: 'Donation completed successfully',
+          message: 'Thank you for donating!',
+          actor: actorProfile,
+        },
       );
-
-      if (
-        settings.channels.inApp.enabled &&
-        settings.channels.inApp.notifications.donationReceipt
-      ) {
-        const notificationEntity = await this.notificationService.save(
-          actorProfile.id,
-          {
-            type: 'donation_receipt',
-            title: 'Donation completed successfully',
-            message: 'Thank you for donating!',
-            actor: actorProfile,
-          },
-        );
-        this.notificationService.send(actorProfile.id, notificationEntity);
-      }
-
-      if (
-        settings.channels.email.enabled &&
-        settings.channels.email.notifications.donationReceipt
-      ) {
-        await this.mailService.sendMail({
-          template: 'donation-receipt',
-          context: {
-            donorName: actorProfile.display_name || actorProfile.username,
-            date: new Date().getDate().toLocaleString(),
-            amount: amount.toString(),
-            token,
-            explorerUrl,
-            txHash: event.transactionHash,
-            recipient: poolOwnerProfile
-              ? poolOwnerProfile.display_name || poolOwnerProfile.username
-              : 'No recipient name',
-          },
-          subject: 'Donation receipt',
-          to: actorProfile.email as string,
-        });
-      }
+      this.notificationService.send(actorProfile.id, notificationEntity);
     }
 
+    if (
+      settings.channels.email.enabled &&
+      settings.channels.email.notifications.donationReceipt
+    ) {
+      await this.mailService.sendMail({
+        template: 'donation-receipt',
+        context: {
+          donorName: actorProfile.display_name || actorProfile.username,
+          date: new Date().getDate().toLocaleString(),
+          amount: amount.toString(),
+          token,
+          explorerUrl,
+          txHash: transactionHash,
+          recipient: poolOwnerProfile
+            ? poolOwnerProfile.display_name || poolOwnerProfile.username
+            : 'No recipient name',
+        },
+        subject: 'Donation receipt',
+        to: actorProfile.email as string,
+      });
+    }
+  }
+
+  private async processDonationReceivedNotification(
+    poolOwnerProfile: ProfileEntity,
+    actorProfile: ProfileEntity | undefined,
+    explorerUrl: string,
+    transactionHash: string,
+    amount: bigint,
+  ): Promise<void> {
     const { settings } = await this.notificationService.getSettings(
       poolOwnerProfile.id,
     );
@@ -182,7 +160,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
         poolOwnerProfile.id,
         {
           type: 'donation_received',
-          actor: actorProfile ?? undefined,
+          actor: actorProfile,
           title: 'New donation',
           message: 'You have received a new donation!',
         },
@@ -205,11 +183,68 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
             ? actorProfile?.display_name || actorProfile.username
             : 'Anonymous',
           explorerUrl,
-          txHash: event.transactionHash,
+          txHash: transactionHash,
           date: new Date().toLocaleString(),
           amount: amount.toString(),
         },
       });
     }
+  }
+
+  private async onDonationSuccess(
+    pool_id: bigint,
+    donor_address: string,
+    token: string,
+    amount: bigint,
+    message: string,
+    event: Log,
+  ) {
+    const actorProfile = await this.save({
+      amount: amount.toString(),
+      donor_address,
+      on_chain_pool_id: pool_id.toString(),
+      token,
+      is_recurring: false,
+      message,
+      tx_hash: event.transactionHash,
+    });
+
+    const { chain_id, profile: poolOwnerProfile } =
+      await this.donationPoolService.getOneByOnChainPoolId(
+        pool_id,
+        {
+          id: true,
+          profile: {
+            id: true,
+            display_name: true,
+          },
+        },
+        ['profile'],
+      );
+
+    if (!poolOwnerProfile) {
+      throw new Error('The pool owner does not exist');
+    }
+
+    const chain = this.chainService.getChainById(chain_id as number); // We can ignore the null case, as the pool should have been created already
+    const explorerUrl = `${chain.explorerUrl}?txHash=${event.transactionHash}`;
+    if (actorProfile) {
+      await this.processDonationReceiptNotifications(
+        actorProfile,
+        poolOwnerProfile,
+        explorerUrl,
+        token,
+        amount,
+        event.transactionHash,
+      );
+    }
+
+    await this.processDonationReceivedNotification(
+      poolOwnerProfile,
+      actorProfile ?? undefined,
+      explorerUrl,
+      token,
+      amount,
+    );
   }
 }
