@@ -23,7 +23,6 @@ describe('DonationService', () => {
   afterAll(async () => {
     const source = module.get<DataSource>(DataSource);
     await source.destroy();
-
     await module.close();
   });
 });
