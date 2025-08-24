@@ -120,8 +120,12 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
         ['profile'],
       );
 
-    const chain = this.chainService.getChainById(chain_id as number); // We can ignore the null case, as the pool should have been created already
+    if (!poolOwnerProfile) {
+      throw new Error('The pool owner does not exist');
+    }
 
+    const chain = this.chainService.getChainById(chain_id as number); // We can ignore the null case, as the pool should have been created already
+    const explorerUrl = `${chain.explorerUrl}?txHash=${event.transactionHash}`;
     if (actorProfile) {
       const { settings } = await this.notificationService.getSettings(
         actorProfile.id,
@@ -154,7 +158,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
             date: new Date().getDate().toLocaleString(),
             amount: amount.toString(),
             token,
-            explorerUrl: `${chain.explorerUrl}?txHash=${event.transactionHash}`,
+            explorerUrl,
             txHash: event.transactionHash,
             recipient: poolOwnerProfile
               ? poolOwnerProfile.display_name || poolOwnerProfile.username
@@ -164,6 +168,48 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
           to: actorProfile.email as string,
         });
       }
+    }
+
+    const { settings } = await this.notificationService.getSettings(
+      poolOwnerProfile.id,
+    );
+
+    if (
+      settings.channels.inApp.enabled &&
+      settings.channels.inApp.notifications.donationReceived
+    ) {
+      const notification = await this.notificationService.save(
+        poolOwnerProfile.id,
+        {
+          type: 'donation_received',
+          actor: actorProfile ?? undefined,
+          title: 'New donation',
+          message: 'You have received a new donation!',
+        },
+      );
+
+      this.notificationService.send(poolOwnerProfile.id, notification);
+    }
+
+    if (
+      settings.channels.email.enabled &&
+      settings.channels.email.notifications.donationReceived &&
+      poolOwnerProfile.email
+    ) {
+      await this.mailService.sendMail({
+        template: 'donation-received',
+        to: poolOwnerProfile.email,
+        subject: 'You have recived a new donation',
+        context: {
+          donorName: actorProfile
+            ? actorProfile?.display_name || actorProfile.username
+            : 'Anonymous',
+          explorerUrl,
+          txHash: event.transactionHash,
+          date: new Date().toLocaleString(),
+          amount: amount.toString(),
+        },
+      });
     }
   }
 }

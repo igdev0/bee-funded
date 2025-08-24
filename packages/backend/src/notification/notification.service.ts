@@ -83,11 +83,11 @@ export class NotificationService {
       ...data,
       title: data.title.replace(
         '{display_name}',
-        data.actor.display_name as string,
+        data.actor?.display_name as string,
       ),
       message: data.message.replace(
         '{display_name}',
-        data.actor.display_name as string,
+        data.actor?.display_name as string,
       ),
     };
   }

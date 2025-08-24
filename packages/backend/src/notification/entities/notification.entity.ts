@@ -29,9 +29,10 @@ export default class NotificationEntity {
 
   @ManyToOne(() => ProfileEntity, (profile) => profile.acted_notifications, {
     onDelete: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn({ name: 'actor_id' })
-  actor: ProfileEntity;
+  actor?: ProfileEntity;
 
   @Column({ type: 'text' })
   type: NotificationType;

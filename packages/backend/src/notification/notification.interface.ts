@@ -11,7 +11,7 @@ export interface NotificationI {
   title: string;
   message: string;
   type: NotificationType;
-  actor: ProfileEntity;
+  actor?: ProfileEntity;
   is_read: boolean;
   metadata?: object;
   created_at: Date;
