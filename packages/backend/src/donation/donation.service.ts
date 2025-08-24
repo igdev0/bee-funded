@@ -16,7 +16,7 @@ import { ChainService } from '../chain/chain.service';
 @Injectable()
 export class DonationService implements OnModuleInit, OnModuleDestroy {
   private chains: ChainConfig[];
-  private providers: WebSocketProvider[];
+  private providers: WebSocketProvider[] = [];
 
   constructor(
     @InjectRepository(DonationEntity)
@@ -32,6 +32,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     if (!chains) {
       throw new Error('Chain configuration not set');
     }
+    this.chains = chains;
   }
 
   async save(payload: SaveDonationDto): Promise<ProfileEntity | null> {
@@ -68,6 +69,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       );
 
       await contract.on('DonationSuccess', this.onDonationSuccess.bind(this));
+      this.providers.push(provider);
     }
   }
 
