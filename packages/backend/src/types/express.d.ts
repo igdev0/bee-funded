@@ -7,3 +7,12 @@ declare module 'express-serve-static-core' {
     user?: UserEntity; // Make it optional if it might not always be present
   }
 }
+
+export interface PagedResponse<T> {
+  data: T;
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}

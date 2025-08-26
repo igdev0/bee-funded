@@ -13,6 +13,7 @@ import ProfileEntity from '../profile/entities/profile.entity';
 import { MailService } from '../mail/mail.service';
 import { ChainService } from '../chain/chain.service';
 import { DonationPoolEntity } from '../donation-pool/entities/donation-pool.entity';
+import { PagedResponse } from '../types/express';
 
 @Injectable()
 export class DonationService implements OnModuleInit, OnModuleDestroy {
@@ -35,6 +36,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     }
     this.chains = chains;
   }
+
   /**
    * Retrieves a paginated list of donations owned by a given profile.
    *
@@ -61,19 +63,50 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     profileId: string,
     page: number,
     limit: number,
-  ): Promise<{
-    data: DonationEntity[];
-    total: number;
-    page: number;
-    limit: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  }> {
+  ): Promise<PagedResponse<DonationEntity[]>> {
     const [data, total] = await this.donationRepository
       .createQueryBuilder('donation')
       .leftJoinAndSelect('donation.pool', 'pool')
       .leftJoinAndSelect('pool.profile', 'profile')
       .where('profile.id = :profileId', { profileId })
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      total: totalPages,
+      page,
+      limit,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    };
+  }
+  /**
+   * Retrieves a paginated list of donations associated with a specific pool.
+   *
+   * @async
+   * @param {string} poolId - The ID of the donation pool.
+   * @param {number} page - The current page number (1-based).
+   * @param {number} limit - The maximum number of donations to return per page.
+   * @returns {Promise<PagedResponse<DonationEntity[]>>} A promise resolving to a paginated response object containing:
+   * - `data`: The list of donations for the requested page.
+   * - `total`: The total number of pages.
+   * - `page`: The current page number.
+   * - `limit`: The maximum number of results per page.
+   * - `hasNextPage`: Whether there is a subsequent page.
+   * - `hasPreviousPage`: Whether there is a previous page.
+   */
+  async getManyByPoolId(
+    poolId: string,
+    page: number,
+    limit: number,
+  ): Promise<PagedResponse<DonationEntity[]>> {
+    const [data, total] = await this.donationRepository
+      .createQueryBuilder('donation')
+      .leftJoinAndSelect('donation.pool', 'pool')
+      .where('pool.id = :poolId', { poolId })
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
