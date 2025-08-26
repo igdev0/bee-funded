@@ -1,6 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { Contract, ethers } from "ethers";
 
 /**
  * Deploys a hardhat named "BeeFunded" using the deployer account and

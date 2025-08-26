@@ -36,6 +36,12 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  typechain: {
+    outDir: "typechain-types",
+    target: "ethers-v6",
+    alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
+    dontOverrideCompile: false, // defaults to false
+  },
   defaultNetwork: "localhost",
   namedAccounts: {
     deployer: {

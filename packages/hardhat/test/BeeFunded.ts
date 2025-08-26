@@ -5,6 +5,7 @@ import {
   DonationManager,
   MockERC1155,
   MockERC20,
+  MockERC721,
   MockUSDC,
   SubscriptionManager,
   TreasureManager,
@@ -12,7 +13,6 @@ import {
 import { expect } from "chai";
 import { AbiCoder, HDNodeWallet, parseUnits, Signer } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { MockERC721 } from "../typechain-types/contracts/mocks/MockERC721.sol";
 
 const AUTOMATION_UP_KEEP_ADDRESS = "0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad";
 
