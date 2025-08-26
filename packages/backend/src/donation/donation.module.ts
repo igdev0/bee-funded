@@ -9,12 +9,14 @@ import { DonationPoolModule } from '../donation-pool/donation-pool.module';
 import { NotificationModule } from '../notification/notification.module';
 import { MailModule } from '../mail/mail.module';
 import { UserModule } from '../user/user.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     ChainModule,
     ProfileModule,
     UserModule,
+    AuthModule,
     DonationPoolModule,
     NotificationModule,
     MailModule,

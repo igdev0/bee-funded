@@ -226,6 +226,16 @@ describe('DonationService', () => {
     expect(processDonationReceivedNotification).toHaveBeenCalled();
   });
 
+  it('should be able to retrieve user owned donations', async () => {
+    const { data, hasPreviousPage, page, hasNextPage, limit, total } =
+      await service.getManyOwned(user.profile.id, 1, 10);
+
+    expect(data.length).toBe(1);
+    expect(hasPreviousPage).toBe(false);
+    expect(page).toBe(1);
+    expect(hasNextPage).toBe(false);
+  });
+
   afterAll(async () => {
     const source = module.get<DataSource>(DataSource);
     await source.dropDatabase();
