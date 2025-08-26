@@ -33,7 +33,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
-    "ethers": "^6.15.0",
+    "ethers": "^6.13.2",
     "nodemailer": "^7.0.5",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
@@ -44,6 +44,7 @@
     "viem": "^2.31.7"
   },
   "devDependencies": {
+    "@bee-funded/contracts": "workspace:^",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@faker-js/faker": "^9.9.0",

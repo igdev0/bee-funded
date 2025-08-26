@@ -65,7 +65,7 @@ export default class DonationEntity {
    * The amount donated, stored as a string to handle big numbers safely.
    */
   @Column({ type: 'bigint' })
-  amount: bigint;
+  amount: string;
   /**
    * Optional message left by the donor along with the donation.
    */

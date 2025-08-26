@@ -45,17 +45,23 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     dto: CreateDonationPoolDto,
     profileId: string,
   ): Promise<DonationPoolEntity> {
+    const chains = this.configService.get<ChainConfig[]>('chains');
+    if (!chains) {
+      throw new Error('Chains should be set');
+    }
     let entity: DonationPoolEntity;
     if (dto.kind == 'main') {
       entity = this.donationPoolRepository.create({
         kind: 'main',
         profile: { id: profileId },
+        chain_id: dto.chain_id || chains[0].chainId,
         status: 'publishing',
       });
     } else {
       entity = this.donationPoolRepository.create({
         ...dto,
         profile: { id: profileId },
+        chain_id: dto.chain_id || chains[0].chainId,
         status: 'publishing',
       });
     }
@@ -137,7 +143,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
    * @param relations – The relations to load e.g.: profile
    */
   getOneByOnChainPoolId(
-    id: bigint,
+    id: string,
     select: FindOptionsSelect<DonationPoolEntity> = {},
     relations: string[] = [],
   ) {
@@ -265,7 +271,7 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     const { profile: actorProfile, id } = await this.publish(
       `0x${id_hash.toString(16)}`,
       {
-        on_chain_id,
+        on_chain_id: on_chain_id.toString(),
         owner_address,
       },
     );

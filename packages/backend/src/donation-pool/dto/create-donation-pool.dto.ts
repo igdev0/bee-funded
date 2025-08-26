@@ -40,6 +40,10 @@ export default class CreateDonationPoolDto {
   cap?: number;
 
   @IsOptional()
+  @IsInt()
+  chain_id?: number;
+
+  @IsOptional()
   @IsString()
   @IsOptional()
   @IsArray()

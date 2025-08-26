@@ -32,8 +32,8 @@ export class DonationPoolEntity {
    *
    * This will be updated once BeeFundedCore emits PoolCreated event
    */
-  @Column('bigint', { nullable: true, default: null })
-  on_chain_id!: bigint | null;
+  @Column('text', { nullable: true, default: null })
+  on_chain_id!: string | null;
   /**
    * Chain ID of the blockchain network where the donation pool exists.
    *
