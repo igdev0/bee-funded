@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { GetUser } from '../user/user.decorator';
 import { UserEntity } from '../user/entities/user.entity';
@@ -7,7 +7,14 @@ import { DonationService } from './donation.service';
 @Controller('donation')
 export class DonationController {
   constructor(private readonly donationService: DonationService) {}
+
   @Get()
   @UseGuards(AuthGuard)
-  getOwnedDonations(@GetUser() user: UserEntity) {}
+  getOwnedDonations(
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+    @GetUser() user: UserEntity,
+  ) {
+    return this.donationService.getManyOwned(user.profile.id, page, limit);
+  }
 }
