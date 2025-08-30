@@ -25,10 +25,6 @@ import { DonationPoolEntity } from '../donation-pool/entities/donation-pool.enti
 import { MailService } from '../mail/mail.service';
 import SpyInstance = jest.SpyInstance;
 
-jest.mock('@nestjs-modules/mailer/dist/adapters/handlebars.adapter', () => {
-  return { HandlebarsAdapter: jest.fn() };
-});
-
 // --- Helper function for generating Permit signature ---
 async function generatePermitSignature(
   ownerSigner: Signer, // The ethers.Signer of the token owner
