@@ -10,6 +10,7 @@ import { FileStorageModule } from './file-storage/file-storage.module';
 import { TokenizerModule } from './tokenizer/tokenizer.module';
 import { ChainModule } from './chain/chain.module';
 import { DonationModule } from './donation/donation.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { DonationModule } from './donation/donation.module';
     TokenizerModule,
     ChainModule,
     DonationModule,
+    SubscriptionModule,
   ],
 })
 export class AppModule {}

@@ -9,6 +9,7 @@ import databaseConfig from './database.config';
 import { DonationPoolEntity } from '../donation-pool/entities/donation-pool.entity';
 import NotificationSettingsEntity from '../notification/entities/notification-settings.entity';
 import DonationEntity from '../donation/entity/donation.entity';
+import SubscriptionEntity from '../subscription/entities/subscription.entity';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import DonationEntity from '../donation/entity/donation.entity';
             NotificationSettingsEntity,
             DonationPoolEntity,
             DonationEntity,
+            SubscriptionEntity,
           ],
         };
       },
