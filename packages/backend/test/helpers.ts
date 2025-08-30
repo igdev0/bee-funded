@@ -1,6 +1,5 @@
-import { ethers } from 'ethers/lib.esm';
 import { ERC20Permit } from '@bee-funded/contracts';
-import { JsonRpcSigner } from 'ethers';
+import { JsonRpcSigner, ethers } from 'ethers';
 
 export async function generatePermitSignature(
   ownerSigner: JsonRpcSigner, // The ethers.Signer of the token owner
