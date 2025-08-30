@@ -175,6 +175,16 @@ describe('DonationService', () => {
     expect(hasNextPage).toBe(false);
   });
 
+  it('should be able to retrieve donations by poold id', async () => {
+    const { data, hasPreviousPage, page, hasNextPage } =
+      await service.getManyByPoolId(pool.id, 1, 10);
+
+    expect(data.length).toBe(1);
+    expect(hasPreviousPage).toBe(false);
+    expect(page).toBe(1);
+    expect(hasNextPage).toBe(false);
+  });
+
   afterAll(async () => {
     const source = module.get<DataSource>(DataSource);
     await source.dropDatabase();
