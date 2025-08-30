@@ -29,6 +29,7 @@ describe('DonationPoolService', () => {
       await service.create({ kind: 'main' }, 'some-profile-id');
 
       expect(donationPoolRepository.create).toHaveBeenCalledWith({
+        chain_id: 31337,
         kind: 'main',
         profile: {
           id: 'some-profile-id',
@@ -51,6 +52,7 @@ describe('DonationPoolService', () => {
 
       expect(donationPoolRepository.create).toHaveBeenCalledWith({
         ...data,
+        chain_id: 31337,
         profile: {
           id: 'some-profile-id',
         },

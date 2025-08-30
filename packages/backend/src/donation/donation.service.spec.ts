@@ -220,6 +220,7 @@ describe('DonationService', () => {
       r,
       s,
     );
+    expect(save).toHaveBeenCalled();
     expect(onDonationSuccess).toHaveBeenCalled();
     await new Promise((resolve) => setTimeout(resolve, 100)); // wait until onDonationSuccess completes
     expect(processDonationReceiptNotifications).toHaveBeenCalled();
