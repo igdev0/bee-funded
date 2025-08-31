@@ -4,7 +4,14 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ChainService {
-  constructor(private readonly configService: ConfigService) {}
+  chains: ChainConfig[] = [];
+  constructor(private readonly configService: ConfigService) {
+    const chains = this.configService.get<ChainConfig[]>('chains');
+    if (!chains) {
+      throw new Error('Unable to load chains');
+    }
+    this.chains = chains;
+  }
   getChainById(id: number): ChainConfig {
     const chains = this.configService.get<ChainConfig[]>('chains');
     if (!chains) {

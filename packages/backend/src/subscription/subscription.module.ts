@@ -6,6 +6,8 @@ import SubscriptionEntity from './entities/subscription.entity';
 import { ChainModule } from '../chain/chain.module';
 import { ProfileModule } from '../profile/profile.module';
 import { AuthModule } from '../auth/auth.module';
+import { MailModule } from '../mail/mail.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { AuthModule } from '../auth/auth.module';
     ProfileModule,
     AuthModule,
     TypeOrmModule.forFeature([SubscriptionEntity]),
+    MailModule,
+    NotificationModule,
   ],
   controllers: [SubscriptionController],
   providers: [SubscriptionService],
