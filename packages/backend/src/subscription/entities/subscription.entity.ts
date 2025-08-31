@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { DonationPoolEntity } from '../../donation-pool/entities/donation-pool.entity';
 
 @Entity('subscription')
 export default class SubscriptionEntity {
@@ -22,6 +23,11 @@ export default class SubscriptionEntity {
 
   @Column({ type: 'int' })
   poolId: number;
+
+  @ManyToOne(() => DonationPoolEntity, (entity) => entity.subscriptions, {
+    onDelete: 'CASCADE',
+  })
+  pool: DonationPoolEntity;
 
   @Column({ type: 'smallint', unsigned: true })
   remainingDuration: number;

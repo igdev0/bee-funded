@@ -13,6 +13,7 @@ import { DonationPoolKind, DonationPoolStatus } from '../types';
 import { keccak256 } from 'ethers';
 import { v4 as uuidv4 } from 'uuid';
 import DonationEntity from '../../donation/entity/donation.entity';
+import SubscriptionEntity from '../../subscription/entities/subscription.entity';
 
 @Entity('donation-pool')
 export class DonationPoolEntity {
@@ -98,6 +99,11 @@ export class DonationPoolEntity {
     onDelete: 'CASCADE',
   })
   donations: DonationEntity[];
+
+  @OneToMany(() => SubscriptionEntity, (subscription) => subscription.pool, {
+    onDelete: 'CASCADE',
+  })
+  subscriptions: SubscriptionEntity[];
   /**
    * List of tags used to categorize or filter donation pools (e.g., "education", "climate", "web3")
    */
