@@ -1,5 +1,5 @@
 <h1 align="center">
-<img src="docs/beefunded-logo-buzz.png" width="300">
+<img src="docs/beefunded-logo-buzz.png" width="200">
 </h1>
 
 # BeeFunded: A web3 DApp for Community-Powered Support
@@ -20,6 +20,8 @@ Empowering communities to fund, support, and reward creators through transparent
 ## Stack
 
 **Frontend**: TypeScript, Vite, React, Redux-Toolkit, React-Query, Wagmi, Viem, Jest and TailwindCSS,
+
+**OnChain**: TypeScript, Hardhat, Solidity, OpenZeppelin, Chainlink.  
 
 **Backend**: NestJS, TypeORM and EthersJS, Jest.
 
