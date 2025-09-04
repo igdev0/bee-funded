@@ -5,7 +5,7 @@
 # BeeFunded: A web3 DApp for Community-Powered Support
 
 ## Why?
-Empowering communities to fund, support, and reward creators through transparent, decentralized tools.
+BeeFunded empowers communities to fund, support, and reward creators through transparent and decentralized tools. By combining donations, NFTs, and community-driven rewards, the platform creates a trustless ecosystem where contributions are valued and recognition is earned.
 
 > The DApp is built with **React**, **Ethereum**, and **NestJS**. Key features include:
 
