@@ -108,6 +108,21 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
     );
   }
 
+  async onSubscriptionExpired(subscriptionId: bigint, subscriber: string) {
+    await this.subscriptionRepository.update(
+      {
+        on_chain_subscription_id: Number(subscriptionId),
+        subscriber,
+      },
+      {
+        active: false,
+        expired: true,
+        next_payment_time: 0,
+        remaining_payments: 0,
+      },
+    );
+  }
+
   async onModuleInit(): Promise<void> {
     for (const chain of this.chains) {
       const provider = new WebSocketProvider(chain.wsUrl);
@@ -122,6 +137,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.onSubscriptionCreated.bind(this),
       );
+
       await contract.on(
         'Unsubscribed',
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -133,6 +149,13 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.onSubscriptionPaymentSuccess.bind(this),
       );
+
+      await contract.on(
+        'SubscriptionExpired',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.onSubscriptionExpired.bind(this),
+      );
+
       this.providers.push(provider);
     }
   }

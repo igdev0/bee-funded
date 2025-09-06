@@ -10,8 +10,8 @@ import {ISubscriptionManager} from "./interfaces/ISubscriptionManager.sol";
 /// @notice Manages upkeep for recurring subscription payments
 contract AutomationUpkeep is IAutomationUpkeep {
     event SubscriptionPaymentSuccess(uint indexed subscriptionId, address indexed subscriber, uint indexed remainingPayments, uint nextPaymentTime);
-    event SubscriptionExpired(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
-    event SubscriptionPaymentFailed(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
+    event SubscriptionExpired(uint indexed subscriptionId, address indexed subscriber, address indexed beneficiary);
+    event SubscriptionPaymentFailed(uint indexed subscriptionId, address indexed subscriber, address indexed beneficiary);
 
     ISubscriptionManager public immutable subscriptionManager;
     IBeeFundedCore public immutable core;
@@ -107,7 +107,7 @@ contract AutomationUpkeep is IAutomationUpkeep {
                 uint nextPaymentTime = block.timestamp + sub.interval;
                 if (sub.remainingPayments == 1) {
                     subscriptionManager.updateSubscription(id, false, true, 0, 0);
-                    emit SubscriptionExpired(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
+                    emit SubscriptionExpired(id, sub.subscriber, core.getPool(sub.poolId).owner);
                 } else {
                     subscriptionManager.updateSubscription(id, true, false, remainingPayments, nextPaymentTime);
                 }

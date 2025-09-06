@@ -48,6 +48,9 @@ export default class SubscriptionEntity {
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  expired: boolean;
+
   @CreateDateColumn()
   created_at: string;
 
