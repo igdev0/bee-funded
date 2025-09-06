@@ -13,6 +13,7 @@ import {
 import { expect } from "chai";
 import { AbiCoder, HDNodeWallet, parseUnits, Signer } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
+import { DonationSuccessEvent } from "../typechain-types/contracts/DonationManager";
 
 const AUTOMATION_UP_KEEP_ADDRESS = "0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad";
 
@@ -196,22 +197,30 @@ describe("BeeFunded", function () {
       ).emit(donationManager, "DonationSuccess");
     });
     it("should be able to perform a subscription", async () => {
+      const hexAmount = "0x" + ethers.parseUnits("1", 18).toString(16); // "0x0de0b6b3a7640000"
+      await network.provider.send("hardhat_setBalance", [await subscriptionManager.getAddress(), hexAmount]);
+
       await network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [await subscriptionManager.getAddress()],
       });
-      await mockUSDC.transfer(await subscriptionManager.getAddress(), ethers.parseUnits("1000", 6));
+      await mockUSDC.transfer(await subscriptionManager.getAddress(), ethers.parseUnits("10000", 6));
 
       // Approve so the performSubscription won't fail.
-      await mockUSDC.approve(await donationManager.getAddress(), BigInt(10));
+      await mockUSDC
+        .connect(await ethers.getSigner(await subscriptionManager.getAddress()))
+        .approve(await donationManager.getAddress(), ethers.parseUnits("100", 6));
+
       await expect(
-        donationManager.performSubscription(
-          await subscriptionManager.getAddress(),
-          BigInt(0),
-          await mockUSDC.getAddress(),
-          BigInt(10),
-        ),
-      ).not.revertedWithoutReason();
+        donationManager
+          .connect(await ethers.getSigner(await subscriptionManager.getAddress()))
+          .performSubscription(
+            await subscriptionManager.getAddress(),
+            BigInt(0),
+            await mockUSDC.getAddress(),
+            ethers.parseUnits("10", 6),
+          ),
+      ).emit(donationManager, "DonationSuccess");
     });
 
     describe("withdraw tokens", () => {

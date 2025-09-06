@@ -10,7 +10,7 @@ import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC2
 /// @title SubscriptionManager - Handles subscriptions for BeeFunded
 /// @notice Manages subscription creation, cancellation, and queries
 contract SubscriptionManager is ISubscriptionManager {
-    event SubscriptionCreated(uint indexed subscriptionId, uint indexed poolId, address indexed subscriber, address beneficiary, uint amount, uint interval, uint8 duration);
+    event SubscriptionCreated(uint indexed subscriptionId, uint indexed poolId, address indexed subscriber, address beneficiary, address token, uint amount, uint interval, uint8 duration);
     event Unsubscribed(uint indexed subscriptionId, uint indexed poolId);
 
     using Counters for Counters.Counter;
@@ -118,7 +118,7 @@ contract SubscriptionManager is ISubscriptionManager {
         });
 
         isSubscribedMap[poolId][subscriber] = true;
-        emit SubscriptionCreated(id, poolId, subscriber, subscriber, amount, interval, duration);
+        emit SubscriptionCreated(id, poolId, subscriber, subscriber, token, amount, interval, duration);
         subscriptionID.increment();
     }
 
@@ -201,7 +201,7 @@ contract SubscriptionManager is ISubscriptionManager {
         sub.active = _active;
         sub.remainingDuration = _remainingDuration;
         sub.nextPaymentTime = _nextPaymentTime;
-        if(_expired) {
+        if (_expired) {
             sub.expiredAt = block.timestamp;
         }
         isSubscribedMap[sub.poolId][sub.subscriber] = _active;

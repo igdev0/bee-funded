@@ -11,7 +11,7 @@ import {ITreasureManager} from "./interfaces/ITreasureManager.sol";
 /// @title DonationManager - Handles donations for BeeFunded
 /// @notice Manages donation logic, including token transfers and permit
 contract DonationManager is IDonationManager, ReentrancyGuard {
-    event DonationSuccess(uint indexed poolId, address indexed donor, address indexed token, uint amount, string message);
+    event DonationSuccess(uint indexed poolId, address indexed donor, address indexed token, uint amount, string message, bool recuring);
     event DonationFailed(uint indexed poolId, address indexed donor, address indexed token, uint amount, string message);
     event WithdrawSuccess(uint indexed poolId, address indexed donor, address indexed token, uint amount);
     event WithdrawFailed(uint indexed poolId, address indexed donor, address indexed token, uint amount);
@@ -60,7 +60,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     ) external payable override {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         _donate(msg.sender, poolId, address(0), msg.value, DonationType.OneTimeDonation);
-        emit DonationSuccess(poolId, msg.sender, address(0), msg.value, message);
+        emit DonationSuccess(poolId, msg.sender, address(0), msg.value, message, false);
     }
 
     /**
@@ -101,7 +101,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
         require(core.getPool(poolId).owner != address(0), "Pool does not exist");
         IERC20Permit(tokenAddress).permit(donor, address(this), amount, deadline, v, r, s);
         _donate(donor, poolId, tokenAddress, amount, DonationType.OneTimeDonation);
-        emit DonationSuccess(poolId, donor, tokenAddress, amount, message);
+        emit DonationSuccess(poolId, donor, tokenAddress, amount, message, false);
     }
 
     /**
@@ -127,6 +127,7 @@ contract DonationManager is IDonationManager, ReentrancyGuard {
     ) external {
         require(msg.sender == automationUpKeepAddress || msg.sender == subscriptionManagerAddress, "Only callable by AutomationUpKeep or SubscriptionManager");
         _donate(donor, poolId, tokenAddress, amount, DonationType.Subscription);
+        emit DonationSuccess(poolId, donor, tokenAddress, amount, "", true);
     }
     /**
      * @dev Handles the internal logic for donating to a pool.
