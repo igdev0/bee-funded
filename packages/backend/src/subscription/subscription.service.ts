@@ -9,6 +9,12 @@ import { Contract, WebSocketProvider } from 'ethers/lib.esm';
 import SaveSubscriptionDto from './dto/save-subscription.dto';
 import { DonationPoolService } from '../donation-pool/donation-pool.service';
 
+/**
+ * @todo – Send notification and email based on profile settings for beneficiary and subscriber, when creating a subscription.
+ * @todo – Send notification and email based on profile settings for beneficiary and subscriber, when subscriber is unsubscribed.
+ * @todo – Update donation email (donation-received.hbs & donation-receipt.hbs) to include details if the donation is recurring or not.
+ * @todo – Send notification and email based on profile settings for subscriber and beneficiary
+ */
 @Injectable()
 export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
   chains: ChainConfig[];
