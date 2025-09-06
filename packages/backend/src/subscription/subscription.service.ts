@@ -85,6 +85,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
       {
         active: false,
         next_payment_time: 0,
+        remaining_payments: 0,
       },
     );
   }
