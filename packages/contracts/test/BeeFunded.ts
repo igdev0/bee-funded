@@ -253,8 +253,8 @@ describe("BeeFunded", function () {
   });
   describe("SubscriptionManager", () => {
     it("should be able to create subscription", async () => {
-      const duration = BigInt(7);
-      const totalValue = ethers.parseUnits("10", 6) * duration;
+      const totalPayments = BigInt(7);
+      const totalValue = ethers.parseUnits("10", 6) * totalPayments;
       const { v, r, s, deadline } = await generatePermitSignature(
         await ethers.getSigner(deployer),
         await donationManager.getAddress(),
@@ -262,15 +262,15 @@ describe("BeeFunded", function () {
         totalValue,
         BigInt(Date.now() + 1000 * 60 * 60 * 24 * 7),
       );
-      const amount = totalValue / duration;
+      const amount = totalValue / totalPayments;
       await expect(
         subscriptionManager.subscribe(
           deployer,
           BigInt(0),
           await mockUSDC.getAddress(),
           amount,
-          deadline / duration,
-          duration,
+          deadline / totalPayments,
+          totalPayments,
           deadline,
           v,
           r,
@@ -297,18 +297,18 @@ describe("BeeFunded", function () {
         method: "hardhat_impersonateAccount",
         params: [await automationUpKeep.getAddress()],
       });
-      const remainingDuration = BigInt(6);
+      const remainingPayments = BigInt(6);
       const nextPaymentTime = BigInt(Math.floor(Date.now() / 1000) * 60 * 60 * 24);
       await expect(
         subscriptionManager
           .connect(await ethers.getSigner(await automationUpKeep.getAddress()))
-          .updateSubscription(0, true, false, remainingDuration, nextPaymentTime),
+          .updateSubscription(0, true, false, remainingPayments, nextPaymentTime),
       ).not.revertedWithoutReason();
 
       const sub = await subscriptionManager.getSubscription(0);
 
       expect(sub.active).to.equal(true);
-      expect(sub.remainingDuration).to.equal(remainingDuration);
+      expect(sub.remainingPayments).to.equal(remainingPayments);
       expect(sub.nextPaymentTime).to.equal(nextPaymentTime);
     });
   });

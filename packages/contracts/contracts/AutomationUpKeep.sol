@@ -77,8 +77,8 @@ contract AutomationUpkeep is IAutomationUpkeep {
      * Logic:
      * - Decodes the subscription indexes list from `performData` (passed from `checkUpkeep`).
      * - Attempts to perform the subscription payment via `donationManager.performSubscription`.
-     * - If `remainingDuration == 1`, the subscription is marked as expired and deactivated.
-     * - Otherwise, the subscription is updated with a decremented `remainingDuration`
+     * - If `remainingPayments == 1`, the subscription is marked as expired and deactivated.
+     * - Otherwise, the subscription is updated with a decremented `remainingPayments`
      *   and a new `nextPaymentTime` based on its interval.
      * - If the payment fails (e.g., user has insufficient funds or allowance), the subscription
      *   is still updated to move forward (avoiding permanent stalling), and a failure event is emitted.
@@ -103,15 +103,15 @@ contract AutomationUpkeep is IAutomationUpkeep {
             }
 
             try donationManager.performSubscription(sub.subscriber, sub.poolId, sub.token, sub.amount) {
-                if (sub.remainingDuration == 1) {
+                if (sub.remainingPayments == 1) {
                     subscriptionManager.updateSubscription(id, false, true, 0, 0);
                     emit SubscriptionExpired(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
                 } else {
-                    subscriptionManager.updateSubscription(id, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
+                    subscriptionManager.updateSubscription(id, true, false, sub.remainingPayments - 1, block.timestamp + sub.interval);
                 }
                 emit SubscriptionPaymentSuccess(id, sub.subscriber);
             } catch {
-                subscriptionManager.updateSubscription(id, true, false, sub.remainingDuration - 1, block.timestamp + sub.interval);
+                subscriptionManager.updateSubscription(id, true, false, sub.remainingPayments - 1, block.timestamp + sub.interval);
                 emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
             }
         }

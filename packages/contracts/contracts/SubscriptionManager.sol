@@ -10,7 +10,7 @@ import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC2
 /// @title SubscriptionManager - Handles subscriptions for BeeFunded
 /// @notice Manages subscription creation, cancellation, and queries
 contract SubscriptionManager is ISubscriptionManager {
-    event SubscriptionCreated(uint indexed subscriptionId, uint indexed poolId, address indexed subscriber, address beneficiary, address token, uint amount, uint interval, uint8 duration);
+    event SubscriptionCreated(uint indexed subscriptionId, uint indexed poolId, address indexed subscriber, address beneficiary, address token, uint amount, uint interval, uint8 totalPayments);
     event Unsubscribed(uint indexed subscriptionId, uint indexed poolId);
 
     using Counters for Counters.Counter;
@@ -55,18 +55,18 @@ contract SubscriptionManager is ISubscriptionManager {
     }
     /**
      * @dev Creates a new recurring subscription to a donation pool using EIP-2612 permit for gasless approval.
-     * The subscriber allows this contract to make periodic donations on their behalf for a specified duration.
+     * The subscriber allows this contract to make periodic donations on their behalf for a specified totalPayments.
      *
      * Requirements:
      * - The specified pool must exist.
      * - Native token (ETH) subscriptions are not supported — only ERC20 tokens.
-     * - `interval` must be at least 7 days.
-     * - `amount` and `duration` must be greater than 0.
+     * - `interval` must be at least 1 day.
+     * - `amount` and `totalPayments` must be greater than 0.
      * - The subscriber must not already have an active subscription to the same pool owner.
      * - A valid permit signature must be provided for approval.
      *
      * Effects:
-     * - Uses the permit signature to approve this contract for `amount * duration` tokens.
+     * - Uses the permit signature to approve this contract for `amount * totalPayments` tokens.
      * - Immediately performs the first donation.
      * - Stores the subscription metadata and marks the user as subscribed.
      *
@@ -77,7 +77,7 @@ contract SubscriptionManager is ISubscriptionManager {
      * @param token The address of the ERC20 token to be donated.
      * @param amount The amount to donate per interval.
      * @param interval The time (in seconds) between each donation.
-     * @param duration The number of recurring donations to make.
+     * @param totalPayments The number of recurring donations to make.
      * @param deadline The expiry timestamp for the permit signature.
      * @param v The recovery byte of the permit signature.
      * @param r Half of the permit signature.
@@ -89,7 +89,7 @@ contract SubscriptionManager is ISubscriptionManager {
         address token,
         uint amount,
         uint interval,
-        uint8 duration,
+        uint8 totalPayments,
         uint deadline,
         uint8 v,
         bytes32 r,
@@ -99,11 +99,11 @@ contract SubscriptionManager is ISubscriptionManager {
         require(token != address(0), "Native token subscriptions not supported");
         require(interval >= 1 days, "Min interval is 1 day");
         require(amount > 0, "Zero amount");
-        require(duration > 0, "Duration must be greater than 0");
+        require(totalPayments > 0, "totalPayments must be greater than 0");
         uint id = subscriptionID.current();
         require(!isSubscribedMap[poolId][subscriber], "Already subscribed");
 
-        IERC20Permit(token).permit(subscriber, address(donationManager), amount * duration, deadline, v, r, s);
+        IERC20Permit(token).permit(subscriber, address(donationManager), amount * totalPayments, deadline, v, r, s);
         donationManager.performSubscription(subscriber, poolId, token, amount);
         subscriptions[id] = Subscription({
             subscriber: subscriber,
@@ -111,14 +111,14 @@ contract SubscriptionManager is ISubscriptionManager {
             amount: amount,
             nextPaymentTime: block.timestamp + interval,
             interval: interval,
-            remainingDuration: duration - 1,
+            remainingPayments: totalPayments - 1,
             poolId: poolId,
             active: true,
             expiredAt: 0
         });
 
         isSubscribedMap[poolId][subscriber] = true;
-        emit SubscriptionCreated(id, poolId, subscriber, subscriber, token, amount, interval, duration);
+        emit SubscriptionCreated(id, poolId, subscriber, subscriber, token, amount, interval, totalPayments);
         subscriptionID.increment();
     }
 
@@ -152,7 +152,7 @@ contract SubscriptionManager is ISubscriptionManager {
      * Effects:
      *   - Sets `active` to false.
      *   - Sets `nextPaymentTime` to 0.
-     *   - Sets `remainingDuration` to 0.
+     *   - Sets `remainingtotalPayments` to 0.
      *
      * Reverts:
      * - If no matching active subscription is found.
@@ -166,7 +166,7 @@ contract SubscriptionManager is ISubscriptionManager {
         if (sub.subscriber == _subscriber) {
             sub.active = false;
             sub.nextPaymentTime = 0;
-            sub.remainingDuration = 0;
+            sub.remainingPayments = 0;
             isSubscribedMap[sub.poolId][sub.subscriber] = false;
         }
 
@@ -180,26 +180,26 @@ contract SubscriptionManager is ISubscriptionManager {
      * - Can only be called internally by this contract (i.e., `msg.sender` must be `automationUpKeepAddress`).
      *
      * Effects:
-     * - Updates the `active` status, `remainingDuration`, and `nextPaymentTime` of the subscription
+     * - Updates the `active` status, `remainingtotalPayments`, and `nextPaymentTime` of the subscription
      *   at the specified index in the `subscriptions` array.
      *
      * @param _subId The id of the subscription to update in the `subscriptions` array.
      * @param _active Whether the subscription is still active.
      * @param _expired Whether the subscription expired.
-     * @param _remainingDuration The number of payments remaining in the subscription.
+     * @param _remainingPayments The number of payments remaining in the subscription.
      * @param _nextPaymentTime The UNIX timestamp for the next scheduled payment.
      */
     function updateSubscription(
         uint _subId,
         bool _active,
         bool _expired,
-        uint8 _remainingDuration,
+        uint8 _remainingPayments,
         uint _nextPaymentTime
     ) external override {
         require(msg.sender == automationUpKeepAddress);
         Subscription storage sub = subscriptions[_subId];
         sub.active = _active;
-        sub.remainingDuration = _remainingDuration;
+        sub.remainingPayments = _remainingPayments;
         sub.nextPaymentTime = _nextPaymentTime;
         if (_expired) {
             sub.expiredAt = block.timestamp;

@@ -11,7 +11,7 @@ interface ISubscriptionManager {
         uint nextPaymentTime;
         uint interval;
         uint poolId;
-        uint8 remainingDuration;
+        uint8 remainingPayments;
         bool active;
         uint expiredAt;
     }
@@ -24,7 +24,7 @@ interface ISubscriptionManager {
      * @param token The address of the ERC20 token to be donated.
      * @param amount The amount to donate per interval.
      * @param interval The time (in seconds) between each donation.
-     * @param duration The number of recurring donations to make.
+     * @param totalPayments The number of recurring donations to make.
      * @param deadline The expiry timestamp for the permit signature.
      * @param v The recovery byte of the permit signature.
      * @param r Half of the permit signature.
@@ -36,7 +36,7 @@ interface ISubscriptionManager {
         address token,
         uint amount,
         uint interval,
-        uint8 duration,
+        uint8 totalPayments,
         uint deadline,
         uint8 v,
         bytes32 r,
@@ -47,7 +47,7 @@ interface ISubscriptionManager {
         uint index,
         bool active,
         bool expired,
-        uint8 remainingDuration,
+        uint8 remainingPayments,
         uint nextPaymentTime
     ) external;
 }
