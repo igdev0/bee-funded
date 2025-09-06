@@ -1007,9 +1007,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bee-funded/contracts@workspace:^, @bee-funded/contracts@workspace:packages/hardhat":
+"@bee-funded/contracts@workspace:^, @bee-funded/contracts@workspace:packages/contracts":
   version: 0.0.0-use.local
-  resolution: "@bee-funded/contracts@workspace:packages/hardhat"
+  resolution: "@bee-funded/contracts@workspace:packages/contracts"
   dependencies:
     "@chainlink/contracts": ^1.4.0
     "@chainlink/contracts-ccip": ^1.6.0
