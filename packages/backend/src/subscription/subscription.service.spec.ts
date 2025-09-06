@@ -9,6 +9,7 @@ import { ChainModule } from '../chain/chain.module';
 import { NotificationModule } from '../notification/notification.module';
 import { MailModule } from '../mail/mail.module';
 import { DonationModule } from '../donation/donation.module';
+import { DonationPoolModule } from '../donation-pool/donation-pool.module';
 
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
@@ -23,6 +24,7 @@ describe('SubscriptionService', () => {
         NotificationModule,
         MailModule,
         DonationModule,
+        DonationPoolModule,
         TypeOrmModule.forFeature([SubscriptionEntity]),
       ],
       providers: [SubscriptionService],
