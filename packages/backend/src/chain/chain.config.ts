@@ -41,7 +41,7 @@ export default registerAs(
   () =>
     [
       {
-        chainName: 'hardhat',
+        chainName: 'contracts',
         rpcUrl: 'http://127.0.0.1:8545',
         wsUrl: 'ws://127.0.0.1:8545',
         chainId: 31337,

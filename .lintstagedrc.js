@@ -3,11 +3,11 @@ const path = require("path");
 const buildNextEslintCommand = (filenames) =>
   `yarn dapp:lint --fix`;
 
-const checkTypesNextCommand = () => "yarn hardhat:check-types";
+const checkTypesNextCommand = () => "yarn contracts:check-types";
 
 const buildHardhatEslintCommand = (filenames) =>
-  `yarn hardhat:lint-staged --fix ${filenames
-    .map((f) => path.relative(path.join("packages", "hardhat"), f))
+  `yarn contracts:lint-staged --fix ${filenames
+    .map((f) => path.relative(path.join("packages", "contracts"), f))
     .join(" ")}`;
 
 
@@ -17,6 +17,6 @@ module.exports = {
     buildNextEslintCommand,
     checkTypesNextCommand,
   ],
-  "packages/hardhat/**/*.ts": [buildHardhatEslintCommand],
+  "packages/contracts/**/*.ts": [buildHardhatEslintCommand],
   "packages/backend/**/*.ts": [fixBackendEslintCommand],
 };

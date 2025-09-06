@@ -6,7 +6,7 @@ import { spawn } from "child_process";
 import { config } from "hardhat";
 
 /**
- * Unencrypts the private key and runs the hardhat deploy command
+ * Unencrypts the private key and runs the contracts deploy command
  */
 async function main() {
   const networkIndex = process.argv.indexOf("--network");
