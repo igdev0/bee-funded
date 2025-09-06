@@ -83,6 +83,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       hasPreviousPage: page > 1,
     };
   }
+
   /**
    * Retrieves a paginated list of donations associated with a specific pool.
    *
@@ -240,6 +241,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
     token: string,
     amount: bigint,
     message: string,
+    is_recurring: boolean,
     event: ContractEventPayload,
   ) {
     const {
@@ -250,7 +252,7 @@ export class DonationService implements OnModuleInit, OnModuleDestroy {
       donor_address,
       on_chain_pool_id: pool_id.toString(),
       token,
-      is_recurring: false,
+      is_recurring,
       message,
       tx_hash: event.log.transactionHash,
     });
