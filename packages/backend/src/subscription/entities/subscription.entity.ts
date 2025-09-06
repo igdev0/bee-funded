@@ -26,7 +26,7 @@ export default class SubscriptionEntity {
   interval: number;
 
   @Column({ type: 'int', unsigned: true })
-  duration: number;
+  remaining_payments: number;
 
   @Column({ type: 'int', unsigned: true })
   deadline: number;

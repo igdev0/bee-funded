@@ -27,7 +27,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
   async save(payload: SaveSubscriptionDto) {
     const poolId = await this.poolService.getPoolIdByChainId(payload.pool_id);
     const entity = this.subscriptionRepository.create({
-      duration: payload.duration,
+      remaining_payments: payload.remaining_payments,
       subscriber: payload.subscriber,
       amount: payload.amount,
       pool_id: payload.pool_id,
@@ -70,11 +70,41 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
       token,
       amount: amount.toString(),
       subscription_id: Number(subscriptionId),
-      duration: Number(duration),
+      remaining_payments: Number(duration),
       interval: Number(interval),
       subscriber,
       pool_id: Number(poolId),
     });
+  }
+
+  async onUnsubscribe(subscriptionId: bigint, poolId: bigint) {
+    await this.subscriptionRepository.update(
+      {
+        on_chain_subscription_id: Number(subscriptionId),
+      },
+      {
+        active: false,
+        next_payment_time: 0,
+      },
+    );
+  }
+
+  async onSubscriptionPaymentSuccess(
+    id: bigint,
+    subscriber: string,
+    remainingPayments: bigint,
+    nextPaymentTime: bigint,
+  ) {
+    await this.subscriptionRepository.update(
+      {
+        on_chain_subscription_id: Number(id),
+        subscriber,
+      },
+      {
+        remaining_payments: Number(remainingPayments),
+        next_payment_time: Number(nextPaymentTime),
+      },
+    );
   }
 
   async onModuleInit(): Promise<void> {
@@ -88,7 +118,19 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
 
       await contract.on(
         'SubscriptionCreated',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.onSubscriptionCreated.bind(this),
+      );
+      await contract.on(
+        'Unsubscribed',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.onUnsubscribe.bind(this),
+      );
+
+      await contract.on(
+        'SubscriptionPaymentSuccess',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.onSubscriptionPaymentSuccess.bind(this),
       );
       this.providers.push(provider);
     }

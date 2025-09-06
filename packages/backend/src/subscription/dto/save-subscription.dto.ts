@@ -23,7 +23,7 @@ export default class SaveSubscriptionDto {
   interval: number;
 
   @IsNumber()
-  duration: number;
+  remaining_payments: number;
 
   @IsNumber()
   deadline: number;
