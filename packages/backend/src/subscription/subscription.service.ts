@@ -35,6 +35,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
       interval: payload.interval,
       active: true,
       token: payload.token,
+      deadline: payload.deadline,
       pool: { id: poolId ?? undefined },
     });
     await this.subscriptionRepository.save(entity);

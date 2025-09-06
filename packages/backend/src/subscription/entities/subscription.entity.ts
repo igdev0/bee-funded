@@ -29,6 +29,9 @@ export default class SubscriptionEntity {
   duration: number;
 
   @Column({ type: 'int', unsigned: true })
+  deadline: number;
+
+  @Column({ type: 'int', unsigned: true })
   next_payment_time: number;
 
   @Column({ type: 'int', unsigned: true })
