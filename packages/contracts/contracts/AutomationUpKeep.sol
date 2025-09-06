@@ -9,7 +9,7 @@ import {ISubscriptionManager} from "./interfaces/ISubscriptionManager.sol";
 /// @title AutomationUpkeep - Handles Chainlink Automation for BeeFunded
 /// @notice Manages upkeep for recurring subscription payments
 contract AutomationUpkeep is IAutomationUpkeep {
-    event SubscriptionPaymentSuccess(uint indexed subscriptionId, address indexed subscriber);
+    event SubscriptionPaymentSuccess(uint indexed subscriptionId, address indexed subscriber, uint indexed remainingPayments, uint nextPaymentTime);
     event SubscriptionExpired(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
     event SubscriptionPaymentFailed(uint indexed poolId, address indexed subscriber, address indexed beneficiary);
 
@@ -103,13 +103,15 @@ contract AutomationUpkeep is IAutomationUpkeep {
             }
 
             try donationManager.performSubscription(sub.subscriber, sub.poolId, sub.token, sub.amount) {
+                uint remainingPayments = sub.remainingPayments - 1;
+                uint nextPaymentTime = block.timestamp + sub.interval;
                 if (sub.remainingPayments == 1) {
                     subscriptionManager.updateSubscription(id, false, true, 0, 0);
                     emit SubscriptionExpired(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
                 } else {
-                    subscriptionManager.updateSubscription(id, true, false, sub.remainingPayments - 1, block.timestamp + sub.interval);
+                    subscriptionManager.updateSubscription(id, true, false, remainingPayments, nextPaymentTime);
                 }
-                emit SubscriptionPaymentSuccess(id, sub.subscriber);
+                emit SubscriptionPaymentSuccess(id, sub.subscriber, remainingPayments, nextPaymentTime);
             } catch {
                 subscriptionManager.updateSubscription(id, true, false, sub.remainingPayments - 1, block.timestamp + sub.interval);
                 emit SubscriptionPaymentFailed(sub.poolId, sub.subscriber, core.getPool(sub.poolId).owner);
