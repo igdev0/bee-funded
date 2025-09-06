@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { DonationPoolEntity } from '../../donation-pool/entities/donation-pool.entity';
 
 @Entity('subscription')
@@ -12,29 +19,35 @@ export default class SubscriptionEntity {
   @Column({ type: 'varchar', length: 42 }) // ERC20 token address
   token: string;
 
-  @Column({ type: 'decimal', precision: 78, scale: 0 }) // BigNumber safe
+  @Column({ type: 'bigint' })
   amount: string;
 
-  @Column({ type: 'bigint' })
-  nextPaymentTime: string; // unix timestamp
+  @Column({ type: 'int', unsigned: true })
+  interval: number;
 
-  @Column({ type: 'bigint' })
-  interval: string; // seconds
+  @Column({ type: 'int', unsigned: true })
+  duration: number;
 
-  @Column({ type: 'int' })
-  poolId: number;
+  @Column({ type: 'int', unsigned: true })
+  next_payment_time: number;
+
+  @Column({ type: 'int', unsigned: true })
+  pool_id: number;
+
+  @Column({ type: 'int', unsigned: true })
+  on_chain_subscription_id: number;
 
   @ManyToOne(() => DonationPoolEntity, (entity) => entity.subscriptions, {
     onDelete: 'CASCADE',
   })
   pool: DonationPoolEntity;
 
-  @Column({ type: 'smallint', unsigned: true })
-  remainingDuration: number;
-
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
-  @Column({ type: 'bigint', nullable: true })
-  expiredAt: string | null;
+  @CreateDateColumn()
+  created_at: string;
+
+  @UpdateDateColumn()
+  updated_at: string;
 }

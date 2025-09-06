@@ -31,6 +31,14 @@ export class DonationPoolService implements OnModuleInit, OnModuleDestroy {
     private readonly mailService: MailService,
   ) {}
 
+  async getPoolIdByChainId(chainId: number): Promise<string> {
+    const entity = await this.donationPoolRepository.findOneOrFail({
+      where: { on_chain_id: `${chainId}` },
+      select: { id: true },
+    });
+    return entity.id;
+  }
+
   /**
    * The create function handles the creation of a donation pool the first step in the process.
    *
