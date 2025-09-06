@@ -11,7 +11,7 @@ interface ISubscriptionManager {
         uint nextPaymentTime;
         uint interval;
         uint poolId;
-        uint8 remainingPayments;
+        uint remainingPayments;
         bool active;
         uint expiredAt;
     }
@@ -36,7 +36,7 @@ interface ISubscriptionManager {
         address token,
         uint amount,
         uint interval,
-        uint8 totalPayments,
+        uint totalPayments,
         uint deadline,
         uint8 v,
         bytes32 r,
@@ -47,7 +47,7 @@ interface ISubscriptionManager {
         uint index,
         bool active,
         bool expired,
-        uint8 remainingPayments,
+        uint remainingPayments,
         uint nextPaymentTime
     ) external;
 }
