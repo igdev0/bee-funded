@@ -9,6 +9,7 @@ import { AuthModule } from '../auth/auth.module';
 import { MailModule } from '../mail/mail.module';
 import { NotificationModule } from '../notification/notification.module';
 import { DonationModule } from '../donation/donation.module';
+import { DonationPoolModule } from '../donation-pool/donation-pool.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { DonationModule } from '../donation/donation.module';
     MailModule,
     NotificationModule,
     DonationModule,
+    DonationPoolModule,
   ],
   controllers: [SubscriptionController],
   providers: [SubscriptionService],
