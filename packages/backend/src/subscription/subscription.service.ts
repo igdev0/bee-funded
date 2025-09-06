@@ -123,12 +123,36 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
     );
   }
 
+  async onSubscriptionPaymentFailed(
+    subscriptionId: bigint,
+    subscriber: string,
+    remainingPayments: bigint,
+    nextPaymentTime: bigint,
+  ) {
+    await this.subscriptionRepository.update(
+      {
+        on_chain_subscription_id: Number(subscriptionId),
+        subscriber,
+      },
+      {
+        remaining_payments: Number(remainingPayments),
+        next_payment_time: Number(nextPaymentTime),
+      },
+    );
+  }
+
   async onModuleInit(): Promise<void> {
     for (const chain of this.chains) {
       const provider = new WebSocketProvider(chain.wsUrl);
       const contract = new Contract(
         chain.contracts.DonationManager.address,
         chain.contracts.DonationManager.abi,
+        provider,
+      );
+
+      const automationContract = new Contract(
+        chain.contracts.AutomationUpkeep.address,
+        chain.contracts.AutomationUpkeep.abi,
         provider,
       );
 
@@ -144,13 +168,19 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         this.onUnsubscribe.bind(this),
       );
 
-      await contract.on(
+      await automationContract.on(
         'SubscriptionPaymentSuccess',
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.onSubscriptionPaymentSuccess.bind(this),
       );
 
-      await contract.on(
+      await automationContract.on(
+        'SubscriptionPaymentFailed',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.onSubscriptionPaymentFailed.bind(this),
+      );
+
+      await automationContract.on(
         'SubscriptionExpired',
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.onSubscriptionExpired.bind(this),
