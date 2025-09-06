@@ -77,7 +77,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
     });
   }
 
-  async onUnsubscribe(subscriptionId: bigint, poolId: bigint) {
+  async onUnsubscribe(subscriptionId: bigint) {
     await this.subscriptionRepository.update(
       {
         on_chain_subscription_id: Number(subscriptionId),
