@@ -92,6 +92,25 @@ export interface SubscriptionReceiptEmailContext {
   appUrl: string;
 }
 
+export interface UnsubscribedReceiptEmailContext {
+  subscriberName: string;
+
+  poolName: string;
+  subscriptionId: string;
+  poolId: string;
+
+  beneficiaryAddress: string;
+  beneficiaryName?: string;
+
+  completedPayments: number;
+  totalPayments: number;
+
+  dashboardUrl: string;
+
+  appName: string;
+  appUrl: string;
+}
+
 export interface SubscriptionExpiredEmailContext {
   subscriberName: string;
 
@@ -168,6 +187,10 @@ export type SendMailTemplates =
   | {
       template: 'subscription-expired-pool-owner';
       context: SubscriptionExpiredPoolOwnerEmailContext;
+    }
+  | {
+      template: 'unsubscribed-receipt';
+      context: UnsubscribedReceiptEmailContext;
     };
 
 export type SendMailPayload = {
