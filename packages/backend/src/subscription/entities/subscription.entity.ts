@@ -26,6 +26,9 @@ export default class SubscriptionEntity {
   interval: number;
 
   @Column({ type: 'int', unsigned: true })
+  total_payments: number;
+
+  @Column({ type: 'int', unsigned: true })
   remaining_payments: number;
 
   @Column({ type: 'int', unsigned: true })

@@ -51,6 +51,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
     const poolId = await this.poolService.getPoolIdByChainId(payload.pool_id);
     const entity = this.subscriptionRepository.create({
       remaining_payments: payload.remaining_payments,
+      total_payments: payload.remaining_payments,
       subscriber: payload.subscriber,
       amount: payload.amount,
       pool_id: payload.pool_id,
@@ -73,7 +74,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
    * @param token – The permit token address
    * @param amount – The amount donated
    * @param interval – The interval of the subscription.
-   * @param remainingPayments – The remaining duration of the subscription.
+   * @param totalPayments – Total payments of the subscription.
    * @param deadline – The deadline of the signature
    */
   async onSubscriptionCreated(
@@ -84,7 +85,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
     token: string,
     amount: bigint,
     interval: bigint,
-    remainingPayments: bigint,
+    totalPayments: bigint,
     deadline: bigint,
   ) {
     await this.save({
@@ -93,7 +94,8 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
       token,
       amount: amount.toString(),
       subscription_id: Number(subscriptionId),
-      remaining_payments: Number(remainingPayments),
+      remaining_payments: Number(totalPayments) - 1,
+      total_payments: Number(totalPayments),
       interval: Number(interval),
       subscriber,
       pool_id: Number(poolId),
@@ -139,7 +141,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
           token: token,
 
           intervalHuman,
-          remainingPayments: Number(remainingPayments),
+          remainingPayments: Number(totalPayments) - 1,
 
           deadline: Number(deadline),
         },
@@ -159,7 +161,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         }),
       };
       await this.processChannelsNotification(
-        subscriberEntity,
+        subscriberEntity.profile,
         mailPayload,
         saveNotificationPayload,
         sendNotificationOverride,
@@ -193,7 +195,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
           token,
 
           intervalHuman,
-          remainingPayments: Number(remainingPayments),
+          remainingPayments: Number(totalPayments) - 1,
 
           deadline: Number(deadline), // formatted via `formatDate`
         },
@@ -213,7 +215,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         }),
       };
       await this.processChannelsNotification(
-        beneficiaryEntity,
+        beneficiaryEntity.profile,
         mailPayload,
         saveNotificationPayload,
         sendNotificationOverride,
@@ -233,6 +235,108 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         remaining_payments: 0,
       },
     );
+    const subscriptionEntity = await this.subscriptionRepository.findOneOrFail({
+      where: { on_chain_subscription_id: Number(subscriptionId) },
+      relations: ['pool', 'pool.profile'],
+    });
+
+    const { profile: unsubscriberProfile } =
+      (await this.userService.findOneByWalletAddress(
+        subscriptionEntity.subscriber,
+      )) as UserEntity;
+
+    // 1. Process unsubscriber receipt notifications
+    if (unsubscriberProfile) {
+      const sendMailPayload: SendMailPayload = {
+        template: 'unsubscribed-receipt',
+        subject: 'Unsubscribed successfully',
+        context: {
+          subscriberName:
+            unsubscriberProfile.display_name ?? unsubscriberProfile.username,
+          poolName: subscriptionEntity.pool.title ?? 'Untitled',
+          subscriptionId: subscriptionId.toString(),
+          poolId: subscriptionEntity.pool_id.toString(),
+          beneficiaryAddress: subscriptionEntity.pool.owner_address as string,
+          beneficiaryName:
+            subscriptionEntity.pool.profile?.display_name ??
+            subscriptionEntity.pool.profile?.username,
+          completedPayments: subscriptionEntity.remaining_payments,
+          totalPayments: subscriptionEntity.total_payments,
+        },
+        to: unsubscriberProfile.email as string,
+      };
+      const saveNotificationPayload: SaveNotificationI = {
+        title: 'Unsubscribed successfully',
+        actor: unsubscriberProfile,
+        message: 'You have unsubscribed from pool {poolName}',
+        type: 'subscription_creation_receipt',
+      };
+
+      const sendNotificationOverride: Partial<NotificationEntity> = {
+        message: this.tokenizer.format(saveNotificationPayload.message, {
+          poolName: subscriptionEntity.pool.title ?? 'Untitled',
+        }),
+      };
+      await this.processChannelsNotification(
+        subscriptionEntity.pool.profile as ProfileEntity,
+        sendMailPayload,
+        saveNotificationPayload,
+        sendNotificationOverride,
+        'subscriptionCanceledReceipt',
+      );
+    }
+    // 2. Process pool owner notifications
+
+    const ownerProfile = subscriptionEntity.pool.profile;
+    if (ownerProfile) {
+      const sendMailPayload: SendMailPayload = {
+        template: 'unsubscribed-pool-owner-notice',
+        subject: 'Unsubscribed successfully',
+        context: {
+          poolName: subscriptionEntity.pool.title ?? 'Untitled',
+          poolOwnerName: ownerProfile.display_name ?? ownerProfile.username,
+
+          subscriptionId: subscriptionId.toString(),
+          poolId: subscriptionEntity.pool_id.toString(),
+
+          subscriberAddress: subscriptionEntity.subscriber,
+          subscriberName:
+            unsubscriberProfile.display_name ??
+            unsubscriberProfile.username ??
+            'No name',
+
+          beneficiaryAddress:
+            subscriptionEntity.pool.owner_address ?? 'no address',
+          beneficiaryName:
+            ownerProfile.display_name ?? ownerProfile.username ?? 'No name',
+
+          completedPayments:
+            subscriptionEntity.total_payments -
+            subscriptionEntity.remaining_payments,
+          totalPayments: subscriptionEntity.total_payments,
+        },
+        to: unsubscriberProfile.email as string,
+      };
+      const saveNotificationPayload: SaveNotificationI = {
+        title: 'Unsubscribed successfully',
+        actor: unsubscriberProfile,
+        message: 'You have unsubscribed from pool {poolName}',
+        type: 'subscription_creation_receipt',
+      };
+
+      const sendNotificationOverride: Partial<NotificationEntity> = {
+        message: this.tokenizer.format(saveNotificationPayload.message, {
+          poolName: subscriptionEntity.pool.title ?? 'Untitled',
+        }),
+      };
+      await this.processChannelsNotification(
+        subscriptionEntity.pool.profile as ProfileEntity,
+        sendMailPayload,
+        saveNotificationPayload,
+        sendNotificationOverride,
+        'subscriptionCanceledReceipt',
+      );
+    }
   }
 
   async onSubscriptionPaymentSuccess(
@@ -344,18 +448,18 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
   }
 
   private async processChannelsNotification(
-    user: UserEntity,
+    profile: ProfileEntity,
     sendMailPayload: SendMailPayload,
     saveNotificationPayload: SaveNotificationI,
     sendNotificationOverride: Partial<NotificationEntity>,
     kind: keyof NotificationTypes,
   ) {
     const { settings: notificationSettings } =
-      await this.notificationService.getSettings(user.profile.id);
+      await this.notificationService.getSettings(profile.id);
     if (
       notificationSettings.channels.email.enabled &&
       notificationSettings.channels.email.notifications[kind] &&
-      user.profile.email
+      profile.email
     ) {
       await this.mailService.sendMail(sendMailPayload);
     }
@@ -365,11 +469,11 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
       notificationSettings.channels.inApp.notifications[kind]
     ) {
       const notificationEntity = await this.notificationService.save(
-        user.profile.id,
+        profile.id,
         saveNotificationPayload,
       );
 
-      this.notificationService.send(user.profile.id, {
+      this.notificationService.send(profile.id, {
         ...notificationEntity,
         ...sendNotificationOverride,
       });

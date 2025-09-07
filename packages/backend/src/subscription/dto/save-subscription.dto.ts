@@ -26,5 +26,8 @@ export default class SaveSubscriptionDto {
   remaining_payments: number;
 
   @IsNumber()
+  total_payments: number;
+
+  @IsNumber()
   deadline: number;
 }

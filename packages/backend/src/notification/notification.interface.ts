@@ -44,6 +44,7 @@ export interface NotificationTypes {
   newSubscriber: boolean;
   subscriptionCreationReceipt: boolean;
   subscriptionCanceled: boolean;
+  subscriptionCanceledReceipt: boolean;
   subscriptionPaymentFailed: boolean;
   subscriptionExpired: boolean;
 }
