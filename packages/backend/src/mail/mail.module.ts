@@ -2,8 +2,12 @@ import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as Handlebars from 'handlebars';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import mailConfig from './mail.config';
+import { formatAmount } from './mail.helpers';
+
+Handlebars.registerHelper('formatAmount', formatAmount);
 
 const mod = MailerModule.forRootAsync({
   imports: [ConfigModule.forFeature(mailConfig)],
