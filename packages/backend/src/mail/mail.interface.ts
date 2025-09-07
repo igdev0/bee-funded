@@ -67,6 +67,31 @@ export interface EmailVerificationContextPayload
   verificationUrl: string;
 }
 
+export interface SubscriptionReceiptEmailContext {
+  subscriberName: string;
+
+  poolName: string;
+  subscriptionId: string;
+  poolId: string;
+
+  beneficiaryAddress: string;
+  beneficiaryName?: string;
+
+  amount: string | number;
+  tokenDecimals: number;
+  token: string; // used with {{tokenSymbol token}}
+
+  intervalHuman: string;
+  remainingPayments: number;
+
+  deadline?: Date | string; // formatted with {{formatDate}}
+
+  dashboardUrl: string;
+
+  appName: string;
+  appUrl: string;
+}
+
 export type SendMailTemplates =
   | {
       template: 'notification';
@@ -87,6 +112,10 @@ export type SendMailTemplates =
   | {
       template: 'new-subscriber';
       context: NewSubscriberEmailContext;
+    }
+  | {
+      template: 'subscription-receipt';
+      context: SubscriptionReceiptEmailContext;
     };
 
 export type SendMailPayload = {

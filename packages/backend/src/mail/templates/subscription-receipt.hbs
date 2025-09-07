@@ -4,10 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
-        /* simple, email-friendly styles */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; padding:0; color:#111827; background:#f6f7fb; }
         .container { max-width:600px; margin:24px auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(16,24,40,0.05); }
-        .header { padding:20px 24px; background:linear-gradient(90deg,#06b6d4 0%, #3b82f6 100%); color:#fff; }
+        .header { padding:20px 24px; background:linear-gradient(90deg,#3b82f6 0%, #06b6d4 100%); color:#fff; }
         .header h1 { margin:0; font-size:18px; }
         .content { padding:20px 24px; }
         .row { margin-bottom:12px; }
@@ -22,27 +21,20 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>New subscriber for "{{poolName}}"</h1>
+        <h1>Subscription confirmed</h1>
     </div>
 
     <div class="content">
-        <p class="muted">Hi {{poolOwnerName}},</p>
+        <p class="muted">Hi {{subscriberName}},</p>
 
         <p>
-            Great news — your donation pool <strong>"{{poolName}}"</strong> just received a new subscriber.
+            Thanks for subscribing to the donation pool <strong>"{{poolName}}"</strong>.
+            Your subscription is now active 🎉
         </p>
 
         <div class="meta">
             <div><strong>Subscription ID:</strong> {{subscriptionId}}</div>
             <div><strong>Pool ID:</strong> {{poolId}}</div>
-        </div>
-
-        <div class="row">
-            <div class="tag">Subscriber</div>
-            <div style="margin-top:8px;"><strong>{{subscriberAddress}}</strong></div>
-            {{#if subscriberName}}
-                <div class="muted">{{subscriberName}}</div>
-            {{/if}}
         </div>
 
         <div class="row">
@@ -76,18 +68,18 @@
         {{/if}}
 
         <p style="margin-top:16px;">
-            <a class="cta" href="{{dashboardUrl}}">View subscription in dashboard</a>
+            <a class="cta" href="{{dashboardUrl}}">Manage your subscription</a>
         </p>
 
         <hr style="border:none;border-top:1px solid #eef2f6;margin:18px 0;">
 
         <p class="muted" style="font-size:13px">
-            If you didn't expect this subscriber or think this is a mistake, please review the subscription in your dashboard or contact support.
+            If you didn’t mean to create this subscription or believe this is a mistake, please review it in your dashboard or contact support.
         </p>
     </div>
 
     <div class="footer">
-        <div>Thanks — the BeeFunded team</div>
+        <div>Thanks for your support — the BeeFunded team</div>
         <div style="margin-top:8px;">{{appName}} • <span class="muted">{{appUrl}}</span></div>
     </div>
 </div>
