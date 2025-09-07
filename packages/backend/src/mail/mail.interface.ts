@@ -35,6 +35,33 @@ export interface DonationReceiptContext {
   year?: string | number;
 }
 
+export interface NewSubscriberEmailContext {
+  poolName: string;
+  poolOwnerName: string;
+  subscriptionId: string;
+  poolId: string;
+
+  subscriberAddress: string;
+  subscriberName?: string;
+
+  beneficiaryAddress: string;
+  beneficiaryName?: string;
+
+  amount: string | number;
+  tokenDecimals: number;
+  token: string; // used in `{{tokenSymbol token}}`
+
+  intervalHuman: string;
+  remainingPayments: number;
+
+  deadline?: Date | string; // formatted via `formatDate`
+
+  dashboardUrl: string;
+
+  appName: string;
+  appUrl: string;
+}
+
 export interface EmailVerificationContextPayload
   extends EmailVerificationContext {
   verificationUrl: string;
@@ -56,6 +83,10 @@ export type SendMailTemplates =
   | {
       template: 'donation-received';
       context: DonationReceivedContext;
+    }
+  | {
+      template: 'new-subscriber';
+      context: NewSubscriberEmailContext;
     };
 
 export type SendMailPayload = {
