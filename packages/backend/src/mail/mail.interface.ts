@@ -111,6 +111,31 @@ export interface SubscriptionExpiredEmailContext {
   appUrl: string;
 }
 
+export interface SubscriptionExpiredPoolOwnerEmailContext {
+  poolName: string;
+  poolOwnerName: string;
+
+  subscriptionId: string;
+  poolId: string;
+
+  subscriberAddress: string;
+  subscriberName?: string;
+
+  beneficiaryAddress: string;
+  beneficiaryName?: string;
+
+  completedPayments: number;
+  totalPayments: number;
+
+  expiredAt?: Date | string;
+  lastPaymentDate?: Date | string;
+
+  dashboardUrl: string;
+
+  appName: string;
+  appUrl: string;
+}
+
 export type SendMailTemplates =
   | {
       template: 'notification';
@@ -139,6 +164,10 @@ export type SendMailTemplates =
   | {
       template: 'subscription-expired';
       context: SubscriptionExpiredEmailContext;
+    }
+  | {
+      template: 'subscription-expired-pool-owner';
+      context: SubscriptionExpiredPoolOwnerEmailContext;
     };
 
 export type SendMailPayload = {
