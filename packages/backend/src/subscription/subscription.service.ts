@@ -91,6 +91,8 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
       subscriber,
       pool_id: Number(poolId),
     });
+
+    const intervalHuman = `${Number(interval) / 120 / 24} days`;
     const poolEntity = await this.poolService.getOneByOnChainPoolId(
       poolId.toString(),
     );
@@ -106,7 +108,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
     );
     const tokenContract = new Contract(token, erc20Abi, provider);
 
-    const decimals: number = (await tokenContract.decimals()) as number;
+    const tokenDecimals: number = (await tokenContract.decimals()) as number;
     const tokenSymbol: string = (await tokenContract.symbol()) as string;
     if (subscriberEntity) {
       const { settings: notificationSettings } =
@@ -131,11 +133,11 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
               beneficiaryEntity?.profile.display_name ?? 'No beneficiary name',
 
             amount: amount.toString(),
-            tokenDecimals: decimals,
-            token: token, // used with {{tokenSymbol token}}
+            tokenDecimals,
             tokenSymbol,
+            token: token, // used with {{tokenSymbol token}}
 
-            intervalHuman: `${Number(interval) / 120 / 24} days`,
+            intervalHuman,
             remainingPayments: Number(remainingPayments),
 
             deadline: Number(deadline), // formatted with {{formatDate}}
@@ -175,6 +177,71 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
     // Process beneficiary email and notification
 
     if (beneficiaryEntity) {
+      const { settings: notificationSettings } =
+        await this.notificationService.getSettings(
+          beneficiaryEntity.profile.id,
+        );
+      if (
+        notificationSettings.channels.email.enabled &&
+        notificationSettings.channels.email.notifications
+          .subscriptionCreationReceipt &&
+        beneficiaryEntity.profile.email
+      ) {
+        await this.mailService.sendMail({
+          template: 'new-subscriber',
+          context: {
+            poolName: poolEntity.title ?? 'Untitled',
+            poolOwnerName:
+              beneficiaryEntity.profile.display_name ??
+              beneficiaryEntity.profile.username,
+            subscriptionId: subscriptionId.toString(),
+            poolId: poolId.toString(),
+
+            subscriberAddress: subscriber,
+            subscriberName:
+              subscriberEntity?.profile.display_name ?? 'Anonymous',
+
+            beneficiaryAddress: beneficiary,
+            beneficiaryName:
+              beneficiaryEntity.profile.display_name ??
+              beneficiaryEntity.profile.username,
+
+            amount: amount.toString(),
+            tokenDecimals,
+            token,
+
+            intervalHuman,
+            remainingPayments: Number(remainingPayments),
+
+            deadline: Number(deadline), // formatted via `formatDate`
+          },
+          subject: 'Subscription created receipt',
+          to: beneficiaryEntity.profile.email,
+        });
+      }
+
+      if (
+        notificationSettings.channels.inApp.enabled &&
+        notificationSettings.channels.inApp.notifications
+          .subscriptionCreationReceipt
+      ) {
+        const notificationEntity = await this.notificationService.save(
+          beneficiaryEntity.profile.id,
+          {
+            type: 'subscription_creation_receipt',
+            title: 'Congrats!🥂 your {poolName} received a new subscription!',
+            message: 'I hope this message finds you well!',
+            actor: subscriberEntity?.profile,
+          },
+        );
+
+        this.notificationService.send(beneficiaryEntity.profile.id, {
+          ...notificationEntity,
+          title: this.tokenizer.format(notificationEntity.title, {
+            poolName: poolEntity.title ?? 'No pool title',
+          }),
+        });
+      }
     }
   }
 

@@ -54,7 +54,7 @@ export interface NewSubscriberEmailContext {
   intervalHuman: string;
   remainingPayments: number;
 
-  deadline?: Date | string; // formatted via `formatDate`
+  deadline?: number; // formatted via `formatDate`
 }
 
 export interface EmailVerificationContextPayload
