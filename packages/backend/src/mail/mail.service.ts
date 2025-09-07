@@ -7,6 +7,8 @@ import {
   SendMailPayload,
 } from './mail.interface';
 
+// @todo – Create a helper for formating the verificationUrl, rather than a method on this service.
+// @todo – Create a helper for formatting notificationSettingsUrl and one for actionUrl, rather than a method "sendNotification" on this service.
 @Injectable()
 export class MailService {
   private appFrontendUrl: string;
