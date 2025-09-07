@@ -5,9 +5,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Handlebars from 'handlebars';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import mailConfig from './mail.config';
-import { formatAmount } from './mail.helpers';
+import { formatAmount, formatDate, globalVar } from './mail.helpers';
 
 Handlebars.registerHelper('formatAmount', formatAmount);
+Handlebars.registerHelper('formatDate', formatDate);
+Handlebars.registerHelper('global', globalVar);
 
 const mod = MailerModule.forRootAsync({
   imports: [ConfigModule.forFeature(mailConfig)],

@@ -55,11 +55,6 @@ export interface NewSubscriberEmailContext {
   remainingPayments: number;
 
   deadline?: Date | string; // formatted via `formatDate`
-
-  dashboardUrl: string;
-
-  appName: string;
-  appUrl: string;
 }
 
 export interface EmailVerificationContextPayload
@@ -79,17 +74,13 @@ export interface SubscriptionReceiptEmailContext {
 
   amount: string | number;
   tokenDecimals: number;
-  token: string; // used with {{tokenSymbol token}}
+  token: string;
+  tokenSymbol: string;
 
   intervalHuman: string;
   remainingPayments: number;
 
-  deadline?: Date | string; // formatted with {{formatDate}}
-
-  dashboardUrl: string;
-
-  appName: string;
-  appUrl: string;
+  deadline?: Date | number; // formatted with {{formatDate}}
 }
 
 export interface UnsubscribedReceiptEmailContext {
@@ -104,11 +95,6 @@ export interface UnsubscribedReceiptEmailContext {
 
   completedPayments: number;
   totalPayments: number;
-
-  dashboardUrl: string;
-
-  appName: string;
-  appUrl: string;
 }
 
 export interface UnsubscribedPoolOwnerNoticeEmailContext {
@@ -126,11 +112,6 @@ export interface UnsubscribedPoolOwnerNoticeEmailContext {
 
   completedPayments: number;
   totalPayments: number;
-
-  dashboardUrl: string;
-
-  appName: string;
-  appUrl: string;
 }
 
 export interface SubscriptionExpiredEmailContext {
@@ -145,11 +126,6 @@ export interface SubscriptionExpiredEmailContext {
 
   completedPayments: number;
   totalPayments: number;
-
-  dashboardUrl: string;
-
-  appName: string;
-  appUrl: string;
 }
 
 export interface SubscriptionExpiredPoolOwnerEmailContext {
@@ -170,11 +146,6 @@ export interface SubscriptionExpiredPoolOwnerEmailContext {
 
   expiredAt?: Date | string;
   lastPaymentDate?: Date | string;
-
-  dashboardUrl: string;
-
-  appName: string;
-  appUrl: string;
 }
 
 export type SendMailTemplates =

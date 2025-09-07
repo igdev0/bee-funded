@@ -4,7 +4,12 @@ export type NotificationType =
   | 'donation_pool_created'
   | 'donation_processed'
   | 'donation_receipt'
-  | 'donation_received';
+  | 'donation_received'
+  | 'new_subscriber'
+  | 'subscription_creation_receipt'
+  | 'subscription_canceled'
+  | 'subscription_payment_failed'
+  | 'subscription_expired';
 
 export interface NotificationI {
   id: string;
@@ -36,6 +41,11 @@ export interface NotificationTypes {
   followingPoolCreation: boolean;
   donationReceipt: boolean;
   donationReceived: boolean;
+  newSubscriber: boolean;
+  subscriptionCreationReceipt: boolean;
+  subscriptionCanceled: boolean;
+  subscriptionPaymentFailed: boolean;
+  subscriptionExpired: boolean;
 }
 
 export interface NotificationChannel {
