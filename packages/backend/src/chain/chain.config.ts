@@ -48,7 +48,7 @@ export default registerAs(
         explorerUrl: 'http://127.0.0.1:8545',
         contracts: {
           BeeFundedCore: {
-            address: '0xfDfD862235ee75427b930a4D4E1FA4E1311fA270',
+            address: '0x58cF3AAd02CE9C9c6f8a3fDCe16E431186A1E6a1',
             abi: [
               {
                 inputs: [
@@ -346,7 +346,7 @@ export default registerAs(
             ],
           },
           SubscriptionManager: {
-            address: '0x548F5dbA56365726bBD9a7f7AEde953f7a294Ae5',
+            address: '0x0A082182e5Fe2498DD0c8306130DED843c9905B7',
             abi: [
               {
                 inputs: [
@@ -398,6 +398,12 @@ export default registerAs(
                   },
                   {
                     indexed: false,
+                    internalType: 'address',
+                    name: 'token',
+                    type: 'address',
+                  },
+                  {
+                    indexed: false,
                     internalType: 'uint256',
                     name: 'amount',
                     type: 'uint256',
@@ -410,9 +416,15 @@ export default registerAs(
                   },
                   {
                     indexed: false,
-                    internalType: 'uint8',
-                    name: 'duration',
-                    type: 'uint8',
+                    internalType: 'uint256',
+                    name: 'totalPayments',
+                    type: 'uint256',
+                  },
+                  {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'deadline',
+                    type: 'uint256',
                   },
                 ],
                 name: 'SubscriptionCreated',
@@ -506,9 +518,9 @@ export default registerAs(
                         type: 'uint256',
                       },
                       {
-                        internalType: 'uint8',
-                        name: 'remainingDuration',
-                        type: 'uint8',
+                        internalType: 'uint256',
+                        name: 'remainingPayments',
+                        type: 'uint256',
                       },
                       {
                         internalType: 'bool',
@@ -566,9 +578,9 @@ export default registerAs(
                         type: 'uint256',
                       },
                       {
-                        internalType: 'uint8',
-                        name: 'remainingDuration',
-                        type: 'uint8',
+                        internalType: 'uint256',
+                        name: 'remainingPayments',
+                        type: 'uint256',
                       },
                       {
                         internalType: 'bool',
@@ -641,9 +653,9 @@ export default registerAs(
                     type: 'uint256',
                   },
                   {
-                    internalType: 'uint8',
-                    name: 'duration',
-                    type: 'uint8',
+                    internalType: 'uint256',
+                    name: 'totalPayments',
+                    type: 'uint256',
                   },
                   {
                     internalType: 'uint256',
@@ -712,9 +724,9 @@ export default registerAs(
                     type: 'uint256',
                   },
                   {
-                    internalType: 'uint8',
-                    name: 'remainingDuration',
-                    type: 'uint8',
+                    internalType: 'uint256',
+                    name: 'remainingPayments',
+                    type: 'uint256',
                   },
                   {
                     internalType: 'bool',
@@ -761,9 +773,9 @@ export default registerAs(
                     type: 'bool',
                   },
                   {
-                    internalType: 'uint8',
-                    name: '_remainingDuration',
-                    type: 'uint8',
+                    internalType: 'uint256',
+                    name: '_remainingPayments',
+                    type: 'uint256',
                   },
                   {
                     internalType: 'uint256',
@@ -779,7 +791,7 @@ export default registerAs(
             ],
           },
           DonationManager: {
-            address: '0xDb331CcD4c048399Cc667aDd88A0410b7B321C39',
+            address: '0x64bcC240308db721179d67F8Fe70b2219EA7A5A0',
             abi: [
               {
                 inputs: [
@@ -881,6 +893,12 @@ export default registerAs(
                     internalType: 'string',
                     name: 'message',
                     type: 'string',
+                  },
+                  {
+                    indexed: false,
+                    internalType: 'bool',
+                    name: 'recuring',
+                    type: 'bool',
                   },
                 ],
                 name: 'DonationSuccess',
@@ -1137,7 +1155,7 @@ export default registerAs(
             ],
           },
           AutomationUpkeep: {
-            address: '0x06eea7907190326Cf71Cf2Dc7beF9D17e383C3cA',
+            address: '0xeAbAf20E15250E9dB81799e08bf16f820C293819',
             abi: [
               {
                 inputs: [
@@ -1171,7 +1189,7 @@ export default registerAs(
                   {
                     indexed: true,
                     internalType: 'uint256',
-                    name: 'poolId',
+                    name: 'subscriptionId',
                     type: 'uint256',
                   },
                   {
@@ -1196,7 +1214,7 @@ export default registerAs(
                   {
                     indexed: true,
                     internalType: 'uint256',
-                    name: 'poolId',
+                    name: 'subscriptionId',
                     type: 'uint256',
                   },
                   {
@@ -1207,9 +1225,15 @@ export default registerAs(
                   },
                   {
                     indexed: true,
-                    internalType: 'address',
-                    name: 'beneficiary',
-                    type: 'address',
+                    internalType: 'uint256',
+                    name: 'remainingPayments',
+                    type: 'uint256',
+                  },
+                  {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'nextPaymentTime',
+                    type: 'uint256',
                   },
                 ],
                 name: 'SubscriptionPaymentFailed',
@@ -1229,6 +1253,18 @@ export default registerAs(
                     internalType: 'address',
                     name: 'subscriber',
                     type: 'address',
+                  },
+                  {
+                    indexed: true,
+                    internalType: 'uint256',
+                    name: 'remainingPayments',
+                    type: 'uint256',
+                  },
+                  {
+                    indexed: false,
+                    internalType: 'uint256',
+                    name: 'nextPaymentTime',
+                    type: 'uint256',
                   },
                 ],
                 name: 'SubscriptionPaymentSuccess',
@@ -1326,7 +1362,7 @@ export default registerAs(
             ],
           },
           TreasureManager: {
-            address: '0x150545009AEEDEc20b7486cA3229F60C8bd354B3',
+            address: '0xea6c86D8E470c72fe51fd189Fdad5b0443AC1ac2',
             abi: [
               {
                 inputs: [
