@@ -269,7 +269,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         title: 'Unsubscribed successfully',
         actor: unsubscriberProfile,
         message: 'You have unsubscribed from pool {poolName}',
-        type: 'subscription_creation_receipt',
+        type: 'subscription_canceled_receipt',
       };
 
       const sendNotificationOverride: Partial<NotificationEntity> = {
@@ -318,15 +318,21 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         to: unsubscriberProfile.email as string,
       };
       const saveNotificationPayload: SaveNotificationI = {
-        title: 'Unsubscribed successfully',
+        title: 'User {displayName} unsubscribed from one of your pools',
         actor: unsubscriberProfile,
-        message: 'You have unsubscribed from pool {poolName}',
-        type: 'subscription_creation_receipt',
+        message: 'User {displayName} unsubscribed from pool {poolName}',
+        type: 'subscription_canceled',
       };
 
       const sendNotificationOverride: Partial<NotificationEntity> = {
+        title: this.tokenizer.format(saveNotificationPayload.title, {
+          displayName:
+            unsubscriberProfile.display_name ?? unsubscriberProfile.username,
+        }),
         message: this.tokenizer.format(saveNotificationPayload.message, {
           poolName: subscriptionEntity.pool.title ?? 'Untitled',
+          displayName:
+            unsubscriberProfile.display_name ?? unsubscriberProfile.username,
         }),
       };
       await this.processChannelsNotification(
@@ -334,7 +340,7 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         sendMailPayload,
         saveNotificationPayload,
         sendNotificationOverride,
-        'subscriptionCanceledReceipt',
+        'subscriptionCanceled',
       );
     }
   }

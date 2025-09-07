@@ -7,6 +7,7 @@ export type NotificationType =
   | 'donation_received'
   | 'new_subscriber'
   | 'subscription_creation_receipt'
+  | 'subscription_canceled_receipt'
   | 'subscription_canceled'
   | 'subscription_payment_failed'
   | 'subscription_expired';
