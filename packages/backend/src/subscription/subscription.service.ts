@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { ProfileService } from '../profile/profile.service';
 import { ChainService } from '../chain/chain.service';
 import { ChainConfig } from '../chain/chain.config';
-import { Contract, WebSocketProvider } from 'ethers/lib.esm';
+import { Contract, WebSocketProvider } from 'ethers';
 import SaveSubscriptionDto from './dto/save-subscription.dto';
 import { DonationPoolService } from '../donation-pool/donation-pool.service';
 
@@ -18,7 +18,7 @@ import { DonationPoolService } from '../donation-pool/donation-pool.service';
 @Injectable()
 export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
   chains: ChainConfig[];
-  providers: WebSocketProvider[];
+  providers: WebSocketProvider[] = [];
 
   constructor(
     @InjectRepository(SubscriptionEntity)
@@ -151,8 +151,8 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
     for (const chain of this.chains) {
       const provider = new WebSocketProvider(chain.wsUrl);
       const contract = new Contract(
-        chain.contracts.DonationManager.address,
-        chain.contracts.DonationManager.abi,
+        chain.contracts.SubscriptionManager.address,
+        chain.contracts.SubscriptionManager.abi,
         provider,
       );
 
