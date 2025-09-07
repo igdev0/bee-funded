@@ -14,6 +14,13 @@ import { MailService } from '../mail/mail.service';
 import { erc20Abi } from 'viem';
 import { ConfigService } from '@nestjs/config';
 import { TokenizerService } from '../tokenizer/tokenizer.service';
+import {
+  NotificationTypes,
+  SaveNotificationI,
+} from '../notification/notification.interface';
+import NotificationEntity from '../notification/entities/notification.entity';
+import { UserEntity } from '../user/entities/user.entity';
+import { SendMailPayload } from '../mail/mail.interface';
 
 /**
  * @todo – Send notification and email based on profile settings for beneficiary and subscriber, when creating a subscription.
@@ -110,138 +117,108 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
 
     const tokenDecimals: number = (await tokenContract.decimals()) as number;
     const tokenSymbol: string = (await tokenContract.symbol()) as string;
+
+    // 1. Process subscriber email and in-app notification
     if (subscriberEntity) {
-      const { settings: notificationSettings } =
-        await this.notificationService.getSettings(subscriberEntity.profile.id);
-      if (
-        notificationSettings.channels.email.enabled &&
-        notificationSettings.channels.email.notifications
-          .subscriptionCreationReceipt &&
-        subscriberEntity.profile.email
-      ) {
-        await this.mailService.sendMail({
-          template: 'subscription-receipt',
-          context: {
-            subscriberName: subscriberEntity.profile?.display_name ?? 'User',
+      const mailPayload: SendMailPayload = {
+        template: 'subscription-receipt',
+        context: {
+          subscriberName: subscriberEntity.profile?.display_name ?? 'User',
 
-            poolName: poolEntity.title ?? 'Untitled',
-            subscriptionId: subscriptionId.toString(),
-            poolId: poolId.toString(),
+          poolName: poolEntity.title ?? 'Untitled',
+          subscriptionId: subscriptionId.toString(),
+          poolId: poolId.toString(),
 
-            beneficiaryAddress: beneficiary,
-            beneficiaryName:
-              beneficiaryEntity?.profile.display_name ?? 'No beneficiary name',
+          beneficiaryAddress: beneficiary,
+          beneficiaryName:
+            beneficiaryEntity?.profile.display_name ?? 'No beneficiary name',
 
-            amount: amount.toString(),
-            tokenDecimals,
-            tokenSymbol,
-            token: token, // used with {{tokenSymbol token}}
+          amount: amount.toString(),
+          tokenDecimals,
+          tokenSymbol,
+          token: token,
 
-            intervalHuman,
-            remainingPayments: Number(remainingPayments),
+          intervalHuman,
+          remainingPayments: Number(remainingPayments),
 
-            deadline: Number(deadline), // formatted with {{formatDate}}
-          },
-          subject: 'Subscription created receipt',
-          to: subscriberEntity.profile.email,
-        });
-      }
+          deadline: Number(deadline),
+        },
+        subject: 'Subscription created receipt',
+        to: subscriberEntity.profile.email as string,
+      };
 
-      if (
-        notificationSettings.channels.inApp.enabled &&
-        notificationSettings.channels.inApp.notifications
-          .subscriptionCreationReceipt
-      ) {
-        const notificationEntity = await this.notificationService.save(
-          subscriberEntity.profile.id,
-          {
-            type: 'subscription_creation_receipt',
-            title: 'You have successfully subscribed to "{poolName}"',
-            message: 'Thank you for subscribing to "{poolName}"',
-            actor: subscriberEntity.profile,
-          },
-        );
-
-        this.notificationService.send(subscriberEntity.profile.id, {
-          ...notificationEntity,
-          title: this.tokenizer.format(notificationEntity.title, {
-            poolName: poolEntity.title ?? 'No pool title',
-          }),
-          message: this.tokenizer.format(notificationEntity.message, {
-            poolName: poolEntity.title ?? 'No pool title',
-          }),
-        });
-      }
+      const saveNotificationPayload: SaveNotificationI = {
+        type: 'subscription_creation_receipt',
+        title: 'You have successfully subscribed to "{poolName}"',
+        message: 'Thank you for subscribing',
+        actor: subscriberEntity.profile,
+      };
+      const sendNotificationOverride = {
+        title: this.tokenizer.format(saveNotificationPayload.title, {
+          poolName: poolEntity.title as string,
+        }),
+      };
+      await this.processChannelsNotification(
+        subscriberEntity,
+        mailPayload,
+        saveNotificationPayload,
+        sendNotificationOverride,
+        'subscriptionCreationReceipt',
+      );
     }
 
-    // Process beneficiary email and notification
+    // 2. Process beneficiary email and notification
 
     if (beneficiaryEntity) {
-      const { settings: notificationSettings } =
-        await this.notificationService.getSettings(
-          beneficiaryEntity.profile.id,
-        );
-      if (
-        notificationSettings.channels.email.enabled &&
-        notificationSettings.channels.email.notifications
-          .subscriptionCreationReceipt &&
-        beneficiaryEntity.profile.email
-      ) {
-        await this.mailService.sendMail({
-          template: 'new-subscriber',
-          context: {
-            poolName: poolEntity.title ?? 'Untitled',
-            poolOwnerName:
-              beneficiaryEntity.profile.display_name ??
-              beneficiaryEntity.profile.username,
-            subscriptionId: subscriptionId.toString(),
-            poolId: poolId.toString(),
+      const mailPayload: SendMailPayload = {
+        template: 'new-subscriber',
+        context: {
+          poolName: poolEntity.title ?? 'Untitled',
+          poolOwnerName:
+            beneficiaryEntity.profile.display_name ??
+            beneficiaryEntity.profile.username,
+          subscriptionId: subscriptionId.toString(),
+          poolId: poolId.toString(),
 
-            subscriberAddress: subscriber,
-            subscriberName:
-              subscriberEntity?.profile.display_name ?? 'Anonymous',
+          subscriberAddress: subscriber,
+          subscriberName: subscriberEntity?.profile.display_name ?? 'Anonymous',
 
-            beneficiaryAddress: beneficiary,
-            beneficiaryName:
-              beneficiaryEntity.profile.display_name ??
-              beneficiaryEntity.profile.username,
+          beneficiaryAddress: beneficiary,
+          beneficiaryName:
+            beneficiaryEntity.profile.display_name ??
+            beneficiaryEntity.profile.username,
 
-            amount: amount.toString(),
-            tokenDecimals,
-            token,
+          amount: amount.toString(),
+          tokenDecimals,
+          token,
 
-            intervalHuman,
-            remainingPayments: Number(remainingPayments),
+          intervalHuman,
+          remainingPayments: Number(remainingPayments),
 
-            deadline: Number(deadline), // formatted via `formatDate`
-          },
-          subject: 'Subscription created receipt',
-          to: beneficiaryEntity.profile.email,
-        });
-      }
+          deadline: Number(deadline), // formatted via `formatDate`
+        },
+        subject: 'Subscription created receipt',
+        to: beneficiaryEntity.profile.email as string,
+      };
+      const saveNotificationPayload: SaveNotificationI = {
+        type: 'subscription_creation_receipt',
+        title: 'Congrats!🥂 your {poolName} received a new subscription!',
+        message: 'I hope this message finds you well!',
+        actor: subscriberEntity?.profile,
+      };
 
-      if (
-        notificationSettings.channels.inApp.enabled &&
-        notificationSettings.channels.inApp.notifications
-          .subscriptionCreationReceipt
-      ) {
-        const notificationEntity = await this.notificationService.save(
-          beneficiaryEntity.profile.id,
-          {
-            type: 'subscription_creation_receipt',
-            title: 'Congrats!🥂 your {poolName} received a new subscription!',
-            message: 'I hope this message finds you well!',
-            actor: subscriberEntity?.profile,
-          },
-        );
-
-        this.notificationService.send(beneficiaryEntity.profile.id, {
-          ...notificationEntity,
-          title: this.tokenizer.format(notificationEntity.title, {
-            poolName: poolEntity.title ?? 'No pool title',
-          }),
-        });
-      }
+      const sendNotificationOverride = {
+        title: this.tokenizer.format(saveNotificationPayload.title, {
+          poolName: poolEntity.title ?? 'No pool title',
+        }),
+      };
+      await this.processChannelsNotification(
+        beneficiaryEntity,
+        mailPayload,
+        saveNotificationPayload,
+        sendNotificationOverride,
+        'newSubscriber',
+      );
     }
   }
 
@@ -364,6 +341,39 @@ export class SubscriptionService implements OnModuleDestroy, OnModuleInit {
         return provider.destroy();
       }),
     );
+  }
+
+  private async processChannelsNotification(
+    user: UserEntity,
+    sendMailPayload: SendMailPayload,
+    saveNotificationPayload: SaveNotificationI,
+    sendNotificationOverride: Partial<NotificationEntity>,
+    kind: keyof NotificationTypes,
+  ) {
+    const { settings: notificationSettings } =
+      await this.notificationService.getSettings(user.profile.id);
+    if (
+      notificationSettings.channels.email.enabled &&
+      notificationSettings.channels.email.notifications[kind] &&
+      user.profile.email
+    ) {
+      await this.mailService.sendMail(sendMailPayload);
+    }
+
+    if (
+      notificationSettings.channels.inApp.enabled &&
+      notificationSettings.channels.inApp.notifications[kind]
+    ) {
+      const notificationEntity = await this.notificationService.save(
+        user.profile.id,
+        saveNotificationPayload,
+      );
+
+      this.notificationService.send(user.profile.id, {
+        ...notificationEntity,
+        ...sendNotificationOverride,
+      });
+    }
   }
 
   private processSubscriptionCreatedSubscriberNotificationChannels(
