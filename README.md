@@ -32,3 +32,7 @@ BeeFunded empowers communities to fund, support, and reward creators through tra
 **OnChain:** Modular & Composable Smart Contracts – Each contract handles a specific domain (e.g., donations, subscriptions, treasures) and interacts with others to form an integrated system.
 
 **Backend**: Layered approach – controllers → services → repositories, which is closer to Clean Architecture than traditional MVC. 
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
