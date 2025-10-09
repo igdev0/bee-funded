@@ -14,7 +14,7 @@
   "scripts": {
     "prepare": "husky",
     "precommit": "lint-staged",
-    "dev": "npm-run-all --parallel dapp:dev backend:dev hardhat:chain hardhat:deploy",
+    "dev": "npm-run-all --parallel dapp:dev backend:dev contracts:chain contracts:deploy",
     "dapp:start": "yarn workspace dapp start",
     "dapp:dev": "yarn workspace dapp dev",
     "dapp:test": "yarn workspace dapp test",
